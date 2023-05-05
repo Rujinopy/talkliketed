@@ -1,91 +1,214 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { type NextPage } from "next";
-import { useState } from "react";
-import Head from "next/head";
-
-// import Link from "next/link";
-
+import { useState, useRef, useEffect } from "react";
+import * as poseDetection from '@tensorflow-models/pose-detection';
+import * as tf from '@tensorflow/tfjs-core';
+import '@tensorflow/tfjs-backend-webgl';
+import Link from "next/link";
+import {
+  drawKeypoints,
+  drawSkeleton,
+} from "./utils/draw";
 import { api } from "~/utils/api";
 import Trpc from "./api/trpc/[trpc]";
-// import { number, set } from "zod";
+import Webcam from "react-webcam";
+import { type Pose } from "@tensorflow-models/pose-detection/dist/types";
+import { useUser, UserButton } from "@clerk/nextjs";
+import Script from "next/script";
+//movenet model
+const model = poseDetection.SupportedModels.MoveNet;
 
-const Home: NextPage = () => {
-  const { data } = api.posts.getAll.useQuery();
-  const [isChecked, setChecked] = useState(false)
-  const [checkedItems, setCheckedItems] = useState<string[]>([])
-  //trpc useContext
-  const ctx = api.useContext()
+//movenet config
+const detectorConfig = {
+  modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+  maxPoses: 1,
+  type: "lightning",
+  scoreThreshold: 0.3,
+  customModel: "",
+  enableTracking: false,
+};
 
-  // const itemm = checkedItems[0]
-  const { mutate } = api.posts.delete.useMutation({
-    onSuccess: () => {
-      //refresh the data
-      void ctx.posts.getAll.invalidate()
-    }
-  });
+
+
+export const Home: NextPage = (props) => {
   
+  const user = useUser();
+  const webRef = useRef<Webcam>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isChecked, setChecked] = useState(false);
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [reps, updateReps] = useState(0);
 
+  //select the webcam
+  // const getDevices = async () => {
+  //     const devices = await navigator.mediaDevices.enumerateDevices()
+  //     const videoDevices = devices.filter(device => device.kind === 'videoinput')
+  //     setDevices(videoDevices)
+  //   };
+  // const handleDeviceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  //     setSelectedDeviceId(event.target.value);
+  //   };
+  const videoConstraints = {
+    deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+    width: 640,
+    height: 480,
+  };
 
-  const handleCheck = (e: string) => {
-    //set isChecked to true and add to checkedItems
-    setChecked(!isChecked)
-    //if checkedItems already has the item, remove it
-    if (checkedItems.includes(e)) {
-      setCheckedItems(checkedItems.filter((item) => item !== e))
-      return
+  //draw the canvas and the keypoints on the video
+  const drawCanvas = (
+    pose: Pose,
+    video: Webcam,
+    videoWidth: number,
+    videoHeight: number,
+    canvas: React.RefObject<HTMLCanvasElement>
+  ) => {
+    const ctx = canvas.current?.getContext("2d");
+    if (canvas.current && ctx) {
+      canvas.current.width = videoWidth;
+      canvas.current.height = videoHeight;
+      drawKeypoints(pose.keypoints, ctx);
     }
-    //if checkedItems does not have the item, add it
-    setCheckedItems([...checkedItems, e])
-    
+  };
 
+  //count the reps
+  function gettingRepsUpdated() {
+    updateReps(reps + 1);
   }
 
-  const handleDelete = () => {
-    //delete all checked items
-    checkedItems.map((item) => mutate(item))
-    //set checkedItems to empty array
-    setCheckedItems([])
-    
+  //detect the pose in real time
+  const detectPoseInRealTime = async (
+    video: Webcam,
+    net: poseDetection.PoseDetector
+  ) => {
+    if (video.video) {
+      const videoWidth = video.video.videoWidth;
+      const videoHeight = video.video.videoHeight;
+      canvasRef.current?.setAttribute("width", videoWidth.toString());
+      canvasRef.current?.setAttribute("height", videoHeight.toString());
+      video.video.width = videoWidth;
+      video.video.height = videoHeight;
+      const pose = await net.estimatePoses(video.video);
+
+      if (pose[0]) {
+        const keypoints = pose[0].keypoints;
+        const context = canvasRef.current?.getContext("2d"); // Use optional chaining operator to avoid undefined
+        if (context) {
+          // Add a check to ensure 'context' is not undefined
+          drawCanvas(pose[0], video, videoWidth, videoHeight, canvasRef);
+          drawSkeleton(keypoints, context);
+          const leftShoulder = keypoints[5];
+          const leftElbow = keypoints[7];
+          const leftWrist = keypoints[9];
+          // if (leftShoulder && leftElbow && leftWrist) {
+          //   inUpPosition(
+          //     (getAngle(
+          //       [leftShoulder.y, leftShoulder.x],
+          //       [leftElbow.y, leftElbow.x],
+          //       [leftWrist.y, leftWrist.x]
+          //     ) *
+          //       -180) /
+          //       Math.PI,
+          //     gettingRepsUpdated
+          //   );
+          //   inDownPosition(
+          //     (getAngle(
+          //       [leftShoulder.y, leftShoulder.x],
+          //       [leftElbow.y, leftElbow.x],
+          //       [leftWrist.y, leftWrist.x]
+          //     ) *
+          //       -180) /
+          //       Math.PI,
+          //     keypoints
+          //   );
+          // }
+        }
+      }
+    }
+    //if the video is not loaded yet, wait for it to load
+    else {
+      setTimeout(() => {
+        detectPoseInRealTime(video, net).catch(console.error);
+      }, 30);
+    }
+  };
+
+  const loadModel = async () => {
+    const net = await poseDetection.createDetector(model, detectorConfig);
+    //detect the pose in real time
+    setInterval(() => {
+      if (webRef.current && net) {
+        detectPoseInRealTime(webRef.current, net).catch(console.error);
+      }
+    }, 0);
+  };
+
+  if (isChecked) {
+    loadModel().catch(console.error);
   }
-
-
 
   return (
-    <>
-      <Head>
-        <title>Create T3 App</title>
-        <meta name="description" content="Generated by create-t3-app" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-black to-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
-          
-         
-          <p className="text-2xl text-white">
-            {data?.map((post) => (
-              <div key={post.id} onChange={() => handleCheck(post.id)} className="p-3 bg-black border-solid border-2 border-indigo-600">
-                <input type="checkbox" className="form-checkbox mx-5 h-5 w-5 text-indigo-600 transition duration-150 ease-in-out" />
-                <a className="text-white">{post.content}</a>
-                
-              </div>
-            ))}
-            <button onClick={handleDelete} className="bg-red-600 hover:bg-red-300 px-5 py-2 font-medium text-white border border-b-4 border-r-4 border-black rounded-lg shadow-lg transition duration-200 transform hover:shadow-sm">Delete</button>
-          </p>
-          {/* <div className="flex items-center justify-topp">
-            <div className="space-x-6">
-                <button
-                    className="bg-white hover:scale-125 px-5 py-2 font-medium border border-b-4 border-r-4 border-black rounded-lg shadow-lg hover:shadow-sm transition duration-200 transform">Outline Button</button>
-                <button
-                    className="bg-white hover:scale-125 px-5 py-2 font-medium text-green-900 border border-b-4 border-r-4 border-green-600 rounded-lg shadow-lg transition duration-200 transform hover:shadow-sm">Outline Button</button>
-                <button
-                    className="bg-white hover:scale-125 px-5 py-2 font-medium text-red-900 border border-b-4 border-r-4 border-red-600 rounded-lg shadow-lg transition duration-200 transform hover:shadow-sm">Outline Button</button>
-                <button
-                    className="bg-white hover:scale-125 px-5 py-2 font-medium text-blue-900 border border-b-4 border-r-4 border-blue-600 rounded-lg shadow-lg transition duration-200 transform hover:shadow-sm">Outline Button</button>
+    <div className="flex flex-col justify-center ">
+      <section className="h-1/2">
+        <div className="flex h-20 w-full ">
+          <p className="mx-5 my-5 text-4xl font-bold">PushUP</p>
+          <button
+            className="border-b-1 border-r-1 mx-5 my-5 transform rounded-lg border border-black bg-red-600 px-5 py-2 font-medium  text-white shadow-lg transition duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:border-b-4 hover:border-r-4 hover:bg-red-500 hover:shadow-sm"
+            onClick={() => setChecked(!isChecked)}
+          >
+            Turn on a webcam
+          </button>
+          {!!user ? (
+            <Link
+              href="/sign-in"
+              className="border-b-1 border-r-1 duration-400 mx-5 my-5 transform rounded-lg border border-blue-800  bg-blue-500 px-5 py-2  font-medium text-white
+                  shadow-lg  transition hover:-translate-x-1 hover:-translate-y-1 hover:scale-110 hover:border-b-4 hover:border-r-4 hover:bg-blue-400 hover:shadow-sm"
+            >
+              Sign In
+            </Link>
+          ) : (
+            <div className="my-6 scale-150">
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox:
+                      "border border-black hover:border-b-2 hover:border-r-2 hover:scale-125 transition duration-400",
+                  },
+                }}
+              />
             </div>
-
-        </div> */}
+          )}
+          <p>{}</p>
         </div>
-      </main>
-    </>
+
+        {/* <select className="w-1/3 mx-auto" onChange={handleDeviceChange}>
+                  <option value={""}>Select a device</option>
+                      {devices.map((device, key) => (
+                          <option key={device.deviceId} value={device.deviceId} className="text-black">
+                              {device.label || `Device ${key + 1}`}
+                          </option>
+                      ))}
+            </select> */}
+
+        <p>{user.user?.primaryEmailAddress?.emailAddress}</p>
+        <div className="w-160 h-120 relative">
+          {isChecked ? (
+            <Webcam
+              className="w-160 h-120 w-160 h-120 absolute inset-0 left-0 z-10 mx-auto text-center"
+              ref={webRef}
+              videoConstraints={videoConstraints}
+            />
+          ) : null}
+          {isChecked ? (
+            <canvas
+              className="w-160 h-120 w-160 h-120 absolute inset-0 left-0 z-20 mx-auto text-center"
+              ref={canvasRef}
+            />
+          ) : null}
+        </div>
+      </section>
+      {isChecked ? <p className="mx-auto text-8xl z-30 text-white">{reps}</p> : null}
+    </div>
   );
 };
 
