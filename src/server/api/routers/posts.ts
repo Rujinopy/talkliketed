@@ -13,5 +13,16 @@ export const postsRouter = createTRPCRouter({
     getAll: publicProcedure.query(({ ctx }) => {
         return ctx.prisma.posts.findMany();
     }
-    ),
+    )
+    ,
+    //delete posts that was checked input = set of id
+    delete: publicProcedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+        return await ctx.prisma.posts.delete({
+            where: {
+                id: input
+            }
+        });
+    }),
 });
