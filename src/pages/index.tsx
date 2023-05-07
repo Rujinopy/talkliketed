@@ -1,13 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+import '@tensorflow/tfjs-backend-webgl';
 import { type NextPage } from "next";
 import { useState, useRef, useEffect } from "react";
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as tf from '@tensorflow/tfjs-core';
-import '@tensorflow/tfjs-backend-webgl';
+
 import Link from "next/link";
 import {
   drawKeypoints,
   drawSkeleton,
+  inUpPosition,
+  inDownPosition,
+  getAngle
 } from "./utils/draw";
 import { api } from "~/utils/api";
 import Trpc from "./api/trpc/[trpc]";
@@ -15,6 +18,7 @@ import Webcam from "react-webcam";
 import { type Pose } from "@tensorflow-models/pose-detection/dist/types";
 import { useUser, UserButton } from "@clerk/nextjs";
 import Script from "next/script";
+
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
 
@@ -28,9 +32,7 @@ const detectorConfig = {
   enableTracking: false,
 };
 
-
-
-export const Home: NextPage = (props) => {
+export const Home: NextPage = () => {
   
   const user = useUser();
   const webRef = useRef<Webcam>(null);
@@ -39,7 +41,9 @@ export const Home: NextPage = (props) => {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [reps, updateReps] = useState(0);
-
+  //goup and godown are used to check if the arm is going up or down
+  const [godown, updateGodown] = useState(false);
+  const [goup, updateGoup] = useState(true);
   //select the webcam
   // const getDevices = async () => {
   //     const devices = await navigator.mediaDevices.enumerateDevices()
@@ -70,11 +74,20 @@ export const Home: NextPage = (props) => {
       drawKeypoints(pose.keypoints, ctx);
     }
   };
-
+ 
   //count the reps
-  function gettingRepsUpdated() {
-    updateReps(reps + 1);
+function gettingRepsUpdated() {
+    updateReps(prevReps => prevReps + 1);
+    updateGodown(false);
+    updateGoup(true);
+    console.log(reps);
   }
+  
+  function downUpdate(){
+    updateGodown(true);
+    updateGoup(false);
+  }
+
 
   //detect the pose in real time
   const detectPoseInRealTime = async (
@@ -97,31 +110,24 @@ export const Home: NextPage = (props) => {
           // Add a check to ensure 'context' is not undefined
           drawCanvas(pose[0], video, videoWidth, videoHeight, canvasRef);
           drawSkeleton(keypoints, context);
-          const leftShoulder = keypoints[5];
-          const leftElbow = keypoints[7];
-          const leftWrist = keypoints[9];
-          // if (leftShoulder && leftElbow && leftWrist) {
-          //   inUpPosition(
-          //     (getAngle(
-          //       [leftShoulder.y, leftShoulder.x],
-          //       [leftElbow.y, leftElbow.x],
-          //       [leftWrist.y, leftWrist.x]
-          //     ) *
-          //       -180) /
-          //       Math.PI,
-          //     gettingRepsUpdated
-          //   );
-          //   inDownPosition(
-          //     (getAngle(
-          //       [leftShoulder.y, leftShoulder.x],
-          //       [leftElbow.y, leftElbow.x],
-          //       [leftWrist.y, leftWrist.x]
-          //     ) *
-          //       -180) /
-          //       Math.PI,
-          //     keypoints
-          //   );
-          // }
+          async function getReps() {
+              const leftShoulder = keypoints[5];
+              const leftElbow = keypoints[7];
+              const leftWrist = keypoints[9];
+              
+              if (leftShoulder && leftElbow && leftWrist) {
+                //awaiting inUpPosion before inDownPosition
+                const angle =  getAngle(
+                  [leftShoulder.y, leftShoulder.x],
+                  [leftElbow.y, leftElbow.x],
+                  [leftWrist.y, leftWrist.x]
+                );
+                await Promise.resolve(inUpPosition(angle, godown, goup, gettingRepsUpdated))
+                await Promise.resolve( inDownPosition(angle, keypoints, goup, godown, downUpdate))
+              }
+              
+          }
+          await getReps()
         }
       }
     }
@@ -129,7 +135,7 @@ export const Home: NextPage = (props) => {
     else {
       setTimeout(() => {
         detectPoseInRealTime(video, net).catch(console.error);
-      }, 30);
+      }, 300);
     }
   };
 
@@ -140,7 +146,7 @@ export const Home: NextPage = (props) => {
       if (webRef.current && net) {
         detectPoseInRealTime(webRef.current, net).catch(console.error);
       }
-    }, 0);
+    }, 100);
   };
 
   if (isChecked) {

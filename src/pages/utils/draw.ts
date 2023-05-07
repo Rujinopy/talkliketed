@@ -4,10 +4,8 @@ import { type Keypoint } from "@tensorflow-models/pose-detection/dist/types";
 
 
 const color = "aqua";
-const lineWidth = 4;
-let goup = true;
-export let elbowAngle = 0;
-let godown = false;
+const lineWidth = 6;
+
 export let countReps = 0;
 
 function isAndroid() {
@@ -94,11 +92,7 @@ export function drawSkeleton(keypoints: Keypoint[], ctx: CanvasRenderingContext2
       1,
       ctx
     );
-    elbowAngle = getAngle(
-      [leftShoulder.y, leftShoulder.x],
-      [leftElbow.y, leftElbow.x],
-      [leftWrist.y, leftWrist.x])
-      * -180 / Math.PI
+
   }
 
   //draw angle at around right elbow using drawAngle function
@@ -124,8 +118,11 @@ export function getAngle(
   [by, bx]: [number, number],
   [cy, cx]: [number, number]
 ) {
-
-  return Math.atan2(cy - by, cx - bx) - Math.atan2(ay - by, ax - bx);
+  let angle = (Math.atan2(cy - by, cx - bx) - Math.atan2(ay - by, ax - bx)) * 180 / Math.PI;
+  if (angle < 0) {
+    angle = angle + 360;
+  }
+  return angle
 }
 
 export function drawAngle(
@@ -145,7 +142,6 @@ export function drawAngle(
 }
 
 //isNoseaboveElbow function
-
 export function isNoseAboveElbow(keypoints: Keypoint[]) {
   if (keypoints[0] && keypoints[7] && keypoints[8])  {
 
@@ -163,14 +159,12 @@ export function isBackStraight(keypoints: Keypoint[]) {
 
   if( leftShoulder?.score && leftHip?.score && leftKnee?.score && leftShoulder.score > 0.3 && leftHip.score > 0.3 && leftKnee.score > 0.3) {
 
-  const angle = getAngle(
+  const degree = getAngle(
     [leftShoulder.y, leftShoulder.x],
     [leftHip.y, leftHip.x],
     [leftKnee.y, leftKnee.x]
   )
     //convert to degree
-    const degree = angle * -180 / Math.PI;
-    console.log(degree)
     if (degree > 160 && degree < 200) {
       return true;
     }
@@ -181,43 +175,42 @@ export function isBackStraight(keypoints: Keypoint[]) {
 }
 
 
-export function inUpPosition(elbowAngle: number, callback: (countReps: number) => void) {
+export function inUpPosition(elbowAngle: number, godown: boolean, goup:boolean, callback: () => void) {
 
-    if (elbowAngle > 160 && elbowAngle < 200) {
-      console.log("in up position")
-      if(godown == true) {
+    if (elbowAngle > 170 && elbowAngle < 200) {
+      console.log("")
+      console.log(godown, goup)
+
+      if(godown === true) {
         godown = false;
         goup = true;
         countReps = countReps + 1;
+        console.log("pushhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh")
+        callback();
+        
 
-        callback(countReps);
       }
-      else if (godown = false) {
-        //do nothing
-        console.log("wait for going down")
-      }
-    }
-    else {
-      console.log("please straighten your elbow")
+      // godown = false;
+      //   goup = true;
     }
   }
 
 
 
-export function inDownPosition(elbowAngle: number,keypoints: Keypoint[]) {
-      if( isNoseAboveElbow(keypoints) && isBackStraight(keypoints) ) {
-        if (goup == true) {
-          if( elbowAngle > 70 && elbowAngle < 100) {
+export function inDownPosition(elbowAngle: number,keypoints: Keypoint[], goup: boolean, godown: boolean, callback: () => void) {
+      // if( isNoseAboveElbow(keypoints) && isBackStraight(keypoints) ) {
+        if (goup === true && elbowAngle > 70 && elbowAngle < 100) {
+          
             console.log("in down position")
             godown = true;
-          }
-          else {
-            console.log("please straighten your elbow")
-          }
+            goup = false;
+            console.log(godown, goup)
+            callback();
         }
-        else if (goup == false) {
-          //do nothing
-          console.log("wait for going up")
-        }
-      }  
+        // else {
+        //   //do nothing
+        //   console.log("wait for going up")
+        // }
+      // }  
 }
+
