@@ -2,12 +2,13 @@
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import { type Keypoint } from "@tensorflow-models/pose-detection/dist/types";
 
-
+export let count = 0
 const color = "aqua";
 const lineWidth = 6;
-
-export let countReps = 0;
-
+let godown = true;
+let goup = false;
+// export let countReps = 0;
+let elbowAngle = 0;
 function isAndroid() {
   return /Android/i.test(navigator.userAgent);
 }
@@ -36,6 +37,9 @@ export function drawKeypoints(keypoints: Keypoint[], ctx: CanvasRenderingContext
       const score = keypoint.score;
       if (score >= 0.3) {
       drawPoint(ctx, y, x, 3, color);
+      // updateArmAngle(keypoints);
+      // inUpPosition();
+      // inDownPosition();
       }
     }
   }
@@ -57,7 +61,7 @@ export function drawSegment(
   ctx.stroke();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export function drawSkeleton(keypoints: Keypoint[], ctx: CanvasRenderingContext2D) {
   const adjacentKeyPoints = poseDetection.util.getAdjacentPairs(poseDetection.SupportedModels.PoseNet);
   for (let i = 0; i < adjacentKeyPoints.length; i++) {
@@ -75,41 +79,10 @@ export function drawSkeleton(keypoints: Keypoint[], ctx: CanvasRenderingContext2
             1,
             ctx
           );
+
         }
       }
   }
-
-  //draw angle at around left elbow using drawAngle function
-  const leftShoulder = keypoints[5];
-  const leftElbow = keypoints[7];
-  const leftWrist = keypoints[9];
-  if (leftShoulder?.score && leftElbow?.score && leftWrist?.score && leftShoulder.score > 0.3 && leftElbow.score > 0.3 && leftWrist.score > 0.3) {
-    drawAngle(
-      [leftShoulder.y, leftShoulder.x],
-      [leftElbow.y, leftElbow.x],
-      [leftWrist.y, leftWrist.x],
-      color,
-      1,
-      ctx
-    );
-
-  }
-
-  //draw angle at around right elbow using drawAngle function
-  const rightShoulder = keypoints[6];
-  const rightElbow = keypoints[8];
-  const rightWrist = keypoints[10];
-  if (rightShoulder?.score && rightElbow?.score && rightWrist?.score && rightShoulder.score > 0.3 && rightElbow.score > 0.3 && rightWrist.score > 0.3) {
-    drawAngle(
-      [rightShoulder.y, rightShoulder.x],
-      [rightElbow.y, rightElbow.x],
-      [rightWrist.y, rightWrist.x],
-      color,
-      1,
-      ctx
-    );
-  }
-
 }
 
 //get angle between 3 points
@@ -175,42 +148,57 @@ export function isBackStraight(keypoints: Keypoint[]) {
 }
 
 
-export function inUpPosition(elbowAngle: number, godown: boolean, goup:boolean, callback: () => void) {
+export function inUpPosition() {
 
     if (elbowAngle > 170 && elbowAngle < 200) {
-      console.log("")
-      console.log(godown, goup)
 
       if(godown === true) {
-        godown = false;
-        goup = true;
-        countReps = countReps + 1;
-        console.log("pushhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh")
-        callback();
-        
 
+        count = count + 1;
+
+        // console.log(count)
       }
-      // godown = false;
-      //   goup = true;
+      godown = false;
+      goup = true;
     }
   }
 
 
 
-export function inDownPosition(elbowAngle: number,keypoints: Keypoint[], goup: boolean, godown: boolean, callback: () => void) {
+export function inDownPosition() {
       // if( isNoseAboveElbow(keypoints) && isBackStraight(keypoints) ) {
-        if (goup === true && elbowAngle > 70 && elbowAngle < 100) {
-          
-            console.log("in down position")
-            godown = true;
-            goup = false;
-            console.log(godown, goup)
-            callback();
+        if (elbowAngle > 70 && elbowAngle < 100) {
+          if (goup === true) {
+            console.log("in down position")        
+          }
+          godown = true;
+          goup = false;
         }
-        // else {
-        //   //do nothing
-        //   console.log("wait for going up")
-        // }
-      // }  
 }
 
+function updateArmAngle(keypoints: Keypoint[]) {
+  const leftWrist = keypoints[9];
+  const leftShoulder = keypoints[5];
+  const leftElbow = keypoints[7];
+
+  if( leftWrist?.score && leftShoulder?.score && leftElbow?.score && leftWrist.score > 0.3 && leftShoulder.score > 0.3 && leftElbow.score > 0.3) {
+  const angle = getAngle(
+    [leftShoulder.y, leftShoulder.x],
+    [leftElbow.y, leftElbow.x],
+    [leftWrist.y, leftWrist.x]
+  );
+
+  if (angle < 0) {
+    //angle = angle + 360;
+  }
+
+  if (leftWrist.score > 0.3 && leftElbow.score > 0.3 && leftShoulder.score > 0.3) {
+    //console.log(angle);
+    elbowAngle = angle;
+  }
+
+}
+  else {
+    //console.log('Cannot see elbow');
+  }
+}

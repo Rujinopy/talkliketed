@@ -1,24 +1,22 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import '@tensorflow/tfjs-backend-webgl';
 import { type NextPage } from "next";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect} from "react";
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as tf from '@tensorflow/tfjs-core';
-
 import Link from "next/link";
 import {
   drawKeypoints,
   drawSkeleton,
-  inUpPosition,
-  inDownPosition,
-  getAngle
+  count
 } from "./utils/draw";
 import { api } from "~/utils/api";
-import Trpc from "./api/trpc/[trpc]";
+// import Trpc from "./api/trpc/[trpc]";
 import Webcam from "react-webcam";
 import { type Pose } from "@tensorflow-models/pose-detection/dist/types";
 import { useUser, UserButton } from "@clerk/nextjs";
-import Script from "next/script";
 
+tf.ready().catch(console.error);
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
 
@@ -33,17 +31,15 @@ const detectorConfig = {
 };
 
 export const Home: NextPage = () => {
-  
+
   const user = useUser();
   const webRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isChecked, setChecked] = useState(false);
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  // const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  // const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [reps, updateReps] = useState(0);
   //goup and godown are used to check if the arm is going up or down
-  const [godown, updateGodown] = useState(false);
-  const [goup, updateGoup] = useState(true);
   //select the webcam
   // const getDevices = async () => {
   //     const devices = await navigator.mediaDevices.enumerateDevices()
@@ -53,11 +49,11 @@ export const Home: NextPage = () => {
   // const handleDeviceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
   //     setSelectedDeviceId(event.target.value);
   //   };
-  const videoConstraints = {
-    deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-    width: 640,
-    height: 480,
-  };
+  // const videoConstraints = {
+  //   deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+  //   width: 640,
+  //   height: 480,
+  // };
 
   //draw the canvas and the keypoints on the video
   const drawCanvas = (
@@ -75,20 +71,7 @@ export const Home: NextPage = () => {
     }
   };
  
-  //count the reps
-function gettingRepsUpdated() {
-    updateReps(prevReps => prevReps + 1);
-    updateGodown(false);
-    updateGoup(true);
-    console.log(reps);
-  }
   
-  function downUpdate(){
-    updateGodown(true);
-    updateGoup(false);
-  }
-
-
   //detect the pose in real time
   const detectPoseInRealTime = async (
     video: Webcam,
@@ -106,28 +89,14 @@ function gettingRepsUpdated() {
       if (pose[0]) {
         const keypoints = pose[0].keypoints;
         const context = canvasRef.current?.getContext("2d"); // Use optional chaining operator to avoid undefined
+        const leftShoulder = keypoints[5];
+        const leftElbow = keypoints[7];
+        const leftWrist = keypoints[9];
+        updateReps(count);
         if (context) {
           // Add a check to ensure 'context' is not undefined
           drawCanvas(pose[0], video, videoWidth, videoHeight, canvasRef);
           drawSkeleton(keypoints, context);
-          async function getReps() {
-              const leftShoulder = keypoints[5];
-              const leftElbow = keypoints[7];
-              const leftWrist = keypoints[9];
-              
-              if (leftShoulder && leftElbow && leftWrist) {
-                //awaiting inUpPosion before inDownPosition
-                const angle =  getAngle(
-                  [leftShoulder.y, leftShoulder.x],
-                  [leftElbow.y, leftElbow.x],
-                  [leftWrist.y, leftWrist.x]
-                );
-                await Promise.resolve(inUpPosition(angle, godown, goup, gettingRepsUpdated))
-                await Promise.resolve( inDownPosition(angle, keypoints, goup, godown, downUpdate))
-              }
-              
-          }
-          await getReps()
         }
       }
     }
@@ -135,23 +104,26 @@ function gettingRepsUpdated() {
     else {
       setTimeout(() => {
         detectPoseInRealTime(video, net).catch(console.error);
-      }, 300);
+      }, 100);
     }
   };
 
-  const loadModel = async () => {
+  const runMovenet = async () => {
     const net = await poseDetection.createDetector(model, detectorConfig);
     //detect the pose in real time
     setInterval(() => {
       if (webRef.current && net) {
         detectPoseInRealTime(webRef.current, net).catch(console.error);
       }
-    }, 100);
+    }, 10);
   };
 
+ 
   if (isChecked) {
-    loadModel().catch(console.error);
+    runMovenet().catch(console.error);
   }
+
+
 
   return (
     <div className="flex flex-col justify-center ">
@@ -202,7 +174,7 @@ function gettingRepsUpdated() {
             <Webcam
               className="w-160 h-120 w-160 h-120 absolute inset-0 left-0 z-10 mx-auto text-center"
               ref={webRef}
-              videoConstraints={videoConstraints}
+              // videoConstraints={videoConstraints}
             />
           ) : null}
           {isChecked ? (
