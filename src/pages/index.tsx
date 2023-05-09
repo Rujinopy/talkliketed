@@ -16,7 +16,7 @@ import Webcam from "react-webcam";
 import { type Pose } from "@tensorflow-models/pose-detection/dist/types";
 import { useUser, UserButton } from "@clerk/nextjs";
 
-tf.ready().catch(console.error);
+
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
 
@@ -36,8 +36,8 @@ export const Home: NextPage = () => {
   const webRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isChecked, setChecked] = useState(false);
-  // const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  // const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [reps, updateReps] = useState(0);
   //goup and godown are used to check if the arm is going up or down
   //select the webcam
@@ -49,11 +49,11 @@ export const Home: NextPage = () => {
   // const handleDeviceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
   //     setSelectedDeviceId(event.target.value);
   //   };
-  // const videoConstraints = {
-  //   deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-  //   width: 640,
-  //   height: 480,
-  // };
+  const videoConstraints = {
+    deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+    width: 640,
+    height: 480,
+  };
 
   //draw the canvas and the keypoints on the video
   const drawCanvas = (
@@ -89,9 +89,6 @@ export const Home: NextPage = () => {
       if (pose[0]) {
         const keypoints = pose[0].keypoints;
         const context = canvasRef.current?.getContext("2d"); // Use optional chaining operator to avoid undefined
-        const leftShoulder = keypoints[5];
-        const leftElbow = keypoints[7];
-        const leftWrist = keypoints[9];
         updateReps(count);
         if (context) {
           // Add a check to ensure 'context' is not undefined
@@ -101,27 +98,34 @@ export const Home: NextPage = () => {
       }
     }
     //if the video is not loaded yet, wait for it to load
-    else {
-      setTimeout(() => {
-        detectPoseInRealTime(video, net).catch(console.error);
-      }, 100);
-    }
+    // else {
+    //   setTimeout(() => {
+    //     detectPoseInRealTime(video, net).catch(console.error);
+    //   }, 3000);
+    // }
   };
 
   const runMovenet = async () => {
     const net = await poseDetection.createDetector(model, detectorConfig);
     //detect the pose in real time
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       if (webRef.current && net) {
         detectPoseInRealTime(webRef.current, net).catch(console.error);
       }
     }, 10);
+    //clear interval
+    return () => {
+      clearInterval(intervalId);
+    }
+
   };
 
- 
+ useEffect(() => {
   if (isChecked) {
+    tf.ready().catch(console.error);
     runMovenet().catch(console.error);
   }
+  }, [isChecked]);
 
 
 
@@ -131,7 +135,9 @@ export const Home: NextPage = () => {
         <div className="flex h-20 w-full ">
           <p className="mx-5 my-5 text-4xl font-bold">PushUP</p>
           <button
-            className="border-b-1 border-r-1 mx-5 my-5 transform rounded-lg border border-black bg-red-600 px-5 py-2 font-medium  text-white shadow-lg transition duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:border-b-4 hover:border-r-4 hover:bg-red-500 hover:shadow-sm"
+            className="border-b-1 border-r-1 mx-5 my-5 transform rounded-lg border border-black bg-red-600 px-5 py-2 
+            font-medium  text-white shadow-lg transition duration-200 hover:-translate-x-1 
+            hover:-translate-y-1 hover:border-b-4 hover:border-r-4 hover:bg-red-500 hover:shadow-sm"
             onClick={() => setChecked(!isChecked)}
           >
             Turn on a webcam
@@ -172,14 +178,14 @@ export const Home: NextPage = () => {
         <div className="w-160 h-120 relative">
           {isChecked ? (
             <Webcam
-              className="w-160 h-120 w-160 h-120 absolute inset-0 left-0 z-10 mx-auto text-center"
+              className="w-160 h-120 absolute inset-0 left-0 z-10 mx-auto text-center"
               ref={webRef}
               // videoConstraints={videoConstraints}
             />
           ) : null}
           {isChecked ? (
             <canvas
-              className="w-160 h-120 w-160 h-120 absolute inset-0 left-0 z-20 mx-auto text-center"
+              className="w-160 h-120 absolute inset-0 left-0 z-20 mx-auto text-center"
               ref={canvasRef}
             />
           ) : null}

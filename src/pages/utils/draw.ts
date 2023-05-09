@@ -31,15 +31,16 @@ export function drawPoint(ctx: CanvasRenderingContext2D, y: number, x: number, r
 export function drawKeypoints(keypoints: Keypoint[], ctx: CanvasRenderingContext2D) {
   for (let i = 0; i < keypoints.length; i++) {
     const keypoint = keypoints[i];
+    console.log(keypoint);
     if (keypoint?.x && keypoint?.y && keypoint?.score) {
       const x = keypoint.x;
       const y = keypoint.y;
       const score = keypoint.score;
       if (score >= 0.3) {
       drawPoint(ctx, y, x, 3, color);
-      // updateArmAngle(keypoints);
-      // inUpPosition();
-      // inDownPosition();
+      updateArmAngle(keypoints);
+      inUpPosition();
+      inDownPosition();
       }
     }
   }
