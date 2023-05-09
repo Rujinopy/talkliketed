@@ -203,3 +203,7 @@ function updateArmAngle(keypoints: Keypoint[]) {
     //console.log('Cannot see elbow');
   }
 }
+
+export default function drawPose() {
+  console.log("hi");
+}
