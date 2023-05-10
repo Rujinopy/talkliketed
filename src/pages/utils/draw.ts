@@ -31,7 +31,7 @@ export function drawPoint(ctx: CanvasRenderingContext2D, y: number, x: number, r
 export function drawKeypoints(keypoints: Keypoint[], ctx: CanvasRenderingContext2D) {
   for (let i = 0; i < keypoints.length; i++) {
     const keypoint = keypoints[i];
-    console.log(keypoint);
+    // console.log(keypoint);
     if (keypoint?.x && keypoint?.y && keypoint?.score) {
       const x = keypoint.x;
       const y = keypoint.y;
@@ -40,7 +40,7 @@ export function drawKeypoints(keypoints: Keypoint[], ctx: CanvasRenderingContext
       drawPoint(ctx, y, x, 3, color);
       updateArmAngle(keypoints);
       inUpPosition();
-      inDownPosition();
+      inDownPosition(keypoints);
       }
     }
   }
@@ -96,6 +96,9 @@ export function getAngle(
   if (angle < 0) {
     angle = angle + 360;
   }
+  if (angle > 200){
+    angle = angle - 180
+  }
   return angle
 }
 
@@ -123,6 +126,14 @@ export function isNoseAboveElbow(keypoints: Keypoint[]) {
         if (keypoints[7].y < keypoints[0].y || keypoints[8].y < keypoints[0].y ) {
             return true;
     }
+    else {
+      console.log("Keep your elbows above your nose")
+      return false;
+    }
+
+  }
+  else {
+    return false;
   }
 }
 
@@ -154,10 +165,7 @@ export function inUpPosition() {
     if (elbowAngle > 170 && elbowAngle < 200) {
 
       if(godown === true) {
-
         count = count + 1;
-
-        // console.log(count)
       }
       godown = false;
       goup = true;
@@ -166,13 +174,21 @@ export function inUpPosition() {
 
 
 
-export function inDownPosition() {
+export function inDownPosition(keypoints: Keypoint[]) {
+  let elbowAboveNose = false
+  
+  if( keypoints[0] && keypoints[7]) {
+    if (keypoints[7].y < keypoints[0].y ) {
+      elbowAboveNose = true;
+    }
+  }
       // if( isNoseAboveElbow(keypoints) && isBackStraight(keypoints) ) {
-        if (elbowAngle > 70 && elbowAngle < 100) {
+        if (elbowAngle > 70 && elbowAngle < 100 && elbowAboveNose === true ) {
           if (goup === true) {
             console.log("in down position")        
+            godown = true;
+          
           }
-          godown = true;
           goup = false;
         }
 }
@@ -188,7 +204,7 @@ function updateArmAngle(keypoints: Keypoint[]) {
     [leftElbow.y, leftElbow.x],
     [leftWrist.y, leftWrist.x]
   );
-
+    console.log(angle);
   if (angle < 0) {
     //angle = angle + 360;
   }
@@ -197,12 +213,9 @@ function updateArmAngle(keypoints: Keypoint[]) {
     //console.log(angle);
     elbowAngle = angle;
   }
+}
+}
 
-}
-  else {
-    //console.log('Cannot see elbow');
-  }
-}
 
 export default function drawPose() {
   console.log("hi");
