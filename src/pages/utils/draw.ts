@@ -204,7 +204,7 @@ function updateArmAngle(keypoints: Keypoint[]) {
     [leftElbow.y, leftElbow.x],
     [leftWrist.y, leftWrist.x]
   );
-    console.log(angle);
+    // console.log(angle);
   if (angle < 0) {
     //angle = angle + 360;
   }

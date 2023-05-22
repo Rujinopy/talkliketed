@@ -25,22 +25,29 @@ model Pushups {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    date      DateTime
     count     Int
-    userId  String
+    user      Subscriptors @relation(fields: [userId], references: [userId])
+    userId    String
 
-    @@unique([userId])
+    @@index([userId])
 }
 
 model Subscriptors {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    email     String
-    name      String
-    userId    String
+    id        Int      @id @default(autoincrement())
+    startDate DateTime
+    endDate   DateTime
+    pushups   Pushups[]
+    email     String?
+    name      String?
+    userId    String 
     expiresAt DateTime
+    
 
     @@unique([userId])
 }
 
-
+enum Role {
+  USER
+  ADMIN
+}

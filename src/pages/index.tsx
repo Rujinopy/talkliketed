@@ -145,14 +145,14 @@ export const Home: NextPage = () => {
         <div className="w-screen h-auto md:w-160 md:h-120 relative text-center flex justify-center">
           {isChecked ? (
             <Webcam
-              className="w-screen h-auto md:w-160 md:h-120 absolute inset-0 left-0 z-10 mx-auto text-center"
+              className="h-auto md:w-160 md:h-120 absolute inset-0 left-0 z-10 mx-auto text-center"
               ref={webRef}
               videoConstraints={videoConstraints}
             />
           ) : null}
           {isChecked ? (
             <canvas
-              className="w-screen h-auto md:w-160 md:h-120 absolute inset-0 left-0 z-20 mx-auto text-center"
+              className="h-auto md:w-160 md:h-120 absolute inset-0 left-0 z-20 mx-auto text-center"
               ref={canvasRef}
             />
           ) : null}
@@ -168,3 +168,4 @@ export const Home: NextPage = () => {
 };
 
 export default Home;
+
