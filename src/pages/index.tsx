@@ -13,7 +13,8 @@ import { type Pose } from "@tensorflow-models/pose-detection/dist/types";
 import { useUser, UserButton } from "@clerk/nextjs";
 import RepCounter from "~/components/RepCounter";
 import Navbar from "~/components/Navbar";
-import { useStore } from "store/stores";
+import { check } from "prettier";
+
 
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
@@ -41,8 +42,7 @@ export const Home: NextPage = () => {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [reps, updateReps] = useState(0);
-  const startDate = useStore((state: unknown) => (state as storeProps).startDate);
-  console.log(startDate)
+
   //get isChecked state from Navbar
   const handleChecked = () => {
     setChecked(!isChecked);

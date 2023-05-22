@@ -27,13 +27,13 @@ model Pushups {
     updatedAt DateTime @updatedAt
     date      DateTime
     count     Int
-    user      Subscriptors @relation(fields: [userId], references: [userId])
+    user      Users @relation(fields: [userId], references: [userId])
     userId    String
 
     @@index([userId])
 }
 
-model Subscriptors {
+model Users {
     id        Int      @id @default(autoincrement())
     startDate DateTime
     endDate   DateTime
@@ -41,13 +41,13 @@ model Subscriptors {
     email     String?
     name      String?
     userId    String 
-    expiresAt DateTime
-    
+    Role      Role     @default(USER)
 
     @@unique([userId])
 }
 
 enum Role {
   USER
+  SUBS
   ADMIN
 }
