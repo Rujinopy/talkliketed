@@ -1,4 +1,5 @@
-import { RequestHandler, buffer } from 'micro'
+import type { RequestHandler } from 'micro'
+import { buffer } from 'micro'
 import Cors from 'micro-cors'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { env } from '~/env.mjs'
@@ -25,6 +26,7 @@ const cors = Cors({
 const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === 'POST') {
     const buf = await buffer(req)
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const sig = req.headers['stripe-signature']!
 
     let event: Stripe.Event

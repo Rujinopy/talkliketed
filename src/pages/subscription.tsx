@@ -38,19 +38,19 @@ export default function Subs() {
     setEndDate(date);
   };
 
-  const [hoverColor, setHoverColor] = useState('');
+  const [hoverColor, setHoverColor] = useState("");
   const handleHoverColorChange = (color: string) => {
     setHoverColor(color);
   };
 
   useEffect(() => {
-    if(typeof startDate === 'string'){
-        setStartDate(parseISO(startDate));
+    if (typeof startDate === "string") {
+      setStartDate(parseISO(startDate));
     }
-    if(typeof endDate === 'string'){
-        setEndDate(parseISO(endDate));
+    if (typeof endDate === "string") {
+      setEndDate(parseISO(endDate));
     }
-    }, [startDate, endDate]);
+  }, [startDate, endDate]);
 
   const checkOut = () => {
     if (startDate && endDate) {
@@ -62,7 +62,9 @@ export default function Subs() {
         if (days > 30) {
           alert("Please select a date range less than 30 days");
         } else {
-          alert("You have selected " + startDate.toDateString() + " as start date");
+          alert(
+            "You have selected " + startDate.toDateString() + " as start date"
+          );
           alert("You have selected " + endDate.toDateString() + " as end date");
         }
       }
@@ -72,58 +74,54 @@ export default function Subs() {
   };
 
   return (
-    <div className="flex h-screen w-screen flex-col justify-center bg-[#ffa07a]">
-        {/* logo */}
-        {/* <Link>
-            <h1 className="py-5 text-2xl px-5 mr-auto">pushup</h1>
-        </Link> */}
-        
-      <div className="justify-center py-5 text-center bg-white border-b-2 border-black">
+    <div className="flex h-screen w-screen flex-col justify-center bg-[#a388ee]">
+      <div className="justify-center border-b-2 border-black bg-white py-5 text-center">
         <h1 className="font-mono text-2xl text-black">Set up your challenge</h1>
       </div>
-      
+
       <SignedIn>
-        <div className="flex h-screen items-center justify-center">
-         
-          <CheckoutForm />
-          <section className="w-1/2">
-          <div className="mx-auto w-full md:w-1/3">
-            <h2 className="py-1 font-mono text-xl">from</h2>
-            <DatePicker
-              className="w-full border rounded-lg border-black py-5 text-center font-mono text-2xl shadow-neo"
-              selected={startDate}
-              onChange={(date: Date) => handleChange(date)}
-            />
-          </div>
-          <div className="mx-auto w-full md:w-1/3">
-            <h2 className="py-1 font-mono text-xl">to</h2>
-            <DatePicker
-              className=" w-full border rounded-lg border-black py-5 text-center font-mono text-2xl shadow-neo"
-              selected={endDate}
-              onChange={(date: Date) => handleChange2(date)}
-            />
-          </div>
-          <p
-            onClick={checkOut}
-            className="border-2 mx-auto w-1/3 rounded-lg mt-8 border-black  p-2 text-center font-mono text-xl shadow-neo hover:cursor-pointer bg-[#fdfd96] hover:bg-[#ffdb58]"
-          >
-            Set deadline and continue
-          </p>
+        <div className="flex flex-col md:flex-row h-screen">
+          <section className="w-full md:w-1/2 -border-5 border-black justify-center items-center flex flex-col">
+            <h1 className="text-black font-mono text-5xl text-center pt-20 md:pb-20">Set your <span className="text-[#fdfd96] flex mt-3">deadline</span> </h1>
+            <div className="mx-auto w-full md:w-1/3">
+              <h2 className="py-1 font-mono text-xl">from</h2>
+              <DatePicker
+                className="w-full rounded-lg border border-black py-5 text-center font-mono text-2xl shadow-neo"
+                selected={startDate}
+                onChange={(date: Date) => handleChange(date)}
+              />
+            </div>
+            <div className="mx-auto w-full md:w-1/3">
+              <h2 className="py-1 font-mono text-xl">to</h2>
+              <DatePicker
+                className=" w-full rounded-lg border border-black py-5 text-center font-mono text-2xl shadow-neo"
+                selected={endDate}
+                onChange={(date: Date) => handleChange2(date)}
+              />
+            </div>
+            <p
+              onClick={checkOut}
+              className="mx-auto mt-8 w-2/3 md:w-1/3 rounded-lg border-2 border-black  bg-[#fdfd96] p-2 text-center font-mono text-xl shadow-neo hover:cursor-pointer hover:bg-[#ffdb58]"
+            >
+              Confirm deadline
+            </p>
           </section>
+          <CheckoutForm />
+
         </div>
-        
       </SignedIn>
       <SignedOut>
-        <div className="container flex flex-col items-center mx-auto">
+        <div className="container mx-auto flex flex-col items-center">
           <p className="py-5 font-mono text-3xl">
             You need to sign in! &#128512;
           </p>
           <Link href={"/sign-in"}>
-            <LoginButton label="Sign in" hoverColor={hoverColor} onColorChange={setHoverColor} />
+            <LoginButton
+              label="Sign in"
+            />
           </Link>
         </div>
       </SignedOut>
-      
     </div>
   );
 }

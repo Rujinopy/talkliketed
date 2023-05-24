@@ -51,7 +51,9 @@ export const Home: NextPage = (props) => {
 
   useEffect(() => {
     if(isSignedIn){
-    updateReps(dataQuery.data?.count!)
+      if(dataQuery.data) {
+        updateReps(dataQuery.data.count ?? 0)
+      }
     }
 
   }, [dataQuery.data]);
@@ -60,7 +62,7 @@ export const Home: NextPage = (props) => {
   useEffect(() => {
     if(dataQuery.data?.count === undefined || dataQuery.data?.count === null) {
       if(isSignedIn){
-        addTodayReps(user, newToday,useMutation)
+        void addTodayReps(user, newToday,useMutation)
       }
     }
     //send reps to db
@@ -68,8 +70,8 @@ export const Home: NextPage = (props) => {
       if(isSignedIn){
         //isUpdating is used to prevent multiple calls to the db
         if (!isUpdating) {
-          Promise.resolve(setIsUpdating(true)).then(() => {
-            Promise.resolve(updateRepsForUser(user, newToday, reps, useUpdateRep)).then(() => {
+          void Promise.resolve(setIsUpdating(true)).then(() => {
+            void Promise.resolve(updateRepsForUser(user, newToday, reps, useUpdateRep)).then(() => {
             setIsUpdating(false);
             });
           });
