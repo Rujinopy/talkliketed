@@ -1,17 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import DatePicker from "react-datepicker";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { SignedIn, SignedOut } from "@clerk/nextjs";
 import LoginButton from "~/components/Loginbutton";
 import Link from "next/link";
 import { useStore } from "store/stores";
 import { parseISO } from "date-fns";
-import { type } from "os";
-import { start } from "repl";
 import CheckoutForm from "~/components/CheckoutForm";
-import CheckOutCarousel from "~/components/CheckOutCarousel";
-import { check } from "prettier";
+import { api } from "~/utils/api";
 
 interface storeProps {
   startDate: Date;
@@ -42,7 +39,6 @@ export default function Subs() {
   };
 
   const [hoverColor, setHoverColor] = useState('');
-
   const handleHoverColorChange = (color: string) => {
     setHoverColor(color);
   };
@@ -74,6 +70,9 @@ export default function Subs() {
       alert("Please select a valid date range");
     }
   };
+
+
+
   return (
     <div className="flex h-screen w-screen flex-col justify-center bg-[#ffa07a]">
         {/* logo */}
@@ -84,9 +83,10 @@ export default function Subs() {
       <div className="justify-center py-5 text-center bg-white border-b-2 border-black">
         <h1 className="font-mono text-2xl text-black">Set up your challenge</h1>
       </div>
-
+      
       <SignedIn>
         <div className="flex h-screen flex-col items-center justify-center">
+         
           <CheckoutForm />
           <div className="mx-auto w-full md:w-1/3">
             <h2 className="py-1 font-mono text-xl">from</h2>

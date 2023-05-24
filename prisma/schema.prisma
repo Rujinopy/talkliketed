@@ -25,18 +25,18 @@ model Pushups {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    date      DateTime
-    count     Int
-    user      Users @relation(fields: [userId], references: [userId])
-    userId    String
+    date      DateTime?
+    count     Int?
+    user      Users? @relation(fields: [userId], references: [userId])
+    userId    String?
 
     @@index([userId])
 }
 
 model Users {
     id        Int      @id @default(autoincrement())
-    startDate DateTime
-    endDate   DateTime
+    startDate DateTime?
+    endDate   DateTime?
     pushups   Pushups[]
     email     String?
     name      String?

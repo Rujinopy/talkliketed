@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { set } from "date-fns";
+import { userAgent } from "next/server";
 import React, { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 
@@ -7,6 +8,7 @@ import { api } from "~/utils/api";
 interface RepCounterProps {
   reps?: number;
   userId: string | undefined | null;
+  date: Date
 }
 
 interface User {
@@ -14,18 +16,11 @@ interface User {
   count: number;
 }
 
-//today's date in YYYY-MM-DD format
-// const today = new Date().toISOString().slice(0, 10);
-// console.log(today);
-
 export default function RepCounter(props: RepCounterProps) {
   const [reps, setReps] = useState(props.reps);
-  
   useEffect(() => {
-    if (props.userId === undefined || props.userId === null) {
-      setReps(0);
-    }
-  }, []);
+    setReps(props.reps);
+  }, [props.reps]);
 
   return (
     <div className="w-auto max-w-xl border-b-1 border-r-1 mx-auto my-5 transform rounded-full border-2 border-black bg-[#fdfd96] px-5 py-2 
