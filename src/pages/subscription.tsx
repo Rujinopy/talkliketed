@@ -71,8 +71,6 @@ export default function Subs() {
     }
   };
 
-
-
   return (
     <div className="flex h-screen w-screen flex-col justify-center bg-[#ffa07a]">
         {/* logo */}
@@ -85,9 +83,10 @@ export default function Subs() {
       </div>
       
       <SignedIn>
-        <div className="flex h-screen flex-col items-center justify-center">
+        <div className="flex h-screen items-center justify-center">
          
           <CheckoutForm />
+          <section className="w-1/2">
           <div className="mx-auto w-full md:w-1/3">
             <h2 className="py-1 font-mono text-xl">from</h2>
             <DatePicker
@@ -106,11 +105,13 @@ export default function Subs() {
           </div>
           <p
             onClick={checkOut}
-            className="w-1/3 border-2 rounded-lg mt-8 border-black  p-2 text-center font-mono text-xl shadow-neo hover:cursor-pointer bg-[#fdfd96] hover:bg-[#ffdb58]"
+            className="border-2 mx-auto w-1/3 rounded-lg mt-8 border-black  p-2 text-center font-mono text-xl shadow-neo hover:cursor-pointer bg-[#fdfd96] hover:bg-[#ffdb58]"
           >
             Set deadline and continue
           </p>
+          </section>
         </div>
+        
       </SignedIn>
       <SignedOut>
         <div className="container flex flex-col items-center mx-auto">
@@ -122,6 +123,7 @@ export default function Subs() {
           </Link>
         </div>
       </SignedOut>
+      
     </div>
   );
 }
