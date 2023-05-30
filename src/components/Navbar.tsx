@@ -13,8 +13,11 @@ export default function Navbar({onStateChanged}: { onStateChanged: (boolean: boo
         onStateChanged(isChecked);
     }
 
+    //scroll to ref when clicked
+    
+
     return (
-        <div className="flex h-20 items-center w-screen border-b border-black bg-white">
+        <div className="flex h-16 items-center w-screen border-b border-black bg-white">
           <Link href={"/"}>
             <p className="font-mono text-lg px-3 md:mx-5 md:my-5 md:text-4xl">Pushup</p>
           </Link>

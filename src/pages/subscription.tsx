@@ -2,14 +2,14 @@
 import DatePicker from "react-datepicker";
 import { useEffect, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignedIn, SignedOut, useAuth } from "@clerk/nextjs";
 import LoginButton from "~/components/Loginbutton";
 import Link from "next/link";
 import { useStore } from "store/stores";
 import { parseISO } from "date-fns";
 import CheckoutForm from "~/components/CheckoutForm";
 import { api } from "~/utils/api";
-
+import {ArrowBigLeft} from "lucide-react";
 interface storeProps {
   startDate: Date;
   endDate: Date;
@@ -18,6 +18,7 @@ interface storeProps {
 }
 
 export default function Subs() {
+  const { userId } = useAuth();
   //startdate and enddate from zustand's store
   const startDate = useStore(
     (state: unknown) => (state as storeProps).startDate
@@ -38,11 +39,6 @@ export default function Subs() {
     setEndDate(date);
   };
 
-  const [hoverColor, setHoverColor] = useState("");
-  const handleHoverColorChange = (color: string) => {
-    setHoverColor(color);
-  };
-
   useEffect(() => {
     if (typeof startDate === "string") {
       setStartDate(parseISO(startDate));
@@ -52,26 +48,49 @@ export default function Subs() {
     }
   }, [startDate, endDate]);
 
+  const [checkoutForm, setCheckoutForm] = useState(false);
+  const toggleCheckoutForm = () => {
+    setCheckoutForm(!checkoutForm);
+  };
+
+  const useMutation = api.reps.updateStartEndDates.useMutation();
+
+  const updateDatesToDb = async () => {
+    if (startDate && endDate) {
+      await useMutation.mutateAsync({
+        userId: userId ?? "",
+        startDate: startDate,
+        endDate: endDate,
+      });
+    }
+  };
+
   const checkOut = () => {
     if (startDate && endDate) {
       const diff = endDate.getTime() - startDate.getTime();
       const days = diff / (1000 * 3600 * 24);
+      //day selected can't be yesterday or before
       if (days < 0) {
         alert("Please select a valid date range");
       } else {
         if (days > 30) {
           alert("Please select a date range less than 30 days");
         } else {
-          alert(
-            "You have selected " + startDate.toDateString() + " as start date"
-          );
-          alert("You have selected " + endDate.toDateString() + " as end date");
+          if(startDate < new Date()){
+            alert("Please select startDate today or after");
+          }
+          else{
+          alert("shit")
+          toggleCheckoutForm();
+          updateDatesToDb();
+          }
         }
       }
     } else {
       alert("Please select a valid date range");
     }
   };
+
 
   return (
     <div className="flex h-screen w-screen flex-col justify-center bg-[#a388ee]">
@@ -80,22 +99,23 @@ export default function Subs() {
       </div>
 
       <SignedIn>
-        <div className="flex flex-col md:flex-row h-screen">
-          <section className="w-full md:w-1/2 -border-5 border-black justify-center items-center flex flex-col">
-            <h1 className="text-black font-mono text-5xl text-center pt-20 md:pb-20">Set your <span className="text-[#fdfd96] flex mt-3">deadline</span> </h1>
+        <div className="flex flex-col h-screen items-center justify-center">
+          {checkoutForm ? <ArrowBigLeft color="white" size={60} onClick={toggleCheckoutForm} className="absolute bottom-5 md:top-20 left-5 hover:cursor-pointer"/> : (
+          <section className="w-full border-black md:border-r-2 justify-center items-center flex flex-col">
+            <h1 className="text-black font-mono text-5xl text-center pt-0 md:pb-10">Set Your <span className="text-[#fdfd96] flex mt-3">Deadline</span> </h1>
             <div className="mx-auto w-full md:w-1/3">
               <h2 className="py-1 font-mono text-xl">from</h2>
               <DatePicker
-                className="w-full rounded-lg border border-black py-5 text-center font-mono text-2xl shadow-neo"
-                selected={startDate}
+                className="w-full rounded-lg border-2 border-black py-5 text-center font-mono text-2xl "
+                selected={new Date(startDate)}
                 onChange={(date: Date) => handleChange(date)}
               />
             </div>
             <div className="mx-auto w-full md:w-1/3">
               <h2 className="py-1 font-mono text-xl">to</h2>
               <DatePicker
-                className=" w-full rounded-lg border border-black py-5 text-center font-mono text-2xl shadow-neo"
-                selected={endDate}
+                className="w-full rounded-lg border-2 border-black py-5 text-center font-mono text-2xl "
+                selected={new Date(endDate)}
                 onChange={(date: Date) => handleChange2(date)}
               />
             </div>
@@ -105,9 +125,8 @@ export default function Subs() {
             >
               Confirm deadline
             </p>
-          </section>
-          <CheckoutForm />
-
+          </section>)}
+          <CheckoutForm Toggle={checkoutForm}/>
         </div>
       </SignedIn>
       <SignedOut>

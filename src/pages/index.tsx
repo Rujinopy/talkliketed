@@ -2,14 +2,23 @@
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import * as tf from "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
-import { Navbar, RepCounter, Canvas, Webcam, drawSkeleton, 
-count, drawCanvas, videoConstraints, addTodayReps,updateRepsForUser } from "./app"
-import { useState, useRef, useEffect, } from "react";
+import {
+  Navbar,
+  RepCounter,
+  Canvas,
+  Webcam,
+  drawSkeleton,
+  count,
+  drawCanvas,
+  addTodayReps,
+  updateRepsForUser,
+  VideoMock
+} from "./app";
+import { useState, useRef, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { api } from "~/utils/api";
 import Link from "next/link";
-
 
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
@@ -30,55 +39,56 @@ interface storeProps {
 }
 
 export const Home: NextPage = (props) => {
-  const {user, isSignedIn} = useUser();
-  const webRef = useRef<Webcam>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { user, isSignedIn } = useUser();
+  const webRef = useRef<Webcam | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isChecked, setChecked] = useState(false);
-  const [reps, updateReps] = useState(0)
+  const [reps, updateReps] = useState(0);
 
   //create custom mutation hooks
   const useMutation = api.reps.createRepForUser.useMutation();
   const useUpdateRep = api.reps.updateRepsForUser.useMutation();
+
   //today's date in yyyy-mm-dd format
   const today = new Date().toISOString().slice(0, 10);
-  const newToday = new Date(today); 
+  const newToday = new Date(today);
   const [isUpdating, setIsUpdating] = useState(false);
-  //fetch today's reps from db 
+  //fetch today's reps from db
   const dataQuery = api.reps.getRepsForUser.useQuery({
     userId: user?.id ?? "",
     date: newToday,
   });
 
   useEffect(() => {
-    if(isSignedIn){
-      if(dataQuery.data) {
-        updateReps(dataQuery.data.count ?? 0)
+    if (isSignedIn) {
+      if (dataQuery.data) {
+        updateReps(dataQuery.data.count ?? 0);
       }
     }
-
   }, [dataQuery.data]);
 
-
   useEffect(() => {
-    if(dataQuery.data?.count === undefined || dataQuery.data?.count === null) {
-      if(isSignedIn){
-        void addTodayReps(user, newToday,useMutation)
+    if (isSignedIn) {
+      if (dataQuery.data?.count === undefined || dataQuery.data?.count === null) {
+        void addTodayReps(user, newToday, useMutation);
       }
     }
     //send reps to db
     if (reps > 0) {
-      if(isSignedIn){
+      if (isSignedIn) {
         //isUpdating is used to prevent multiple calls to the db
         if (!isUpdating) {
           void Promise.resolve(setIsUpdating(true)).then(() => {
-            void Promise.resolve(updateRepsForUser(user, newToday, reps, useUpdateRep)).then(() => {
-            setIsUpdating(false);
+            void Promise.resolve(
+              updateRepsForUser(user, newToday, reps, useUpdateRep)
+            ).then(() => {
+              setIsUpdating(false);
             });
           });
         }
       }
     }
-  }, [reps])
+  }, [reps]);
 
   //detect the pose in real time
   const detectPoseInRealTime = async (
@@ -97,7 +107,7 @@ export const Home: NextPage = (props) => {
       if (pose[0]) {
         const keypoints = pose[0].keypoints;
         const context = canvasRef.current?.getContext("2d"); // Use optional chaining operator to avoid undefined
-        updateReps((prev) => prev+count);
+        updateReps((prev) => prev + count);
         if (context) {
           // Add a check to ensure 'context' is not undefined
           drawCanvas(pose[0], video, videoWidth, videoHeight, canvasRef);
@@ -106,11 +116,11 @@ export const Home: NextPage = (props) => {
       }
     }
     //if the video is not loaded yet, wait for it to load
-    // else {
-    //   setTimeout(() => {
-    //     detectPoseInRealTime(video, net).catch(console.error);
-    //   }, 3000);
-    // }
+    else {
+      setTimeout(() => {
+        detectPoseInRealTime(video, net).catch(console.error);
+      }, 3000);
+    }
   };
 
   //run movenet
@@ -139,41 +149,57 @@ export const Home: NextPage = (props) => {
       runMovenet().catch(console.error);
     }
   }, [isChecked]);
-  
+
+  const handleWebcamRef = (ref: any) => {
+    webRef.current = ref;
+  };
+
+  const handleCanvasRef = (ref: any) => {
+    canvasRef.current = ref;
+  };
+
   return (
-    <div className="justify-cente flex h-screen w-screen flex-col">
+    <div className="flex h-auto w-screen flex-col justify-center">
+      {/* <button className="text-stroke-3 text-7xl text-red-400 font-mono font-bold" onClick={() => updateReps((prev) => prev + 1)}>test</button> */}
       <section className="border-b border-black">
         <Navbar onStateChanged={handleChecked} />
       </section>
-      <section aria-label="body" className="h-screen w-screen bg-[#f8d6b3]">
-        {!isSignedIn ? (
+      <section aria-label="body" className="h-auto w-screen bg-[#f8d6b3]">
+        <section className="flex flex-col-reverse md:flex-row md:h-screen h-auto border-b-2 border-black">
+
+          {/* left */}
+          <div className="h-72 md:h-auto md:basis-1/4 flex flex-col md:pl-8 justify-center pb-20 bg-[#ffb2ef]">
+          
+          </div>
+
+          {/* middle */}
+          <div
+            aria-label="video"
+            className="md:basis-1/2 relative h-auto w-screen md:h-auto md:w-auto bg-white md:border-x-2 border-black"
+          >
+            <RepCounter date={newToday} userId={user?.id} reps={reps} />
+            {isChecked ? (
+            <Canvas onWebcamRef={handleWebcamRef} onCanvasRef={handleCanvasRef} /> ): <VideoMock />
+            }
+          </div>
+
+          {/* right */}
+          <div className="md:basis-1/4 h-[8rem] md:h-auto items-center justify-center flex-col flex bg-[#ffb2ef]">
+          {!isSignedIn ? (
           <Link
-            className="mx-auto my-5 flex max-w-3xl transform items-center justify-center border-2 border-black bg-[#fdfd96] 
+            className="transform border-2 border-black bg-[#fdfd96] 
             px-5 py-2 font-mono text-2xl font-medium text-black shadow-lg transition duration-200 hover:bg-[#ffdb58] hover:shadow-neo
             "
             href={"/sign-in"}
           >
             Login to track your goal &#128547;
           </Link>
-        ) : (
-          <RepCounter date={newToday} userId={user.id} reps={reps} />
-        )}
-        <div className="md:w-160 md:h-120 relative flex h-auto w-screen justify-center text-center">
-          {isChecked ? (
-            <Webcam
-              className="md:w-160 md:h-120 absolute inset-0 left-0 z-10 mx-auto h-auto text-center"
-              ref={webRef}
-              videoConstraints={videoConstraints}
-            />
-          ) : null}
-          {isChecked ? (
-            <Canvas />
-          ) : null}
-          {isChecked ? (
-            <p className="z-50 mx-auto text-8xl text-white">{reps}</p>
-          ) : null}
-        </div>
+        ) : 
+            <p className="text-[8rem] md:text-[12rem] font-bold font-mono text-white text-stroke-3 px-5 md:bg-[#fdfd96] rounded-2xl md:border-2 border-black">{reps}</p>}
+          </div>
+        </section>
       </section>
+      <section className="h-screen bg-yellow-500"></section>
     </div>
   );
 };

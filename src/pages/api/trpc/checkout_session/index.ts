@@ -5,15 +5,9 @@ import { CURRENCY, MIN_AMOUNT, MAX_AMOUNT } from '../../../../../config/config'
 import { formatAmountForStripe } from '../../../../utils/stripe-helpers'
 import { env } from '~/env.mjs'
 import Stripe from 'stripe'
-// interface LineItem {
-//     amount: number;
-//     currency: string;
-//     quantity: number;
-//     name: string; // added name property to the interface
-//   }
+import { getAuth } from "@clerk/nextjs/server";
 interface PaymentRequestBody {
     amount: number;
-    // other properties
   }
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2022-11-15',
@@ -24,10 +18,9 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === 'POST') {
-    console.log("hi")
-
+    const {userId} = getAuth(req);
     const { amount }: PaymentRequestBody = req.body;
-    console.log(amount)
+    
     try {
       // Validate the amount that was passed from the client.
       if (!(amount >= MIN_AMOUNT && amount <= MAX_AMOUNT)) {
@@ -36,13 +29,16 @@ export default async function handler(
       // Create Checkout Sessions from body params.
       const params: Stripe.Checkout.SessionCreateParams = {
         submit_type: 'donate',
+        metadata: {
+          userId: userId
+        },
         payment_method_types: ['card'],
         line_items: [
           { 
             price_data: {
               currency: CURRENCY,
               product_data: {
-                name: 'Custom amount donation',
+                name: 'Pledge amount',
               },
               unit_amount: formatAmountForStripe(amount, CURRENCY),
             },
@@ -52,8 +48,8 @@ export default async function handler(
         mode: 'payment',
         // success_url: `${req.headers.origin}/result?session_id={CHECKOUT_SESSION_ID}`,
         // cancel_url: `${req.headers.origin}/donate-with-checkout`,
-        success_url: `${req.headers.origin}/?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.origin}/`,
+        success_url: `${req.headers.origin}/`,
+        cancel_url: `${req.headers.origin}/subscription`,
       }
 
       const checkoutSession: Stripe.Checkout.Session =

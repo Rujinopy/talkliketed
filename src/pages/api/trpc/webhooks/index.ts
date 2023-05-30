@@ -4,6 +4,10 @@ import Cors from 'micro-cors'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { env } from '~/env.mjs'
 import Stripe from 'stripe'
+import { getAuth } from "@clerk/nextjs/server";
+import { api } from '~/utils/api'
+import { appRouter } from "../../../../server/api/root";
+import { createTRPCContext } from "../../../../server/api/trpc";
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   // https://github.com/stripe/stripe-node#configuration
   apiVersion: '2022-11-15',
@@ -24,6 +28,9 @@ const cors = Cors({
   });
 
 const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const ctx = await createTRPCContext({ req, res });
+  const caller = appRouter.createCaller(ctx);
+
   if (req.method === 'POST') {
     const buf = await buffer(req)
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -33,6 +40,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     try {
       event = stripe.webhooks.constructEvent(buf.toString(), sig, webhookSecret)
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
       // On error, log and return the error message.
@@ -47,7 +55,9 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     // Cast event data to Stripe object.
     if (event.type === 'payment_intent.succeeded') {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      const paymentIntent = event.data.object as Stripe.PaymentIntent 
+      caller.reps.updateRoleToSubS()
+
       console.log(`💰 PaymentIntent status: ${paymentIntent.status}`)
     } else if (event.type === 'payment_intent.payment_failed') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent

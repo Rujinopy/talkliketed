@@ -1,11 +1,31 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
+import Webcam from "react-webcam";
+const Canvas = ({ onWebcamRef, onCanvasRef }: any) =>{
+  const camRef = useRef(null);
+  const canvasRef = useRef(null);
 
-export default function Canvas() {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    onWebcamRef(camRef);
+  }, [onWebcamRef]);
 
-    return (
-        <div>
-            <canvas className="md:w-160 md:h-120 absolute inset-0 left-0 z-20 mx-auto h-auto text-center" ref={canvasRef} />
-        </div>
-    );
+  useEffect(() => {
+    onCanvasRef(canvasRef);
+  }, [onCanvasRef]);
+
+  
+  return (
+    <div className="relative w-full h-72 md:mt-10">
+      <Webcam
+        ref={camRef}
+        muted={true}
+        className="z-9 absolute inset-0 mx-auto text-center w-full md:h-[30rem] md:w-[40rem] border-red-500 border-2"
+      />
+      <canvas
+        ref={canvasRef}
+        className="z-8 absolute inset-0 mx-auto text-center w-full md:h-[30rem] md:w-[40rem]"
+      />
+    </div>
+  );
 }
+
+export default Canvas;

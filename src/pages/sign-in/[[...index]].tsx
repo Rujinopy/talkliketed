@@ -1,5 +1,6 @@
 import { SignIn } from "@clerk/nextjs";
 import { useRouter } from "next/router";
+
 function SignInPage() {
 
     //check previous page
@@ -8,16 +9,18 @@ function SignInPage() {
     console.log(previousPage);
 
     return (
-    <div className="flex flex-col items-center h-screen justify-center bg-[#f8d6b3]">
-        <p className="font-sans text-8xl p-5">pushup</p>
+      <div className="flex flex-col items-center h-screen justify-center bg-[#a388ee]">
+      <p className="font-mono text-6xl p-5 font-bold text-stroke-3 text-[#fdfd96]">pushup</p>
         <div className="px-2 md:px-2">
-        <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up" 
+        <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up"
+        afterSignInUrl="/"
         appearance={
           {
             layout: {},
             variables: {
-              colorPrimary: "#ff6b6b",
+              colorPrimary: "#fdfd96",
               colorTextSecondary: "#000",
+              colorTextOnPrimaryBackground: "#000",
             },
             elements: {
               card: {
@@ -53,14 +56,19 @@ function SignInPage() {
                "formButtonPrimary": {
                 "height": "2.5rem",
                 "border": "2px solid #000",
-                "boxShadow": "3px 3px 0px #000"
+                "boxShadow": "3px 3px 0px #000",
+                "color": "#000"
                },
                "footer": {
                 "& + div": {
                  "border": "2px solid #000",
-                 "boxShadow": "-4px 1px 0 0 #000"
+                 "boxShadow": "-4px 1px 0 0 #000",
+                 "color": "#000"
                 }
                },
+               "footerActionLink": {
+                "color": "#a388ee",
+               }
           }
           }
         } 

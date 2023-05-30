@@ -2,8 +2,6 @@ import {z} from 'zod';
 
 import {createTRPCRouter, publicProcedure} from '~/server/api/trpc';
 
-
-
 export const repsRouter = createTRPCRouter({
     createRepForUser: publicProcedure
     .input(z.object({
@@ -69,6 +67,85 @@ export const repsRouter = createTRPCRouter({
         return rep;
     }
     ),
+    updateStartEndDates: publicProcedure
+    .input(z.object({
+        userId: z.string(),
+        startDate: z.date(),
+        endDate: z.date(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+        const rep = await ctx.prisma.users.update({
+            where: {
+                userId: input.userId
+            },
+            data: {
+                startDate: input.startDate,
+                endDate: input.endDate,
+                Role: "MEM"
+            }
+        })
+        return rep;
+    }
+    ),
+
+    updateRoleToSubS: publicProcedure
+    .mutation(async ({ ctx }) => {
+        const rep = await ctx.prisma.users.update({
+            where: {
+                userId: ctx.auth.userId ?? ""
+            },
+            data: {
+                Role: "SUBS" 
+            }
+        })
+        return rep;
+    }
+    ),
+
+    checkIfUserExists: publicProcedure
+    .input(z.object({
+        userId: z.string(),
+    }))
+    .query(async ({ input, ctx }) => {
+        const rep = await ctx.prisma.users.findFirst({
+            where: {
+                userId: input.userId
+            }
+        })
+
+
+        return rep;
+    }
+    ),
+
+    createUser: publicProcedure
+    .mutation(async ({ ctx }) => {
+        const user = await ctx.prisma.users.create({
+            data: {
+                userId: ctx.auth.userId ?? "",
+                Role: "USER"
+            }
+        })
+        return user;
+    }
+    ),
+
+    createUserByUserId: publicProcedure
+    .input(z.object({
+        userId: z.string(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+        const user = await ctx.prisma.users.create({
+            data: {
+                userId: input.userId,
+                Role: "USER"
+            }
+        })
+        return user;
+    }
+    ),
+        
+
 
 })
 

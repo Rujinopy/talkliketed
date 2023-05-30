@@ -22,9 +22,8 @@ const CustomDonationInput = ({
   onChange,
   className,
 }: Props) => (
-  <label className='flex flex-col text-2xl'>
-    Custom pledge amount ({formatAmountForDisplay(min, currency)}-
-    {formatAmountForDisplay(max, currency)}):
+  <label className='flex flex-col text-5xl text-center'>
+    <span className='text-[#fdfd96]'>Pledge </span>Amount
     <input
       className={className}
       type="number"
@@ -36,7 +35,7 @@ const CustomDonationInput = ({
       onChange={onChange}
     ></input>
     <input
-      className='my-2 '
+      className='my-2'
       type="range"
       name={name}
       value={value}

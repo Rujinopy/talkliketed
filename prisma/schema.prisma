@@ -42,12 +42,13 @@ model Users {
     name      String?
     userId    String 
     Role      Role     @default(USER)
-
+    pledge    Int?      @default(0)
     @@unique([userId])
 }
 
 enum Role {
   USER
+  MEM
   SUBS
   ADMIN
 }
