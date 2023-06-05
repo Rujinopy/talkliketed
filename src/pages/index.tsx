@@ -14,12 +14,12 @@ import {
   updateRepsForUser,
   VideoMock
 } from "./app";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { api } from "~/utils/api";
 import Link from "next/link";
-
+import { memo } from "react";
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
 
@@ -46,9 +46,8 @@ export const Home: NextPage = (props) => {
   const [reps, updateReps] = useState(0);
 
   //create custom mutation hooks
-  const useMutation = api.reps.createRepForUser.useMutation();
+  const createRep = api.reps.createRepForUser.useMutation();
   const useUpdateRep = api.reps.updateRepsForUser.useMutation();
-
   //today's date in yyyy-mm-dd format
   const today = new Date().toISOString().slice(0, 10);
   const newToday = new Date(today);
@@ -59,20 +58,27 @@ export const Home: NextPage = (props) => {
     date: newToday,
   });
 
+  //update to local state
   useEffect(() => {
     if (isSignedIn) {
       if (dataQuery.data) {
         updateReps(dataQuery.data.count ?? 0);
       }
     }
-  }, [dataQuery.data]);
+  }, [dataQuery.data, isSignedIn]);
 
+  //create reps only one time when page loads
   useEffect(() => {
-    if (isSignedIn) {
-      if (dataQuery.data?.count === undefined || dataQuery.data?.count === null) {
-        void addTodayReps(user, newToday, useMutation);
-      }
-    }
+    createRep.mutate({
+      userId: user?.id ?? "",
+      date: newToday,
+      reps: 0,
+    });
+  }, []);
+
+
+  //update reps in db
+  useEffect(() => {
     //send reps to db
     if (reps > 0) {
       if (isSignedIn) {
@@ -150,17 +156,17 @@ export const Home: NextPage = (props) => {
     }
   }, [isChecked]);
 
-  const handleWebcamRef = (ref: any) => {
+  const handleWebcamRef = useCallback((ref: any) => {
     webRef.current = ref;
-  };
+  }, [])
 
-  const handleCanvasRef = (ref: any) => {
+  const handleCanvasRef = useCallback((ref: any) => {
     canvasRef.current = ref;
-  };
+  }, [])
 
   return (
     <div className="flex h-auto w-screen flex-col justify-center">
-      {/* <button className="text-stroke-3 text-7xl text-red-400 font-mono font-bold" onClick={() => updateReps((prev) => prev + 1)}>test</button> */}
+      <button className="text-stroke-3 text-7xl text-red-400 font-mono font-bold" onClick={() => updateReps((prev) => prev + 1)}>test</button>
       <section className="border-b border-black">
         <Navbar onStateChanged={handleChecked} />
       </section>

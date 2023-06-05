@@ -4,6 +4,8 @@ import getStripe from '~/utils/get-stripejs'
 import { fetchPostJSON } from '~/utils/api-helpers'
 import { formatAmountForDisplay } from '~/utils/stripe-helpers'
 import * as config from 'config/config'
+import Link from 'next/link'
+import { api } from '~/utils/api'
 
 const CheckoutForm = (props: any) => {
     const [loading, setLoading] = useState(false)
@@ -21,13 +23,14 @@ const CheckoutForm = (props: any) => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
       e.preventDefault()
       setLoading(true)
-      
+
+      //create checkout session
       const response = await fetchPostJSON('/api/trpc/checkout_session', {
         amount: input.customDonation,
       })
+
       const stripe = await getStripe()
-      console.log(response)
-      console.log(stripe)
+
       if (stripe) {
         if(response.id === undefined || response.id === null) {
           console.warn('response.id is undefined')
@@ -38,12 +41,20 @@ const CheckoutForm = (props: any) => {
         })
         
         console.warn(error.message)
-        
+        if(response) {
+          console.log(response)
+        }
       }
+      
     }
     //hidden form if props.Toggle is false
     if(!props.Toggle) {
       return null
+    }
+    const mutateToMem = api.reps.changeUserToMem.useMutation();
+    const addMem = async () => {
+      
+      mutateToMem.mutateAsync();
     }
 
   return (
@@ -67,8 +78,13 @@ const CheckoutForm = (props: any) => {
       >
         Pledge {formatAmountForDisplay(input.customDonation, config.CURRENCY)}
       </button>
+      <Link href="/">
+        <button onClick={addMem} className="px-12 mt-10 md:mt-5 py-2 shadow-neo rounded-lg font-mono text-2xl
+          hover:cursor-pointer bg-[#fdfd96] hover:bg-[#ffdb58] border-2 border-black">Go without pledge</button>
+      </Link>
     </form>
   )
 }
 
 export default CheckoutForm
+

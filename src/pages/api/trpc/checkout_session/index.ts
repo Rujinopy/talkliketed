@@ -46,9 +46,9 @@ export default async function handler(
           }
         ],
         mode: 'payment',
-        // success_url: `${req.headers.origin}/result?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${req.headers.origin}/result?session_id={CHECKOUT_SESSION_ID}`,
         // cancel_url: `${req.headers.origin}/donate-with-checkout`,
-        success_url: `${req.headers.origin}/`,
+        // success_url: `${req.headers.origin}/`,
         cancel_url: `${req.headers.origin}/subscription`,
       }
 
