@@ -7,43 +7,80 @@ import { useEffect } from "react";
 
 const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   const { data } = api.profiles.getProfile.useQuery();
+
   const progress = api.reps.getAllRepsForUser.useQuery();
   const sessionData = api.reps.checkIfUserExists.useQuery({
     userId: data?.id ?? "",
   });
-  console.log(progress.data);
 
+  const role = sessionData.data?.Role;
+  const endDate = sessionData.data?.endDate ?? "";
+  
+  //if today's date is greater than endDate, or equal to endDate do something
+  const today = new Date();
+  
   useEffect(() => {
-    console.log("555")
-  }, [])
+    if(endDate){
+    if (today > endDate) {
+      console.log("today is greater than enddate");
+    }
+    if (today === endDate) {
+      console.log("today is equal to enddate");
+    }
+  }
+  }, [today, endDate]);
+
+  const isUserEnded = () => {
+    if (today > endDate) {
+      return true;
+    }
+    if (today === endDate) {
+      return true;
+    }
+    alert("you have not ended your subscription yet")
+    return false;
+  };
+  
 
   return (
     <div className="relative w-screen">
-    <NavbarWithoutCam />
-    <Title title={"Dashboard"}/>
-    <MenuBar />
-      <div className="flex h-[25vh] flex-col items-center justify-center border-b-2 border-black bg-[#ffb2ef] md:flex-row md:justify-start md:px-44">
+      <NavbarWithoutCam />
+      <Title title={"Dashboard"} />
+      <MenuBar />
+      <div className="flex h-[35vh] md:h-[25vh] flex-col items-center justify-center border-b-2 border-black bg-[#ffb2ef] md:flex-row md:justify-start md:px-44">
         <img
           className="mt-10 h-24 w-24 rounded-full border-2 border-black md:mr-10 md:mt-0"
           src={data?.profileImageUrl}
           alt=""
         />
-        <h1 className="text-stroke-3 pb-4 text-[3rem] font-semibold text-[#fdfd96] dark:text-white md:text-[3rem]">
-          {data?.firstName}
-        </h1>
+        <div className="">
+          <h1 className="text-stroke-3 text-[3rem] font-semibold text-[#fdfd96] dark:text-white md:text-[3rem]">
+            {data?.firstName}
+          </h1>
+          {role === "SUBS" ? (
+          <div className="flex space-x-3">
+            {/* <p className="font-mono px-3 py-2 ">status : </p> */}
+            <h2 className="font-mono px-3 py-2 rounded-lg bg-white border-2 border-black h-10 tex-center">promised</h2>
+              <h2 className="font-mono px-3 py-2 rounded-lg bg-white border-2 border-black h-10 tex-center">pledged</h2>
+          </div>
+          ) : null}
+        </div>
       </div>
-      <div className="flex w-screen bg-[#87ceeb] md:h-[75vh] flex-col border-b-2 border-black md:flex-row">
-        <div aria-label="promises" className="mx-auto w-full md:w-1/2 border-black border-r-2">
+      <div className="flex w-screen flex-col border-b-2 border-black bg-[#87ceeb] md:h-[75vh] md:flex-row">
+        <div
+          aria-label="promises"
+          className="mx-auto w-full border-r-2 border-black md:w-1/2"
+        >
           <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold">
             Promises
           </h1>
           <div className="flex h-[60vh] items-center justify-center text-left text-sm text-gray-500 dark:text-gray-400 md:mx-auto md:max-w-5xl">
-            <div className="flex rounded-3xl md:shadow-neo bg-white ">
+            <div className="flex md:rounded-3xl bg-white md:shadow-neo ">
               <div
                 aria-label="titles"
                 className="flex w-3/12 flex-col font-mono text-2xl uppercase text-black md:text-xl"
               >
-                <div className="flex h-[15vh] items-center justify-center border border-l-2 border-t-2 border-black md:rounded-tl-2xl">
+                <div className="flex h-[15vh] items-center justify-center border border-l-2 border-t-2 border-black md:rounded-tl-3xl">
                   <h1 className="p-5 text-center">Start</h1>
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-l-2 border-black">
@@ -72,6 +109,8 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-black bg-[#fdfd96]">
                   <h1 className="p-5">{sessionData.data?.pledge} USD</h1>
+                  { role === "SUBS" ? <p className="bg-red-200 font-mono py-1 px-1 text-sm md:text-lg
+                  hover:cursor-pointer hover:bg-red-400 border-2 border-black duration-200 md:hover:translate-x-3 hover:translate-x-1 hover:shadow-neo rounded-lg" onClick={isUserEnded}>claim pledge &#128181;</p> : null}
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-b-2 border-black bg-[#fdfd96] md:rounded-br-3xl">
                   <h1 className="p-5">{sessionData.data?.repsAmount}</h1>
@@ -88,24 +127,24 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
             Progress
           </h1>
 
-          <div className="font-mono mx-auto flex justify-between space-x-14 rounded-2xl py-2 border-black w-full md:w-2/3" >
-              <h1 className="font-bold font-mono text-2xl">No.</h1>
-              <h1 className="font-bold font-mono text-2xl">Date</h1>
-              <h1 className="font-bold font-mono text-2xl">Count</h1>
-            </div>
+          <div className="mx-auto flex w-full justify-between px-5 space-x-14 rounded-2xl border-black py-2 font-mono md:w-2/3">
+            <h1 className="font-mono text-2xl font-bold">No.</h1>
+            <h1 className="font-mono text-2xl font-bold">Date</h1>
+            <h1 className="font-mono text-2xl font-bold">Count</h1>
+          </div>
           <div
-            className="mx-auto flex h-full w-full md:justify-center flex-col
-        items-center space-y-5 overflow-y-auto md:mx-auto md:max-w-5xl rounded-2xl"
+            className="flex flex-col overflow-y-scroll px-5 h-3/4 items-center py-5 space-y-2"
           >
-            
             {progress.data?.map((rep, id) => (
-              <div className="bg-white font-mono shadow-neo flex space-x-3 justify-between pr-12 border rounded-lg py-2 pl-5 border-black w-full md:w-2/3" key={id}>
-                <h1>{id +1 }</h1>
+              <div
+                className="flex w-full justify-between space-x-3 rounded-lg border border-black bg-white py-2 pl-5 pr-12 font-mono md:w-2/3"
+                key={id}
+              >
+                <h1>{id + 1}</h1>
                 <p>{rep.date?.toDateString()}</p>
                 <p className="">{rep.count}</p>
-                </div>
-                ))}
-
+              </div>
+            ))}
           </div>
         </div>
       </div>

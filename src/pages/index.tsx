@@ -69,12 +69,24 @@ export const Home: NextPage = (props) => {
 
   //create reps only one time when page loads
   useEffect(() => {
+    if(isSignedIn === undefined || isSignedIn === null) 
+    {
+      
+    }
+    if(isSignedIn){
+      if(dataQuery.data?.count) {
+        console.log("not null")
+      }
+      if(dataQuery.data?.count === undefined || dataQuery.data?.count === null){
+        console.log("why")
     createRep.mutate({
       userId: user?.id ?? "",
       date: newToday,
       reps: 0,
     });
-  }, []);
+  }
+  }
+  }, [isSignedIn]);
 
 
   //update reps in db

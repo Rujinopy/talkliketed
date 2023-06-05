@@ -172,7 +172,7 @@ export default function Subs() {
             <div className="flex flex-col md:flex-row mx-auto w-full md:w-auto">
               <button className="md:px-10 py-3 text-xl font-mono shadow-neo border-2
                border-black bg-white hover:bg-amber-300" onClick={toggleCheckoutForm}>Pledge(optional)</button>
-              <Link href="user-profile mx-auto ">
+              <Link href="user-profile">
                 <button className="w-screen md:w-auto md:px-10 py-3 text-xl font-mono shadow-neo border-2 
                 border-black bg-white hover:bg-amber-300">Go to profile
                 </button>
@@ -187,8 +187,12 @@ export default function Subs() {
           <div className="flex flex-col">
           <p className="mb-5 text-3xl md:text-4xl text-center font-mono">You have already pledge!</p>
           <div className="flex flex-col md:flex-row mx-auto w-full md:w-auto">
-              <button className="md:px-10 py-3 text-xl font-mono shadow-neo border-2 border-black bg-white hover:bg-amber-300">Go to profile</button>
+          <Link href="user-profile">
+              <button className="w-screen md:w-auto md:px-10 py-3 text-xl font-mono shadow-neo 
+              border-2 border-black bg-white hover:bg-amber-300">Go to profile</button>
+             </Link>
             </div>
+           
           </div>) : null
           }
         </div>
