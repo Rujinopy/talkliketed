@@ -3,19 +3,20 @@ import type { NextPage } from "next";
 import MenuBar from "~/components/MenuBar";
 import NavbarWithoutCam from "~/components/NavbarWithoutCam";
 import Title from "~/components/Title";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import RefundButton from "~/components/RefundButton";
 
 const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   const { data } = api.profiles.getProfile.useQuery();
-
   const progress = api.reps.getAllRepsForUser.useQuery();
   const sessionData = api.reps.checkIfUserExists.useQuery({
     userId: data?.id ?? "",
   });
 
-  const role = sessionData.data?.Role;
-  const endDate = sessionData.data?.endDate ?? "";
+  const role = useMemo(() => sessionData.data?.Role, [sessionData.data?.Role]);
+  const endDate = useMemo(() => sessionData.data?.endDate, [
+    sessionData.data?.endDate,
+  ]);
   
 
   return (

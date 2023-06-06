@@ -68,6 +68,11 @@ export const repsRouter = createTRPCRouter({
                 },
                 select: {
                     count: true,
+                    user:{
+                        select:{
+                            repsAmount:true
+                        }
+                    }
                 },
             });
             return reps;
@@ -183,10 +188,23 @@ export const repsRouter = createTRPCRouter({
     ),
 
     getAllReps: publicProcedure
-    .query(async ({ ctx }) => {
+    .input (
+        z.object({
+            startDate: z.date(),
+            endDate: z.date(),
+        })
+    )
+    .query(async ({ input, ctx }) => {
         const reps = await ctx.prisma.pushups.findMany({
+            where: {
+                userId: ctx.auth?.userId ?? "",
+                date: {
+                    gte: input.startDate,
+                    lte: input.endDate,
+                },
+            },
             select: {
-                userId: true,
+                count: true,
             },
         });
         return reps;
@@ -265,7 +283,8 @@ export const repsRouter = createTRPCRouter({
                 pledge: 0,
                 payment_intent: "",
                 startDate: null,
-                endDate: null
+                endDate: null,
+                repsAmount: 0
             }
         })
         return user;

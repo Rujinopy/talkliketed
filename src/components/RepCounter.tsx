@@ -7,6 +7,7 @@ interface RepCounterProps {
   reps?: number;
   userId: string | undefined | null;
   date: Date
+  goal: number
 }
 
 interface User {
@@ -24,7 +25,7 @@ export default function RepCounter(props: RepCounterProps) {
     <div className="w-full h-20 md:h-auto relative transform border-y-2 md:border-b-2 md:border-t-0 border-black bg-[#fdfd96] px-5 py-2 
     font-medium text-black shadow-lg transition duration-200 font-mono text-2xl md:text-3xl flex justify-center items-center
      hover:shadow-sm">
-       <p className="">Today&apos;s goal: {reps} / 21</p>
+       <p className="text-3xl md:text-3xl">Goal: {reps} / {props.goal}</p>
     </div>
   );
 }

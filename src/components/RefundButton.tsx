@@ -5,11 +5,11 @@ import { api } from "~/utils/api";
 
 const RefundButton = (props: any) => {
   const [loading, setLoading] = useState(false);
-    const updateToUser = api.reps.changeSubsToUser.useMutation()
   const today = new Date();
 
   const isUserEnded = () => {
-    if (today < props.endDate || today === props.endDate) {
+
+    if (today > props.endDate || today === props.endDate) {
         const handleSubmit = async () => {
             setLoading(true);
             //create checkout session

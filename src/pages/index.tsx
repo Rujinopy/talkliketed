@@ -13,12 +13,13 @@ import {
   updateRepsForUser,
   VideoMock,
 } from "./app";
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { api } from "~/utils/api";
 import Link from "next/link";
-import { memo } from "react";
+import { is } from "date-fns/locale";
+
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
 
@@ -48,21 +49,24 @@ export const Home: NextPage = (props) => {
   const createRep = api.reps.createRepForUser.useMutation();
   const useUpdateRep = api.reps.updateRepsForUser.useMutation();
   //today's date in yyyy-mm-dd format
-  const today = new Date().toISOString().slice(0, 10);
-  const newToday = new Date(today);
+  const today = new Date().toString().slice(0, 15);
+  const newToday = new Date(today)
+  
   const [isUpdating, setIsUpdating] = useState(false);
   //fetch today's reps from db
   const dataQuery = api.reps.getRepsForUser.useQuery({
     userId: user?.id ?? "",
     date: newToday,
-  });
+  } );
 
   //update to local state
   useEffect(() => {
-    if (isSignedIn) {
+    if(!isSignedIn) return;
+    
       if (dataQuery.data) {
         updateReps(dataQuery.data.count ?? 0);
-      }
+        console.log(today)
+        console.log(newToday)
     }
   }, [dataQuery.data, isSignedIn]);
 
@@ -96,9 +100,12 @@ export const Home: NextPage = (props) => {
         //isUpdating is used to prevent multiple calls to the db
         if (!isUpdating) {
           void Promise.resolve(setIsUpdating(true)).then(() => {
-            void Promise.resolve(
-              updateRepsForUser(user, newToday, reps, useUpdateRep)
-            ).then(() => {
+            // void Promise.resolve(
+            //   updateRepsForUser(user, newToday, reps, useUpdateRep)
+            // ).then(() => {
+            //   setIsUpdating(false);
+            // });
+            updateRepsForUser(user, newToday, reps, useUpdateRep).then(() => {
               setIsUpdating(false);
             });
           });
@@ -169,6 +176,7 @@ export const Home: NextPage = (props) => {
 
   const handleWebcamRef = useCallback((ref: any) => {
     webRef.current = ref;
+    
   }, []);
 
   const handleCanvasRef = useCallback((ref: any) => {
@@ -177,12 +185,12 @@ export const Home: NextPage = (props) => {
 
   return (
     <div className="flex h-auto w-screen flex-col justify-center">
-      <button
+      {/* <button
         className="text-stroke-3 font-mono text-7xl font-bold text-red-400"
         onClick={() => updateReps((prev) => prev + 1)}
       >
         test
-      </button>
+      </button> */}
       <section className="border-b border-black">
         <Navbar onStateChanged={handleChecked} />
       </section>
@@ -196,7 +204,7 @@ export const Home: NextPage = (props) => {
             aria-label="video"
             className="relative h-auto w-screen border-black bg-white md:h-auto md:w-auto md:basis-1/2 md:border-x-2"
           >
-            <RepCounter date={newToday} userId={user?.id} reps={reps} />
+            <RepCounter date={newToday} userId={user?.id} reps={reps} goal={dataQuery.data?.user?.repsAmount as number} />
             {isChecked ? (
               <Canvas
                 onWebcamRef={handleWebcamRef}

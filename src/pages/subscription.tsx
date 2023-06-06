@@ -56,9 +56,16 @@ export default function Subs() {
 
   //set startdate and enddate
   const handleChange = (date: Date) => {
+    //convert date to have only yyyy-mm-dd 
+    
     setStartDate(date);
   };
+  useEffect(() => {
+    console.log(endDate)
+  }, [endDate])
+
   const handleChange2 = (date: Date) => {
+   
     setEndDate(date);
   };
   const handleChange3 = (e: any) => {
@@ -104,26 +111,27 @@ export default function Subs() {
       const diff = endDate.getTime() - startDate.getTime();
       const days = diff / (1000 * 3600 * 24);
       //day selected can't be yesterday or before
-      if (days < 0) {
-        alert("Please select a valid date range");
-      } else {
-        if (days > 30) {
-          alert("Please select a date range less than 30 days");
-        } else {
-          if(startDate < new Date()) {
-            alert("Please select startDate today or after");
-          }
-          else {
+      // if (days < 0) {
+      //   alert("Please select a valid date range");
+      // } else {
+      //   if (days > 30) {
+      //     alert("Please select a date range less than 30 days");
+      //   } else {
+      //     if(startDate < new Date()) {
+      //       alert("Please select startDate today or after");
+      //     }
+      //     else {
 
           toggleCheckoutForm();
           updateDatesToDb();
-          }
-        }
-      }
-    } else {
-      alert("Please select a valid date range");
-    }
+    //       }
+    //     }
+    //   }
+    // } else {
+    //   alert("Please select a valid date range");
+    // }
   };
+}
 
   return (
     <div className="flex h-screen w-screen flex-col justify-center bg-[#a388ee]">

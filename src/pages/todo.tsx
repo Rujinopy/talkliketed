@@ -2,8 +2,6 @@ import { type NextPage } from "next";
 import { useState } from "react";
 import Head from "next/head";
 import { api } from "~/utils/api";
-import Trpc from "./api/trpc/[trpc]";
-// import { number, set } from "zod";
 
 const Home: NextPage = () => {
   const { data } = api.posts.getAll.useQuery();
