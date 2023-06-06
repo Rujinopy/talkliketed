@@ -268,6 +268,7 @@ export const repsRouter = createTRPCRouter({
                 endDate: null
             }
         })
+        return user;
     })
 });
 
