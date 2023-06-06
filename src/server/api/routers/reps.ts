@@ -214,6 +214,7 @@ export const repsRouter = createTRPCRouter({
         z.object({
             userId: z.string(),
             pledge: z.number(),
+            payment_intent: z.string()
         }))
     .mutation(async ({ input, ctx }) => {
         const user = await ctx.prisma.users.updateMany({
@@ -223,6 +224,7 @@ export const repsRouter = createTRPCRouter({
             data: {
                 Role: "SUBS",
                 pledge: input.pledge,
+                payment_intent: input.payment_intent
             },
         });
         return user;
@@ -232,6 +234,9 @@ export const repsRouter = createTRPCRouter({
     getAllRepsForUser: publicProcedure
     .query(async ({ ctx }) => {
         const reps = await ctx.prisma.pushups.findMany({
+            where:{
+                userId: ctx.auth?.userId
+            },
             select: {
                 userId: true,
                 count: true,
@@ -244,5 +249,25 @@ export const repsRouter = createTRPCRouter({
         return reps;
     }
     ),
+
+    changeSubsToUser: publicProcedure
+    .input(
+        z.object({
+            userId: z.string(),
+        }))
+    .mutation(async ({input, ctx}) => {
+        const user = await ctx.prisma.users.update({
+            where:{
+                userId: ctx.auth?.userId ?? input.userId
+            },
+            data:{
+                Role: "USER",
+                pledge: 0,
+                payment_intent: "",
+                startDate: null,
+                endDate: null
+            }
+        })
+    })
 });
 

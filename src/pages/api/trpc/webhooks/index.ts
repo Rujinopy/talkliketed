@@ -4,11 +4,10 @@ import Cors from 'micro-cors'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { env } from '~/env.mjs'
 import Stripe from 'stripe'
-import { auth } from "@clerk/nextjs";
 import { api } from '~/utils/api'
 import { appRouter } from "../../../../server/api/root";
 import { createTRPCContext } from "../../../../server/api/trpc";
-
+import { auth } from '@clerk/nextjs'
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   // https://github.com/stripe/stripe-node#configuration
@@ -26,8 +25,8 @@ export const config = {
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
 const cors = Cors({
-    allowMethods: ['POST', 'HEAD'],
-  });
+  allowMethods: ['POST', 'HEAD'],
+});
 
 const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   const ctx = await createTRPCContext({ req, res });
@@ -42,7 +41,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     try {
       event = stripe.webhooks.constructEvent(buf.toString(), sig, webhookSecret)
-      // console.log(event.data.object)
+      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
       // On error, log and return the error message.
@@ -51,28 +50,33 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
       res.status(400).send(`Webhook Error: ${errorMessage}`)
       return
     }
-
+    
     // Successfully constructed event.
     console.log('✅ Success:', event.id)
 
     // Cast event data to Stripe object.
     if (event.type === 'payment_intent.succeeded') {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent 
+      const paymentIntent = await event.data.object as Stripe.PaymentIntent
       
-
+      console.log(paymentIntent.metadata.userId)
       console.log(`💰 PaymentIntent status: ${paymentIntent.status}`)
     } else if (event.type === 'payment_intent.payment_failed') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent
-      console.log(
         `❌ Payment failed: ${paymentIntent.last_payment_error?.message ?? 'unknown error'}`
-      )
-    } else if (event.type === 'charge.succeeded') {
       
+    } else if (event.type === 'charge.succeeded') {
+
       const charge = event.data.object as Stripe.Charge
-     
+
 
       console.log(`💵 Charge id: ${charge.id}`)
-    } else {
+    }
+    else if (event.type === 'charge.refunded') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      await caller.reps.changeSubsToUser({userId: paymentIntent.metadata.userId ?? ""})
+    }
+
+    else {
       console.warn(`🤷‍♀️ Unhandled event type: ${event.type}`)
     }
 

@@ -4,6 +4,7 @@ import MenuBar from "~/components/MenuBar";
 import NavbarWithoutCam from "~/components/NavbarWithoutCam";
 import Title from "~/components/Title";
 import { useEffect } from "react";
+import RefundButton from "~/components/RefundButton";
 
 const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   const { data } = api.profiles.getProfile.useQuery();
@@ -15,31 +16,6 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
 
   const role = sessionData.data?.Role;
   const endDate = sessionData.data?.endDate ?? "";
-  
-  //if today's date is greater than endDate, or equal to endDate do something
-  const today = new Date();
-  
-  useEffect(() => {
-    if(endDate){
-    if (today > endDate) {
-      console.log("today is greater than enddate");
-    }
-    if (today === endDate) {
-      console.log("today is equal to enddate");
-    }
-  }
-  }, [today, endDate]);
-
-  const isUserEnded = () => {
-    if (today > endDate) {
-      return true;
-    }
-    if (today === endDate) {
-      return true;
-    }
-    alert("you have not ended your subscription yet")
-    return false;
-  };
   
 
   return (
@@ -109,8 +85,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-black bg-[#fdfd96]">
                   <h1 className="p-5">{sessionData.data?.pledge} USD</h1>
-                  { role === "SUBS" ? <p className="bg-red-200 font-mono py-1 px-1 text-sm md:text-lg
-                  hover:cursor-pointer hover:bg-red-400 border-2 border-black duration-200 md:hover:translate-x-3 hover:translate-x-1 hover:shadow-neo rounded-lg" onClick={isUserEnded}>claim pledge &#128181;</p> : null}
+                  { role === "SUBS" ? <RefundButton endDate={endDate} /> : null}
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-b-2 border-black bg-[#fdfd96] md:rounded-br-3xl">
                   <h1 className="p-5">{sessionData.data?.repsAmount}</h1>

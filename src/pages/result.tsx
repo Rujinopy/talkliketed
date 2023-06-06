@@ -5,9 +5,9 @@ import { fetchGetJSON } from '../utils/api-helpers'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { useEffect } from 'react'
-
+import { useUser } from "@clerk/nextjs";
 const Result: NextPage = () => {
-
+    // const { isLoaded, isSignedIn, user } = useUser()
         const router = useRouter()
       
         // Fetch CheckoutSession from static page via
@@ -19,16 +19,20 @@ const Result: NextPage = () => {
         )
 
         const changeRoleToSubs = api.reps.changeUserToSubs.useMutation()
+        console.log(data)
 
         //after fetch data, update the database
         useEffect (() => {
+            // if(isSignedIn){
             if (data) {
                 console.log(data)
                 changeRoleToSubs.mutate({
                     userId: data.metadata.userId,
-                    pledge: data.payment_intent.amount / 100
+                    pledge: data.payment_intent.amount / 100,
+                    payment_intent: data.payment_intent.id
                 })
             }
+        // }
         }, [data])
 
         

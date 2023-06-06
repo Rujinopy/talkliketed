@@ -185,7 +185,7 @@ export default function Subs() {
           (!pledgeLayout ? <CheckoutForm Toggle={checkoutForm} startDate={startDate} endDate={endDate} repsPerDay={repsPerDay}/>
           : 
           <div className="flex flex-col">
-          <p className="mb-5 text-3xl md:text-4xl text-center font-mono">You have already pledge!</p>
+          <p className="mb-5 text-3xl md:text-4xl text-center font-mono">You have already pledged!</p>
           <div className="flex flex-col md:flex-row mx-auto w-full md:w-auto">
           <Link href="user-profile">
               <button className="w-screen md:w-auto md:px-10 py-3 text-xl font-mono shadow-neo 

@@ -29,6 +29,11 @@ export default async function handler(
       // Create Checkout Sessions from body params.
       const params: Stripe.Checkout.SessionCreateParams = {
         submit_type: 'donate',
+        payment_intent_data:{
+          metadata:{
+            userId: userId
+          }
+        },
         metadata: {
           userId: userId
         },

@@ -10,9 +10,8 @@ import {
   drawSkeleton,
   count,
   drawCanvas,
-  addTodayReps,
   updateRepsForUser,
-  VideoMock
+  VideoMock,
 } from "./app";
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -69,25 +68,25 @@ export const Home: NextPage = (props) => {
 
   //create reps only one time when page loads
   useEffect(() => {
-    if(isSignedIn === undefined || isSignedIn === null) 
-    {
-      
+    if (isSignedIn === undefined || isSignedIn === null) {
+      return;
     }
-    if(isSignedIn){
-      if(dataQuery.data?.count) {
-        console.log("not null")
+    if (isSignedIn) {
+      if (dataQuery.data?.count) {
+        return;
       }
-      if(dataQuery.data?.count === undefined || dataQuery.data?.count === null){
-        console.log("why")
-    createRep.mutate({
-      userId: user?.id ?? "",
-      date: newToday,
-      reps: 0,
-    });
-  }
-  }
+      if (
+        dataQuery.data?.count === undefined ||
+        dataQuery.data?.count === null
+      ) {
+        createRep.mutate({
+          userId: user?.id ?? "",
+          date: newToday,
+          reps: 0,
+        });
+      }
+    }
   }, [isSignedIn]);
-
 
   //update reps in db
   useEffect(() => {
@@ -170,50 +169,60 @@ export const Home: NextPage = (props) => {
 
   const handleWebcamRef = useCallback((ref: any) => {
     webRef.current = ref;
-  }, [])
+  }, []);
 
   const handleCanvasRef = useCallback((ref: any) => {
     canvasRef.current = ref;
-  }, [])
+  }, []);
 
   return (
     <div className="flex h-auto w-screen flex-col justify-center">
-      <button className="text-stroke-3 text-7xl text-red-400 font-mono font-bold" onClick={() => updateReps((prev) => prev + 1)}>test</button>
+      <button
+        className="text-stroke-3 font-mono text-7xl font-bold text-red-400"
+        onClick={() => updateReps((prev) => prev + 1)}
+      >
+        test
+      </button>
       <section className="border-b border-black">
         <Navbar onStateChanged={handleChecked} />
       </section>
       <section aria-label="body" className="h-auto w-screen bg-[#f8d6b3]">
-        <section className="flex flex-col-reverse md:flex-row md:h-screen h-auto border-b-2 border-black">
-
+        <section className="flex h-auto flex-col-reverse border-b-2 border-black md:h-screen md:flex-row">
           {/* left */}
-          <div className="h-72 md:h-auto md:basis-1/4 flex flex-col md:pl-8 justify-center pb-20 bg-[#ffb2ef]">
-          
-          </div>
+          <div className="flex h-72 flex-col justify-center bg-[#ffb2ef] pb-20 md:h-auto md:basis-1/4 md:pl-8"></div>
 
           {/* middle */}
           <div
             aria-label="video"
-            className="md:basis-1/2 relative h-auto w-screen md:h-auto md:w-auto bg-white md:border-x-2 border-black"
+            className="relative h-auto w-screen border-black bg-white md:h-auto md:w-auto md:basis-1/2 md:border-x-2"
           >
             <RepCounter date={newToday} userId={user?.id} reps={reps} />
             {isChecked ? (
-            <Canvas onWebcamRef={handleWebcamRef} onCanvasRef={handleCanvasRef} /> ): <VideoMock />
-            }
+              <Canvas
+                onWebcamRef={handleWebcamRef}
+                onCanvasRef={handleCanvasRef}
+              />
+            ) : (
+              <VideoMock />
+            )}
           </div>
 
           {/* right */}
-          <div className="md:basis-1/4 h-[8rem] md:h-auto items-center justify-center flex-col flex bg-[#ffb2ef]">
-          {!isSignedIn ? (
-          <Link
-            className="transform border-2 border-black bg-[#fdfd96] 
+          <div className="flex h-[8rem] flex-col items-center justify-center bg-[#ffb2ef] md:h-auto md:basis-1/4">
+            {!isSignedIn ? (
+              <Link
+                className="transform border-2 border-black bg-[#fdfd96] 
             px-5 py-2 font-mono text-2xl font-medium text-black shadow-lg transition duration-200 hover:bg-[#ffdb58] hover:shadow-neo
             "
-            href={"/sign-in"}
-          >
-            Login to track your goal &#128547;
-          </Link>
-        ) : 
-            <p className="text-[8rem] md:text-[12rem] font-bold font-mono text-white text-stroke-3 px-5 md:bg-[#fdfd96] rounded-2xl md:border-2 border-black">{reps}</p>}
+                href={"/sign-in"}
+              >
+                Login to track your goal &#128547;
+              </Link>
+            ) : (
+              <p className="text-stroke-3 rounded-2xl border-black px-5 font-mono text-[8rem] font-bold text-white md:border-2 md:bg-[#fdfd96] md:text-[12rem]">
+                {reps}
+              </p>
+            )}
           </div>
         </section>
       </section>

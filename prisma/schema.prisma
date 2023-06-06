@@ -44,6 +44,7 @@ model Users {
     Role      Role     @default(USER)
     pledge    Int?      @default(0)
     repsAmount Int?     @default(0)
+    payment_intent String? 
     @@unique([userId])
 }
 
