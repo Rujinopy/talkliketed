@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import DatePicker from "react-datepicker";
-import React, { ChangeEvent, use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { SignedIn, SignedOut, useAuth } from "@clerk/nextjs";
 import LoginButton from "~/components/Loginbutton";
@@ -9,10 +9,11 @@ import { useStore } from "store/stores";
 import { parseISO } from "date-fns";
 import CheckoutForm from "~/components/CheckoutForm";
 import { api } from "~/utils/api";
-import {ArrowBigLeft} from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
+import { ArrowBigLeft } from "lucide-react";
 import NavbarWithoutCam from "~/components/NavbarWithoutCam";
 import Title from "~/components/Title";
+import toast, { Toaster } from 'react-hot-toast';
+
 interface storeProps {
   startDate: Date;
   endDate: Date;
@@ -23,12 +24,15 @@ interface storeProps {
 }
 
 export default function Subs() {
-
   const { userId } = useAuth();
   //startdate and enddate from zustand's store
-  const startDate = useStore((state: unknown) => (state as storeProps).startDate);
+  const startDate = useStore(
+    (state: unknown) => (state as storeProps).startDate
+  );
   const endDate = useStore((state: unknown) => (state as storeProps).endDate);
-  const repsPerDay = useStore((state: unknown) => (state as storeProps).repsPerDay);
+  const repsPerDay = useStore(
+    (state: unknown) => (state as storeProps).repsPerDay
+  );
   const setRepsPerDay = useStore(
     (state: unknown) => (state as storeProps).setRepsPerDay
   );
@@ -39,6 +43,7 @@ export default function Subs() {
     (state: unknown) => (state as storeProps).setEndDate
   );
 
+
   //check if user's role is 'MEM' according to Users table in db
   const role = api.reps.checkUserRoleWithoutId.useQuery();
   //disable datepicker if user is MEM
@@ -48,7 +53,7 @@ export default function Subs() {
     if (role.data === "MEM") {
       setPicker(true);
     }
-    if(role.data === "SUBS"){
+    if (role.data === "SUBS") {
       setPledgeLayout(true);
       setPicker(true);
     }
@@ -56,20 +61,19 @@ export default function Subs() {
 
   //set startdate and enddate
   const handleChange = (date: Date) => {
-    //convert date to have only yyyy-mm-dd 
-    
+    //convert date to have only yyyy-mm-dd
+    const newDate = new Date(startDate.toString().slice(0, 15));
     setStartDate(date);
   };
   useEffect(() => {
-    console.log(endDate)
-  }, [endDate])
+    console.log(endDate);
+  }, [endDate]);
 
   const handleChange2 = (date: Date) => {
-   
     setEndDate(date);
   };
   const handleChange3 = (e: any) => {
-    setRepsPerDay(e.target.value)
+    setRepsPerDay(e.target.value);
   };
 
   useEffect(() => {
@@ -93,7 +97,7 @@ export default function Subs() {
   };
 
   const useMutation = api.reps.updateStartEndDates.useMutation();
-  
+
   //turn repsPerDay into number
   const updateDatesToDb = async () => {
     if (startDate && endDate) {
@@ -111,98 +115,138 @@ export default function Subs() {
       const diff = endDate.getTime() - startDate.getTime();
       const days = diff / (1000 * 3600 * 24);
       //day selected can't be yesterday or before
-      // if (days < 0) {
-      //   alert("Please select a valid date range");
-      // } else {
-      //   if (days > 30) {
-      //     alert("Please select a date range less than 30 days");
-      //   } else {
-      //     if(startDate < new Date()) {
-      //       alert("Please select startDate today or after");
-      //     }
-      //     else {
-
-          toggleCheckoutForm();
-          updateDatesToDb();
-    //       }
-    //     }
-    //   }
-    // } else {
-    //   alert("Please select a valid date range");
-    // }
+      if (days < 0) {
+        alert("Please select a valid date range");
+      } else {
+        if (days > 30) {
+          alert("Please select a date range less than 30 days");
+        } else {
+          if (startDate < new Date()) {
+            toast.error("Please select startDate at least today or after");
+            // alert("Please select startDate today or after");
+          } else {
+            toggleCheckoutForm();
+            updateDatesToDb();
+          }
+        }
+      }
+    } else {
+      alert("Please select a valid date range");
+    }
   };
-}
 
   return (
     <div className="flex h-screen w-screen flex-col justify-center bg-[#a388ee]">
+      <Toaster toastOptions={
+        {
+          className: "font-mono border-2 border-black "
+        }
+      } />
       <NavbarWithoutCam />
-     <Title title={"set up your challenge"}/>
-
+      <Title title={"set up your challenge"} />
+      
       <SignedIn>
-        <div className="flex flex-col h-screen items-center justify-center">
-          {checkoutForm ? <ArrowBigLeft color="white" size={60} onClick={toggleCheckoutForm} 
-          className="absolute bottom-5 md:top-20 left-5 hover:cursor-pointer"/> : null}        
-          {!checkoutForm ? 
-            (!picker ? (
-          
-          <section className="w-full border-black md:border-r-2 justify-center items-center flex flex-col">
+        <div className="flex h-screen flex-col items-center justify-center">
+          {checkoutForm ? (
+            <ArrowBigLeft
+              color="white"
+              size={60}
+              onClick={toggleCheckoutForm}
+              className="absolute bottom-5 left-5 hover:cursor-pointer md:top-20"
+            />
+          ) : null}
+          {!checkoutForm ? (
+            !picker ? (
+              <section className="flex w-full flex-col items-center justify-center border-black md:border-r-2">
+                <h1 className="pt-0 md:mt-10 text-center font-mono text-5xl text-black md:pb-10">
+                  Set Your{" "}
+                  <span className="mt-3 flex text-[#fdfd96]">Deadline</span>{" "}
+                </h1>
+                <div className="mx-auto w-full md:w-1/3">
+                  <h2 className="py-1 font-mono text-2xl">start</h2>
+                  <DatePicker
+                    className="w-full rounded-lg border-2 border-black py-5 text-center font-mono text-2xl "
+                    selected={new Date(startDate)}
+                    onChange={(date: Date) => handleChange(date)}
+                  />
+                </div>
+                <div className="mx-auto w-full md:w-1/3">
+                  <h2 className="py-1 font-mono text-2xl">end</h2>
+                  <DatePicker
+                    className="w-full rounded-lg border-2 border-black py-5 text-center font-mono text-2xl "
+                    selected={new Date(endDate)}
+                    onChange={(date: Date) => handleChange2(date)}
+                  />
+                  <h2 className="w-full py-1 font-mono text-2xl">
+                    reps per day
+                  </h2>
+                  <input
+                    type="number"
+                    value={repsPerDay}
+                    onChange={(e) => handleChange3(e)}
+                    className="w-full rounded-lg border-2 border-black py-5 text-center font-mono text-2xl"
+                  />
+                </div>
 
-            <h1 className="text-black font-mono text-5xl text-center pt-0 md:pb-10">Set Your <span className="text-[#fdfd96] flex mt-3">Deadline</span> </h1>
-            <div className="mx-auto w-full md:w-1/3">
-              <h2 className="py-1 font-mono text-2xl">start</h2>
-              <DatePicker
-                className="w-full rounded-lg border-2 border-black py-5 text-center font-mono text-2xl "
-                selected={new Date(startDate)}
-                onChange={(date: Date) => handleChange(date)}
+                <p
+                  onClick={checkOut}
+                  className="mx-auto mt-8 w-2/3 rounded-lg border-2 border-black bg-[#fdfd96]  p-2 text-center font-mono text-xl shadow-neo hover:cursor-pointer hover:bg-[#ffdb58] md:w-1/3"
+                >
+                  Confirm deadline and reps
+                </p>
+              </section>
+            ) : (
+              <div className="flex flex-col">
+                <p className="mb-5 text-center font-mono text-3xl md:text-4xl">
+                  You have set dates range! Check your profile.
+                </p>
+                {/* 2 buttons 1.toggle checkOutForm 2.Go to profile */}
+                <div className="mx-auto flex w-full flex-col md:w-auto md:flex-row">
+                  <button
+                    className="border-2 border-black bg-white py-3 font-mono text-xl
+               shadow-neo hover:bg-amber-300 md:px-10"
+                    onClick={toggleCheckoutForm}
+                  >
+                    Pledge(optional)
+                  </button>
+                  <Link href="user-profile">
+                    <button
+                      className="w-screen border-2 border-black bg-white py-3 font-mono text-xl shadow-neo 
+                hover:bg-amber-300 md:w-auto md:px-10"
+                    >
+                      Go to profile
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            )
+          ) : null}
+          {checkoutForm ? (
+            !pledgeLayout ? (
+              <CheckoutForm
+                Toggle={checkoutForm}
+                startDate={startDate}
+                endDate={endDate}
+                repsPerDay={repsPerDay}
               />
-            </div>
-            <div className="mx-auto w-full md:w-1/3">
-              <h2 className="py-1 font-mono text-2xl">end</h2>
-              <DatePicker
-                className="w-full rounded-lg border-2 border-black py-5 text-center font-mono text-2xl "
-                selected={new Date(endDate)}
-                onChange={(date: Date) => handleChange2(date)}
-              />
-              <h2 className="py-1 font-mono text-2xl w-full">reps per day</h2>
-              <input type="number" value={repsPerDay} onChange={(e) => handleChange3(e)} className="w-full rounded-lg border-2 border-black py-5 text-center font-mono text-2xl"/>
-            </div>
-
-            <p
-              onClick={checkOut}
-              className="mx-auto mt-8 w-2/3 md:w-1/3 rounded-lg border-2 border-black  bg-[#fdfd96] p-2 text-center font-mono text-xl shadow-neo hover:cursor-pointer hover:bg-[#ffdb58]"
-            >
-              Confirm deadline and reps
-            </p>
-          </section>):  
-          <div className="flex flex-col">
-            <p className="mb-5 text-3xl md:text-4xl text-center font-mono">You have set dates range! Check your profile.</p> 
-            {/* 2 buttons 1.toggle checkOutForm 2.Go to profile */}
-            <div className="flex flex-col md:flex-row mx-auto w-full md:w-auto">
-              <button className="md:px-10 py-3 text-xl font-mono shadow-neo border-2
-               border-black bg-white hover:bg-amber-300" onClick={toggleCheckoutForm}>Pledge(optional)</button>
-              <Link href="user-profile">
-                <button className="w-screen md:w-auto md:px-10 py-3 text-xl font-mono shadow-neo border-2 
-                border-black bg-white hover:bg-amber-300">Go to profile
-                </button>
-              </Link> 
-            </div>
-
-          </div>) : null
-          }
-          {checkoutForm ?
-          (!pledgeLayout ? <CheckoutForm Toggle={checkoutForm} startDate={startDate} endDate={endDate} repsPerDay={repsPerDay}/>
-          : 
-          <div className="flex flex-col">
-          <p className="mb-5 text-3xl md:text-4xl text-center font-mono">You have already pledged!</p>
-          <div className="flex flex-col md:flex-row mx-auto w-full md:w-auto">
-          <Link href="user-profile">
-              <button className="w-screen md:w-auto md:px-10 py-3 text-xl font-mono shadow-neo 
-              border-2 border-black bg-white hover:bg-amber-300">Go to profile</button>
-             </Link>
-            </div>
-           
-          </div>) : null
-          }
+            ) : (
+              <div className="flex flex-col">
+                <p className="mb-5 text-center font-mono text-3xl md:text-4xl">
+                  You have already pledged!
+                </p>
+                <div className="mx-auto flex w-full flex-col md:w-auto md:flex-row">
+                  <Link href="user-profile">
+                    <button
+                      className="w-screen border-2 border-black bg-white py-3 font-mono text-xl 
+              shadow-neo hover:bg-amber-300 md:w-auto md:px-10"
+                    >
+                      Go to profile
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            )
+          ) : null}
         </div>
       </SignedIn>
       <SignedOut>
@@ -211,9 +255,7 @@ export default function Subs() {
             You need to sign in! &#128512;
           </p>
           <Link href={"/sign-in"}>
-            <LoginButton
-              label="Sign in"
-            />
+            <LoginButton label="Sign in" />
           </Link>
         </div>
       </SignedOut>

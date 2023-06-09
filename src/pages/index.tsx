@@ -38,6 +38,12 @@ interface storeProps {
   endDate: Date;
 }
 
+const convertDate = () => {
+  const today = new Date().toString().slice(0, 15);
+  let newToday = new Date(today)
+  return newToday
+}
+
 export const Home: NextPage = (props) => {
   const { user, isSignedIn } = useUser();
   const webRef = useRef<Webcam | null>(null);
@@ -49,9 +55,8 @@ export const Home: NextPage = (props) => {
   const createRep = api.reps.createRepForUser.useMutation();
   const useUpdateRep = api.reps.updateRepsForUser.useMutation();
   //today's date in yyyy-mm-dd format
-  const today = new Date().toString().slice(0, 15);
-  const newToday = new Date(today)
-  
+  const newToday = convertDate()
+
   const [isUpdating, setIsUpdating] = useState(false);
   //fetch today's reps from db
   const dataQuery = api.reps.getRepsForUser.useQuery({
@@ -59,16 +64,21 @@ export const Home: NextPage = (props) => {
     date: newToday,
   } );
 
+  const cachedData = useMemo(() => {
+    if(!dataQuery.isSuccess) return null;
+    updateReps(dataQuery.data?.count! ?? 0);
+    console.log(dataQuery.data?.date)
+    return dataQuery.data;
+  }, [dataQuery.data?.count]);
   //update to local state
-  useEffect(() => {
-    if(!isSignedIn) return;
+  // useEffect(() => {
+  //   if(!isSignedIn) return;
     
-      if (dataQuery.data) {
-        updateReps(dataQuery.data.count ?? 0);
-        console.log(today)
-        console.log(newToday)
-    }
-  }, [dataQuery.data, isSignedIn]);
+  //     if (dataQuery.data) {
+  //       updateReps(dataQuery.data.count ?? 0);
+  //       console.log(dataQuery.data.date)
+  //   }
+  // }, [dataQuery.data, isSignedIn]);
 
   //create reps only one time when page loads
   useEffect(() => {
@@ -76,7 +86,7 @@ export const Home: NextPage = (props) => {
       return;
     }
     if (isSignedIn) {
-      if (dataQuery.data?.count) {
+      if (dataQuery.data?.count !== undefined && dataQuery.data?.count !== null) {
         return;
       }
       if (
@@ -100,11 +110,6 @@ export const Home: NextPage = (props) => {
         //isUpdating is used to prevent multiple calls to the db
         if (!isUpdating) {
           void Promise.resolve(setIsUpdating(true)).then(() => {
-            // void Promise.resolve(
-            //   updateRepsForUser(user, newToday, reps, useUpdateRep)
-            // ).then(() => {
-            //   setIsUpdating(false);
-            // });
             updateRepsForUser(user, newToday, reps, useUpdateRep).then(() => {
               setIsUpdating(false);
             });
@@ -185,24 +190,25 @@ export const Home: NextPage = (props) => {
 
   return (
     <div className="flex h-auto w-screen flex-col justify-center">
-      {/* <button
+      <button
         className="text-stroke-3 font-mono text-7xl font-bold text-red-400"
         onClick={() => updateReps((prev) => prev + 1)}
       >
         test
-      </button> */}
+      </button>
+      <p>{dataQuery.data?.date?.toString() }</p>
       <section className="border-b border-black">
         <Navbar onStateChanged={handleChecked} />
       </section>
-      <section aria-label="body" className="h-auto w-screen bg-[#f8d6b3]">
-        <section className="flex h-auto flex-col-reverse border-b-2 border-black md:h-screen md:flex-row">
+      <section aria-label="body" className="h-auto w-screen bg-[#daf5f0]">
+        <section className="flex h-auto flex-col-reverse border-b-2 border-black md:h-screen md:flex-row justify-center">
           {/* left */}
-          <div className="flex h-72 flex-col justify-center bg-[#ffb2ef] pb-20 md:h-auto md:basis-1/4 md:pl-8"></div>
+          {/* <div className="flex h-72 flex-col justify-center bg-white pb-20 md:h-auto md:basis-1/4 md:pl-8"></div> */}
 
           {/* middle */}
           <div
             aria-label="video"
-            className="relative h-auto w-screen border-black bg-white md:h-auto md:w-auto md:basis-1/2 md:border-x-2"
+            className="relative h-[70vh] w-screen border-black bg-white md:h-auto md:w-auto md:basis-1/2 md:border-x-2"
           >
             <RepCounter date={newToday} userId={user?.id} reps={reps} goal={dataQuery.data?.user?.repsAmount as number} />
             {isChecked ? (
@@ -216,10 +222,10 @@ export const Home: NextPage = (props) => {
           </div>
 
           {/* right */}
-          <div className="flex h-[8rem] flex-col items-center justify-center bg-[#ffb2ef] md:h-auto md:basis-1/4">
+          <div className="flex h-[8rem] flex-col items-center justify-center bg-[#ffb2ef] md:border-r-2 border-black md:h-auto md:basis-1/4">
             {!isSignedIn ? (
               <Link
-                className="transform border-2 border-black bg-[#fdfd96] 
+                className="transform border-y-2 border-black bg-[#fdfd96] 
             px-5 py-2 font-mono text-2xl font-medium text-black shadow-lg transition duration-200 hover:bg-[#ffdb58] hover:shadow-neo
             "
                 href={"/sign-in"}

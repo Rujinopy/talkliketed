@@ -61,6 +61,7 @@ export const repsRouter = createTRPCRouter({
         )
         .query(async ({ input, ctx }) => {
             //if user is logged in, return reps for that user
+            console.log(input.date)
             const reps = await ctx.prisma.pushups.findFirst({
                 where: {
                     userId: input.userId ?? ctx.auth?.userId,
@@ -68,6 +69,7 @@ export const repsRouter = createTRPCRouter({
                 },
                 select: {
                     count: true,
+                    date:true,
                     user:{
                         select:{
                             repsAmount:true
