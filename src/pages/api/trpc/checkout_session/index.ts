@@ -17,7 +17,7 @@ export default async function handler(
 ) {
   if (req.method === 'POST') {
     const {userId} = getAuth(req);
-    const { amount }: PaymentRequestBody = req.body;
+    const { amount }: PaymentRequestBody = req.body as PaymentRequestBody;
     
     try {
       // Validate the amount that was passed from the client.
@@ -49,8 +49,8 @@ export default async function handler(
           }
         ],
         mode: 'payment',
-        success_url: `${req.headers.origin}/result?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.origin}/subscription`,
+        success_url: `${req.headers.origin ?? ""}/result?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.origin ?? ""}/subscription`,
       }
 
       const checkoutSession: Stripe.Checkout.Session =
