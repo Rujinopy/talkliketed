@@ -24,7 +24,7 @@ const Result: NextPage = () => {
 
         const router = useRouter()
        
-        const { data }: {data?: PaymentData | undefined} = useSWR(
+        const { data }: {data?: PaymentData | undefined} = useSWR<PaymentData>(
           router.query.session_id
             ? `/api/trpc/checkout_session/${router.query.session_id.toString() ?? ""}`
             : "", (url: string) => fetch(url).then((res) => res.json())
@@ -42,7 +42,7 @@ const Result: NextPage = () => {
                     payment_intent: data.payment_intent.id
                 })
             }
-        }, [data, changeRoleToSubs.mutate])
+        }, [data])
 
         
     return (
