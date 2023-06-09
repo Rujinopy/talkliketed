@@ -7,11 +7,11 @@ interface RefundData {
 }
 
 const RefundButton = (props: RefundData) => {
-  const [loading, setLoading] = useState(false);
+
   const today = new Date();
 
   const handleSubmit = async () => {
-    setLoading(true);
+
     //create checkout session
     const response = await fetchPostJSON("/api/trpc/refund");
 

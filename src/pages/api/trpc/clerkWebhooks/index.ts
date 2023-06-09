@@ -18,7 +18,7 @@ export default async function handler(
   req: NextApiRequestWithSvixRequiredHeaders,
   res: NextApiResponse
 ) {
-  const ctx = await createTRPCContext({ req, res });
+  const ctx = createTRPCContext({ req, res });
   const caller = appRouter.createCaller(ctx);
   // Verify the webhook signature
   // See https://docs.svix.com/receiving/verifying-payloads/how

@@ -11,15 +11,6 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
     apiVersion: '2022-11-15',
 })
 
-interface dataType {
-    payment_intent: string
-    pledge: number
-    startDate: Date
-    endDate: Date
-    pledgeAmount: number
-}
-
-
 
 export default async function handler(
     req: NextApiRequest,
@@ -27,7 +18,7 @@ export default async function handler(
 ) {
     
     const { userId } = getAuth(req)
-    const ctx = await createTRPCContext({ req, res });
+    const ctx = createTRPCContext({ req, res });
     const caller = appRouter.createCaller(ctx);
     
     const data = await caller.reps.checkIfUserExists({ userId: userId ?? "" })
@@ -37,10 +28,10 @@ export default async function handler(
         startDate: startDate,
         endDate: endDate
     })
-
-    const payment_intent = data?.payment_intent
-    const pledge = data!.pledge ?? 0
-    const repsGoal = data!.repsAmount ?? 0
+    if(data) {
+    const payment_intent = data.payment_intent
+    const pledge = data.pledge ?? 0
+    const repsGoal = data.repsAmount ?? 0
     const refundAmount = calculatedRefundAmount(pledge, actualSessions, startDate, endDate, repsGoal)
 
     if (req.method === 'POST') {
@@ -63,7 +54,7 @@ export default async function handler(
         res.status(405).end('Method Not Allowed')
     }
 }
-
+}
 
 
 export const calculatedRefundAmount = (pledge: number, pushupSessions: Array<{ count: number | null }>
