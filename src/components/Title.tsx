@@ -1,5 +1,3 @@
-import { proseWrap } from "prettier.config.cjs";
-
 interface TitleProps {
     title: string;
 }
