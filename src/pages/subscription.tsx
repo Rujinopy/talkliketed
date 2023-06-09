@@ -124,7 +124,7 @@ export default function Subs() {
             toast.error("Please select startDate at least today or after");
             // alert("Please select startDate today or after");
           } else {
-            await toggleCheckoutForm();
+            toggleCheckoutForm();
             await updateDatesToDb();
           }
         }

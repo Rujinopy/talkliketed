@@ -6,21 +6,28 @@ import useSWR from 'swr'
 import { useEffect } from 'react'
 import { fetchGetJSON } from '~/utils/api-helpers'
 
+
+interface dataFetched {
+    metadata: {
+        userId: string
+    }
+    payment_intent: {
+        amount: number
+        id: string
+    }
+}
+
 const Result: NextPage = () => {
 
         const router = useRouter()
-      
-        // Fetch CheckoutSession from static page via
-        // https://nextjs.org/docs/basic-features/data-fetching#static-generation
 
-        const { data, error } = useSWR(
+        const { data } : {data: dataFetched} = useSWR(
           router.query.session_id
             ? `/api/trpc/checkout_session/${router.query.session_id}`
             : null, (url) => fetch(url).then((res) => res.json())
         )
 
         const changeRoleToSubs = api.reps.changeUserToSubs.useMutation()
-        console.log(data)
 
         //after fetch data, update the database
         useEffect (() => {

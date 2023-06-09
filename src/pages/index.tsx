@@ -12,12 +12,12 @@ import {
   drawCanvas,
   VideoMock,
 } from "./app";
-import { useState, useRef, useEffect, useMemo, useCallback, memo, MutableRefObject } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, type MutableRefObject } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { api } from "~/utils/api";
 import Link from "next/link";
-import { is } from "date-fns/locale";
+
 
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
@@ -69,9 +69,10 @@ export const Home: NextPage = (props) => {
 
   const cachedData = useMemo(() => {
     if(!dataQuery.isSuccess) return null;
-    updateReps(dataQuery.data?.count! ?? 0);
-    console.log(dataQuery.data?.date)
-    return dataQuery.data;
+    if(dataQuery.data){
+    updateReps(dataQuery.data.count ?? 0);
+    console.log(dataQuery.data.date)
+    return dataQuery.data;}
   }, [dataQuery.data?.count]);
   //update to local state
   // useEffect(() => {

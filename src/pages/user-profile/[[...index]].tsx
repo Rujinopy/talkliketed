@@ -5,7 +5,7 @@ import NavbarWithoutCam from "~/components/NavbarWithoutCam";
 import Title from "~/components/Title";
 import { useEffect, useMemo } from "react";
 import RefundButton from "~/components/RefundButton";
-
+import Image from "next/image";
 const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   const { data } = api.profiles.getProfile.useQuery();
   const progress = api.reps.getAllRepsForUser.useQuery();
@@ -25,9 +25,9 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
       <Title title={"Dashboard"} />
       <MenuBar />
       <div className="flex h-[35vh] md:h-[25vh] flex-col items-center justify-center border-b-2 border-black bg-[#ffb2ef] md:flex-row md:justify-start md:px-44">
-        <img
+        <Image
           className="mt-10 h-24 w-24 rounded-full border-2 border-black md:mr-10 md:mt-0"
-          src={data?.profileImageUrl}
+          src={data ? data.profileImageUrl : "/images/placeholder.png"}
           alt=""
         />
         <div className="">

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import getStripe from "~/utils/get-stripejs";
 import { fetchPostJSON } from "~/utils/api-helpers";
 

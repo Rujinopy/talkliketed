@@ -22,13 +22,15 @@ export default async function handler(
     const caller = appRouter.createCaller(ctx);
     
     const data = await caller.reps.checkIfUserExists({ userId: userId ?? "" })
-    const startDate = data?.startDate ?? new Date()
-    const endDate = data?.endDate ?? new Date()
+
+    if(data){
+    const startDate = data.startDate ?? new Date()
+    const endDate = data.endDate ?? new Date()
     const actualSessions = await caller.reps.getAllReps({
         startDate: startDate,
         endDate: endDate
     })
-    if(data) {
+   
     const payment_intent = data.payment_intent
     const pledge = data.pledge ?? 0
     const repsGoal = data.repsAmount ?? 0
@@ -41,7 +43,7 @@ export default async function handler(
                 payment_intent: payment_intent ?? "",
                 amount: refundAmount * 100
             });
-            console.log(refundSession)
+
             res.status(200).json(refundSession)
         } catch (err) {
             const errorMessage =
@@ -52,10 +54,10 @@ export default async function handler(
     else {
         res.setHeader('Allow', 'POST')
         res.status(405).end('Method Not Allowed')
-    }
+    
 }
 }
-
+}
 
 export const calculatedRefundAmount = (pledge: number, pushupSessions: Array<{ count: number | null }>
     , startDate: Date, endDate: Date, repsGoal: number) => {

@@ -29,7 +29,7 @@ const cors = Cors({
 });
 
 const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
-  const ctx = await createTRPCContext({ req, res });
+  const ctx = createTRPCContext({ req, res });
   const caller = appRouter.createCaller(ctx);
 
   if (req.method === 'POST') {
