@@ -1,6 +1,6 @@
 import { IncomingHttpHeaders } from "http";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { Webhook, WebhookRequiredHeaders } from "svix";
+import { Webhook, type WebhookRequiredHeaders } from "svix";
 import { buffer } from "micro";
 import { appRouter } from "../../../../server/api/root";
 import { createTRPCContext } from "../../../../server/api/trpc";

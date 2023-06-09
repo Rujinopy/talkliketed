@@ -4,17 +4,16 @@ import Cors from 'micro-cors'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { env } from '~/env.mjs'
 import Stripe from 'stripe'
-import { api } from '~/utils/api'
 import { appRouter } from "../../../../server/api/root";
 import { createTRPCContext } from "../../../../server/api/trpc";
-import { auth } from '@clerk/nextjs'
+
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   // https://github.com/stripe/stripe-node#configuration
   apiVersion: '2022-11-15',
 })
 
-const webhookSecret = "whsec_fd24c339d9aca6bd92276ca8900d42170b526644d0005740cec48e5b461baa36"
+
 
 // Stripe requires the raw body to construct the event.
 export const config = {
@@ -40,7 +39,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     let event: Stripe.Event
 
     try {
-      event = stripe.webhooks.constructEvent(buf.toString(), sig, webhookSecret)
+      event = stripe.webhooks.constructEvent(buf.toString(), sig, process.env.STRIPE_WEBHOOK_SECRE || "")
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'

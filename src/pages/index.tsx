@@ -6,7 +6,7 @@ import {
   Navbar,
   RepCounter,
   Canvas,
-  Webcam,
+  type Webcam,
   drawSkeleton,
   count,
   drawCanvas,

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { CURRENCY, MIN_AMOUNT, MAX_AMOUNT } from '../../../../../config/config'   
 import { formatAmountForStripe } from '../../../../utils/stripe-helpers'
