@@ -1,10 +1,9 @@
-import { NextPage } from 'next'
+import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { api } from '../utils/api'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { useEffect } from 'react'
-import { fetchGetJSON } from '~/utils/api-helpers'
 
 
 interface dataFetched {
@@ -20,13 +19,13 @@ interface dataFetched {
 const Result: NextPage = () => {
 
         const router = useRouter()
-
-        const { data } : {data: dataFetched} = useSWR(
+        
+        const { data } : {data?: dataFetched} = useSWR<dataFetched>(
           router.query.session_id
             ? `/api/trpc/checkout_session/${router.query.session_id}`
-            : null, (url) => fetch(url).then((res) => res.json())
+            : "", (url) => fetch(url).then((res) => res.json())
         )
-
+        
         const changeRoleToSubs = api.reps.changeUserToSubs.useMutation()
 
         //after fetch data, update the database
