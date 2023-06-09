@@ -1,6 +1,6 @@
 import Webcam from "react-webcam";
 import { type Pose } from "@tensorflow-models/pose-detection/dist/types";
-import { drawKeypoints } from "../utils/draw";
+import { drawKeypoints } from "./draw";
 
 const drawCanvas = (
     pose: Pose,
