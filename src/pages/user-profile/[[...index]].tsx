@@ -86,7 +86,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-black bg-[#fdfd96]">
                   <h1 className="p-5">{sessionData.data?.pledge} USD</h1>
-                  { role === "SUBS" ? <RefundButton endDate={endDate} /> : null}
+                  { role === "SUBS" && endDate ? <RefundButton endDate={endDate} /> : null}
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-b-2 border-black bg-[#fdfd96] md:rounded-br-3xl">
                   <h1 className="p-5">{sessionData.data?.repsAmount}</h1>
