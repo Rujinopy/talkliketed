@@ -58,8 +58,8 @@ const CheckoutForm = (props: Form) => {
       return null
     }
     const mutateToMem = api.reps.changeUserToMem.useMutation();
-    const addMem = async () => {
-      await mutateToMem.mutateAsync();
+    const addMem = () => {
+      mutateToMem.mutateAsync();
     }
 
   return (
