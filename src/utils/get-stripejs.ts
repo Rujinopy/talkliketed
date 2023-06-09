@@ -4,7 +4,7 @@ import type { Stripe } from '@stripe/stripe-js'
 
 let stripePromise: Promise<Stripe | null>
 const getStripe = () => {
-  stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+  stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string)
   return stripePromise
 }
 

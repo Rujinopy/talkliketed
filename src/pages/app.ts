@@ -6,3 +6,6 @@ export { drawSkeleton, count} from "./utils/draw";
 export { default as drawCanvas } from "./utils/drawCanvas";
 export { default as videoConstraints } from "../../config/videoConstraints";
 export { default as VideoMock } from "~/components/VideoMock";
+export default function Home() {
+    return 
+}
