@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useUser, UserButton, SignedIn } from "@clerk/nextjs";
 import { Camera } from 'lucide-react';
 import Subscription from "./Subscription";
-import MenuBar from "./MenuBar";
+
 export default function Navbar({onStateChanged}: { onStateChanged: (boolean: boolean) => void }) {
     const [isChecked, setChecked] = useState(false);
     const [color, setColor] = useState("#ff6b6b")

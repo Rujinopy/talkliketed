@@ -91,7 +91,7 @@ export default function Subs() {
   }, [repsPerDay]);
 
   const [checkoutForm, setCheckoutForm] = useState(false);
-  const toggleCheckoutForm = async () => {
+  const toggleCheckoutForm = () => {
     setCheckoutForm(!checkoutForm);
   };
 
@@ -150,7 +150,7 @@ export default function Subs() {
             <ArrowBigLeft
               color="white"
               size={60}
-              onClick={toggleCheckoutForm}
+              onClick={void toggleCheckoutForm}
               className="absolute bottom-5 left-5 hover:cursor-pointer md:top-20"
             />
           ) : null}
@@ -188,7 +188,7 @@ export default function Subs() {
                 </div>
 
                 <p
-                  onClick={checkOut}
+                  onClick={void checkOut}
                   className="mx-auto mt-8 w-2/3 rounded-lg border-2 border-black bg-[#fdfd96]  p-2 text-center font-mono text-xl shadow-neo hover:cursor-pointer hover:bg-[#ffdb58] md:w-1/3"
                 >
                   Confirm deadline and reps
@@ -204,7 +204,7 @@ export default function Subs() {
                   <button
                     className="border-2 border-black bg-white py-3 font-mono text-xl
                shadow-neo hover:bg-amber-300 md:px-10"
-                    onClick={toggleCheckoutForm}
+                    onClick={void toggleCheckoutForm}
                   >
                     Pledge(optional)
                   </button>

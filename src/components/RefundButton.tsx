@@ -45,7 +45,7 @@ const RefundButton = (props: RefundData) => {
         className="rounded-lg border-2 border-black bg-red-200 px-1 py-1
                   font-mono text-sm duration-200 hover:translate-x-1 hover:cursor-pointer hover:bg-red-400 
                   hover:shadow-neo md:text-lg md:hover:translate-x-3"
-        onClick={isUserEnded}
+        onClick={void isUserEnded}
       >
         claim pledge &#128181;
       </button>

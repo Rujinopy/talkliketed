@@ -1,4 +1,4 @@
-import React, { MutableRefObject, useEffect, useRef } from "react";
+import React, {type MutableRefObject, useEffect, useRef } from "react";
 import Webcam from "react-webcam";
 
 interface Props {

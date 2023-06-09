@@ -48,7 +48,7 @@ export default async function handler(
         try { 
             const refundSession = await stripe.refunds.create({
                 payment_intent: payment_intent ?? "",
-                amount: refundAmount! * 100
+                amount: refundAmount * 100
             });
             console.log(refundSession)
             res.status(200).json(refundSession)
@@ -70,7 +70,7 @@ export const calculatedRefundAmount = (pledge: number, pushupSessions: Array<{ c
     , startDate: Date, endDate: Date, repsGoal: number) => {
     let incompletedDays = 0
     const totalDays = daysDifference(startDate, endDate)
-        console.log("days difference" + totalDays)
+        // console.log("days difference" + totalDays)
     if (pushupSessions && pushupSessions.length > 0) {
         for (let i = 0; i < pushupSessions.length; i++) {
             

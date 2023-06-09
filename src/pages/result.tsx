@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { api } from '../utils/api'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { useEffect } from 'react'
+import { fetchGetJSON } from '~/utils/api-helpers'
 
 const Result: NextPage = () => {
 
