@@ -19,11 +19,11 @@ interface dataFetched {
 const Result: NextPage = () => {
 
         const router = useRouter()
-        
-        const { data } : {data?: dataFetched} = useSWR<dataFetched>(
+
+        const { data } = useSWR(
           router.query.session_id
             ? `/api/trpc/checkout_session/${router.query.session_id}`
-            : "", (url) => fetch(url).then((res) => res.json())
+            : "", (url: string) => fetch(url).then((res) => res.json())
         )
         
         const changeRoleToSubs = api.reps.changeUserToSubs.useMutation()
