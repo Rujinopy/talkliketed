@@ -4,7 +4,7 @@ import Stripe from 'stripe'
 import { getAuth } from '@clerk/nextjs/server'
 import { appRouter } from "../../../../server/api/root";
 import { createTRPCContext } from "../../../../server/api/trpc";
-import { daysDifference } from '~/pages/utils/dateHelpers'
+import { daysDifference } from '~/utils/dateHelpers'
 
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
