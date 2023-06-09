@@ -2,10 +2,8 @@ import { IncomingHttpHeaders } from "http";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { Webhook, WebhookRequiredHeaders } from "svix";
 import { buffer } from "micro";
-import { env } from '~/env.mjs'
 import { appRouter } from "../../../../server/api/root";
 import { createTRPCContext } from "../../../../server/api/trpc";
-import { isToday } from "date-fns";
 // Disable the bodyParser so we can access the raw
 // request body for verification.
 export const config = {
@@ -38,26 +36,12 @@ export default async function handler(
   const eventType: EventType = evt.type;
   if (eventType === "user.created") {
     const { id }= evt.data;
-    caller.reps.createUserByUserId({
+    await caller.reps.createUserByUserId({
       userId: id as string})
   }
 
   if (eventType === "session.created") {
-    const { user_id }= evt.data;
-    // const isTodayReps = await caller.reps.getRepsForUser(
-    //   { userId: user_id as string, date: new Date() }
-    // )
-    // const isSubs = await caller.reps.checkIfUserIsMem({
-    //   userId: user_id as string
-    // })
 
-    // if (!isTodayReps && (isSubs === "SUBS" || isSubs === "MEM") ) {
-    //   caller.reps.createRepForUser({
-    //     userId: user_id as string,
-    //     date: new Date(),
-    //     reps: 0
-    //   })
-    // }
   }
   res.json({});
 }

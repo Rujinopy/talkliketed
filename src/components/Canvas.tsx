@@ -1,6 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { MutableRefObject, useEffect, useRef } from "react";
 import Webcam from "react-webcam";
-const Canvas = ({ onWebcamRef, onCanvasRef }: any) =>{
+
+interface Props {
+  onWebcamRef: (ref: MutableRefObject<null>) => void;
+  onCanvasRef: (ref: MutableRefObject<null>) => void;
+}
+const Canvas = ({ onWebcamRef, onCanvasRef }: Props) =>{
   const camRef = useRef(null);
   const canvasRef = useRef(null);
 

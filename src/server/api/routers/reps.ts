@@ -64,7 +64,7 @@ export const repsRouter = createTRPCRouter({
             console.log(input.date)
             const reps = await ctx.prisma.pushups.findFirst({
                 where: {
-                    userId: input.userId ?? ctx.auth?.userId,
+                    userId: ctx.auth?.userId ?? input.userId,
                     date: input.date,
                 },
                 select: {

@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatAmountForDisplay } from '~/utils/stripe-helpers'
+// import { formatAmountForDisplay } from '~/utils/stripe-helpers'
 
 type Props = {
   name: string
@@ -17,7 +17,7 @@ const CustomDonationInput = ({
   value,
   min,
   max,
-  currency,
+  // currency,
   step,
   onChange,
   className,

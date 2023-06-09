@@ -1,17 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { api } from '../utils/api'
-import { fetchGetJSON } from '../utils/api-helpers'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { useEffect } from 'react'
-import { useUser } from "@clerk/nextjs";
+
 const Result: NextPage = () => {
-    // const { isLoaded, isSignedIn, user } = useUser()
+
         const router = useRouter()
       
         // Fetch CheckoutSession from static page via
         // https://nextjs.org/docs/basic-features/data-fetching#static-generation
+
         const { data, error } = useSWR(
           router.query.session_id
             ? `/api/trpc/checkout_session/${router.query.session_id}`

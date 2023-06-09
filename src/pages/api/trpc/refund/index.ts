@@ -1,14 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { CURRENCY, MIN_AMOUNT, MAX_AMOUNT } from '../../../../../config/config'
-import { formatAmountForStripe } from '../../../../utils/stripe-helpers'
 import { env } from '~/env.mjs'
 import Stripe from 'stripe'
-import { api } from '~/utils/api'
 import { getAuth } from '@clerk/nextjs/server'
 import { appRouter } from "../../../../server/api/root";
 import { createTRPCContext } from "../../../../server/api/trpc";
 import { daysDifference } from '~/pages/utils/dateHelpers'
-import { start } from 'repl'
 
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
@@ -30,24 +26,23 @@ export default async function handler(
     res: NextApiResponse
 ) {
     
-    const { userId } = await getAuth(req)
+    const { userId } = getAuth(req)
     const ctx = await createTRPCContext({ req, res });
-    const caller = await appRouter.createCaller(ctx);
+    const caller = appRouter.createCaller(ctx);
     
     const data = await caller.reps.checkIfUserExists({ userId: userId ?? "" })
     const startDate = data?.startDate ?? new Date()
     const endDate = data?.endDate ?? new Date()
     const actualSessions = await caller.reps.getAllReps({
-        startDate: startDate!,
-        endDate: endDate!
+        startDate: startDate,
+        endDate: endDate
     })
 
     const payment_intent = data?.payment_intent
     const pledge = data!.pledge ?? 0
     const repsGoal = data!.repsAmount ?? 0
     const refundAmount = calculatedRefundAmount(pledge, actualSessions, startDate, endDate, repsGoal)
-    console.log(actualSessions)
-    console.log("refundamount" + refundAmount)
+
     if (req.method === 'POST') {
 
         try { 
@@ -83,11 +78,12 @@ export const calculatedRefundAmount = (pledge: number, pushupSessions: Array<{ c
                 incompletedDays++;
             }
         }
-        console.log("incompletedDay" + incompletedDays)
+
         return pledge - (incompletedDays * pledge / totalDays)
     }
 
-    
+    return pledge
+
 }
 
 

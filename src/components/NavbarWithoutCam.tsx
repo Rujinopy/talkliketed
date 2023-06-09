@@ -1,11 +1,7 @@
 import Link from "next/link";
-import { useState } from "react";
 import { useUser, UserButton, SignedIn } from "@clerk/nextjs";
 
-import Subscription from "./Subscription";
 export default function Navbar() {
-    const [isChecked, setChecked] = useState(false);
-    const [color, setColor] = useState("#ff6b6b")
     const user = useUser();
     
 

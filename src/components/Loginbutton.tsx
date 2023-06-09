@@ -1,9 +1,4 @@
-import { useEffect, useState } from "react";
-
 export default function LoginButton({label}: {label: string}) {
-
-
-
     return (
         <div>
             <button className={`font-mono hover:-translate-x-1 hover:translate-y-1 transition duration-150 

@@ -1,41 +1,42 @@
 import React, { useState } from "react";
 import getStripe from "~/utils/get-stripejs";
 import { fetchPostJSON } from "~/utils/api-helpers";
-import { api } from "~/utils/api";
 
-const RefundButton = (props: any) => {
+interface RefundData {
+  endDate: Date;
+}
+
+const RefundButton = (props: RefundData) => {
   const [loading, setLoading] = useState(false);
   const today = new Date();
 
-  const isUserEnded = () => {
+  const handleSubmit = async () => {
+    setLoading(true);
+    //create checkout session
+    const response = await fetchPostJSON("/api/trpc/refund");
 
-    if (today > props.endDate || today === props.endDate) {
-        const handleSubmit = async () => {
-            setLoading(true);
-            //create checkout session
-            const response = await fetchPostJSON("/api/trpc/refund",);
-        
-            const stripe = await getStripe();
-        
-            if (stripe) {
-              if (response.id === undefined || response.id === null) {
-                console.warn("response.id is undefined");
-                return;
-              }
+    const stripe = await getStripe();
 
-              if (response) {
-                console.log(response);
-              }
-            }
-          };
+    if (stripe) {
+      if (response.id === undefined || response.id === null) {
+        console.warn("response.id is undefined");
+        return;
+      }
 
-          handleSubmit()
-          
-          return true
+      if (response) {
+        console.log(response);
+      }
     }
-    alert("you have not ended your subscription yet")
+  };
+
+  const isUserEnded = async () => {
+    if (today > props.endDate || today === props.endDate) {
+      await handleSubmit();
+      return true;
+    }
+    alert("you have not ended your subscription yet");
     return false;
-  }; 
+  };
 
   return (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises

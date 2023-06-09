@@ -16,7 +16,7 @@ export const profilesRouter = createTRPCRouter({
         //     })
         // )
         .query(async ({ input, ctx }) => {
-            const userId = await ctx.auth?.userId;
+            const userId = ctx.auth?.userId;
             const profile = await clerkClient.users.getUser(userId ?? "");
             return profile
         }),

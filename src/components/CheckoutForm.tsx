@@ -7,7 +7,13 @@ import * as config from 'config/config'
 import Link from 'next/link'
 import { api } from '~/utils/api'
 
-const CheckoutForm = (props: any) => {
+
+interface Form {
+  Toggle: boolean
+}
+
+
+const CheckoutForm = (props: Form) => {
     const [loading, setLoading] = useState(false)
     const [input, setInput] = useState({
       customDonation: Math.round(config.MAX_AMOUNT / config.AMOUNT_STEP),

@@ -1,4 +1,3 @@
-import Link from 'next/link'
 
 export default function CreateButton({ onClick }: { onClick: () => void }) {
     const handleCreateSession = () => {

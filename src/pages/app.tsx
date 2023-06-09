@@ -5,6 +5,4 @@ export { default as Webcam } from "react-webcam";
 export { drawSkeleton, count} from "./utils/draw";
 export { default as drawCanvas } from "./utils/drawCanvas";
 export { default as videoConstraints } from "../../config/videoConstraints";
-// export { default as addTodayReps }from "src/pages/api/trpc/addTodayReps";
-export { default as updateRepsForUser } from "src/pages/api/trpc/updateRepsForUser";
 export { default as VideoMock } from "~/components/VideoMock";

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import DatePicker from "react-datepicker";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { SignedIn, SignedOut, useAuth } from "@clerk/nextjs";
 import LoginButton from "~/components/Loginbutton";
@@ -12,7 +12,7 @@ import { api } from "~/utils/api";
 import { ArrowBigLeft } from "lucide-react";
 import NavbarWithoutCam from "~/components/NavbarWithoutCam";
 import Title from "~/components/Title";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 
 interface storeProps {
   startDate: Date;
@@ -43,7 +43,6 @@ export default function Subs() {
     (state: unknown) => (state as storeProps).setEndDate
   );
 
-
   //check if user's role is 'MEM' according to Users table in db
   const role = api.reps.checkUserRoleWithoutId.useQuery();
   //disable datepicker if user is MEM
@@ -72,8 +71,8 @@ export default function Subs() {
   const handleChange2 = (date: Date) => {
     setEndDate(date);
   };
-  const handleChange3 = (e: any) => {
-    setRepsPerDay(e.target.value);
+  const handleChange3 = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRepsPerDay(parseInt(e.target.value));
   };
 
   useEffect(() => {
@@ -92,7 +91,7 @@ export default function Subs() {
   }, [repsPerDay]);
 
   const [checkoutForm, setCheckoutForm] = useState(false);
-  const toggleCheckoutForm = () => {
+  const toggleCheckoutForm = async () => {
     setCheckoutForm(!checkoutForm);
   };
 
@@ -110,41 +109,41 @@ export default function Subs() {
     }
   };
 
-  const checkOut = () => {
+  const checkOut = async () => {
     if (startDate && endDate) {
       const diff = endDate.getTime() - startDate.getTime();
       const days = diff / (1000 * 3600 * 24);
       //day selected can't be yesterday or before
       if (days < 0) {
-        alert("Please select a valid date range");
+        toast.error("Please select a valid date range");
       } else {
         if (days > 30) {
-          alert("Please select a date range less than 30 days");
+          toast.error("Please select a date range less than 30 days");
         } else {
           if (startDate < new Date()) {
             toast.error("Please select startDate at least today or after");
             // alert("Please select startDate today or after");
           } else {
-            toggleCheckoutForm();
-            updateDatesToDb();
+            await toggleCheckoutForm();
+            await updateDatesToDb();
           }
         }
       }
     } else {
-      alert("Please select a valid date range");
+      toast.error("Please select a valid date range");
     }
   };
 
   return (
     <div className="flex h-screen w-screen flex-col justify-center bg-[#a388ee]">
-      <Toaster toastOptions={
-        {
-          className: "font-mono border-2 border-black "
-        }
-      } />
+      <Toaster
+        toastOptions={{
+          className: "font-mono border-2 border-black ",
+        }}
+      />
       <NavbarWithoutCam />
       <Title title={"set up your challenge"} />
-      
+
       <SignedIn>
         <div className="flex h-screen flex-col items-center justify-center">
           {checkoutForm ? (
@@ -158,7 +157,7 @@ export default function Subs() {
           {!checkoutForm ? (
             !picker ? (
               <section className="flex w-full flex-col items-center justify-center border-black md:border-r-2">
-                <h1 className="pt-0 md:mt-10 text-center font-mono text-5xl text-black md:pb-10">
+                <h1 className="pt-0 text-center font-mono text-5xl text-black md:mt-10 md:pb-10">
                   Set Your{" "}
                   <span className="mt-3 flex text-[#fdfd96]">Deadline</span>{" "}
                 </h1>
@@ -225,9 +224,9 @@ export default function Subs() {
             !pledgeLayout ? (
               <CheckoutForm
                 Toggle={checkoutForm}
-                startDate={startDate}
-                endDate={endDate}
-                repsPerDay={repsPerDay}
+                // startDate={startDate}
+                // endDate={endDate}
+                // repsPerDay={repsPerDay}
               />
             ) : (
               <div className="flex flex-col">

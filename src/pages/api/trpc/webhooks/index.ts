@@ -56,7 +56,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     // Cast event data to Stripe object.
     if (event.type === 'payment_intent.succeeded') {
-      const paymentIntent = await event.data.object as Stripe.PaymentIntent
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
       
       console.log(paymentIntent.metadata.userId)
       console.log(`💰 PaymentIntent status: ${paymentIntent.status}`)

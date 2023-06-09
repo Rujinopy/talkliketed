@@ -51,7 +51,7 @@ const createInnerTRPCContext = ({ auth }: AuthContext ) => {
  * @see https://trpc.io/docs/context
  */
 export const createTRPCContext = async (_opts: CreateNextContextOptions) => {
-  return await createInnerTRPCContext({ auth: getAuth(_opts.req) });
+  return createInnerTRPCContext({ auth: getAuth(_opts.req) });
 };
 
 /**

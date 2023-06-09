@@ -10,10 +10,9 @@ import {
   drawSkeleton,
   count,
   drawCanvas,
-  updateRepsForUser,
   VideoMock,
 } from "./app";
-import { useState, useRef, useEffect, useMemo, useCallback, memo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, memo, MutableRefObject } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { api } from "~/utils/api";
@@ -40,7 +39,7 @@ interface storeProps {
 
 const convertDate = () => {
   const today = new Date().toString().slice(0, 15);
-  let newToday = new Date(today)
+  const newToday = new Date(today)
   return newToday
 }
 
@@ -53,7 +52,11 @@ export const Home: NextPage = (props) => {
 
   //create custom mutation hooks
   const createRep = api.reps.createRepForUser.useMutation();
-  const useUpdateRep = api.reps.updateRepsForUser.useMutation();
+  const useUpdateRep = api.reps.updateRepsForUser.useMutation({
+    onSuccess: () => {
+      setIsUpdating(false);
+    }
+  });
   //today's date in yyyy-mm-dd format
   const newToday = convertDate()
 
@@ -110,9 +113,13 @@ export const Home: NextPage = (props) => {
         //isUpdating is used to prevent multiple calls to the db
         if (!isUpdating) {
           void Promise.resolve(setIsUpdating(true)).then(() => {
-            updateRepsForUser(user, newToday, reps, useUpdateRep).then(() => {
-              setIsUpdating(false);
-            });
+            // updateRepsForUser(user.id, newToday, reps, useUpdateRep).then(() => {
+            //   setIsUpdating(false);
+            // });
+            void useUpdateRep.mutateAsync({
+              date: newToday,
+              reps: reps,
+            },)
           });
         }
       }
@@ -179,13 +186,12 @@ export const Home: NextPage = (props) => {
     }
   }, [isChecked]);
 
-  const handleWebcamRef = useCallback((ref: any) => {
-    webRef.current = ref;
-    
+  const handleWebcamRef = useCallback((ref: MutableRefObject<Webcam | null>) => { 
+    webRef.current = ref.current; 
   }, []);
 
-  const handleCanvasRef = useCallback((ref: any) => {
-    canvasRef.current = ref;
+  const handleCanvasRef = useCallback((ref: MutableRefObject<HTMLCanvasElement | null>) => {
+    canvasRef.current = ref.current;
   }, []);
 
   return (
