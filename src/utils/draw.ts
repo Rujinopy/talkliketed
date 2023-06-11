@@ -1,11 +1,12 @@
 
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import { type Keypoint } from "@tensorflow-models/pose-detection/dist/types";
+import { ca } from "date-fns/locale";
 
 export let count = 0
 const color = "aqua";
 const lineWidth = 6;
-let godown = true;
+export let godown = true;
 let goup = false;
 // export let countReps = 0;
 let elbowAngle = 0;
@@ -20,6 +21,11 @@ function isiOS() {
 export function isMobile() {
   return isAndroid() || isiOS();
 }
+let countUpdateCallback: () => void = () => { };
+
+export function setCountUpdateCallback(callback: () => void) {
+  countUpdateCallback = callback;
+}
 
 export function drawPoint(ctx: CanvasRenderingContext2D, y: number, x: number, r: number, color: string) {
   ctx.beginPath();
@@ -28,22 +34,23 @@ export function drawPoint(ctx: CanvasRenderingContext2D, y: number, x: number, r
   ctx.fill();
 }
 
-export function drawKeypoints(keypoints: Keypoint[], ctx: CanvasRenderingContext2D) {
+export function drawKeypoints(keypoints: Keypoint[], ctx: CanvasRenderingContext2D, callback: () => void) {
   for (let i = 0; i < keypoints.length; i++) {
     const keypoint = keypoints[i];
-    // console.log(keypoint);
+
     if (keypoint?.x && keypoint?.y && keypoint?.score) {
       const x = keypoint.x;
       const y = keypoint.y;
       const score = keypoint.score;
       if (score >= 0.3) {
-      drawPoint(ctx, y, x, 3, color);
-      updateArmAngle(keypoints);
-      inUpPosition();
-      inDownPosition(keypoints);
+        drawPoint(ctx, y, x, 3, color);
+        updateArmAngle(keypoints);
+        inUpPosition(callback);
+        inDownPosition(keypoints);
       }
     }
   }
+
 }
 
 export function drawSegment(
@@ -67,22 +74,22 @@ export function drawSkeleton(keypoints: Keypoint[], ctx: CanvasRenderingContext2
   const adjacentKeyPoints = poseDetection.util.getAdjacentPairs(poseDetection.SupportedModels.PoseNet);
   for (let i = 0; i < adjacentKeyPoints.length; i++) {
     //making sure that adjacentKeyPoints[i] is not undefined
-      const leftIndex = adjacentKeyPoints[i]?.[0];
-      const rightIndex = adjacentKeyPoints[i]?.[1];
-      if (leftIndex !== undefined && rightIndex !== undefined){
-        const leftKeypoint = keypoints[leftIndex];
-        const rightKeypoint = keypoints[rightIndex];
-        if (leftKeypoint?.score && rightKeypoint?.score && leftKeypoint.score > 0.3 && rightKeypoint.score > 0.3) {
-          drawSegment(
-            [leftKeypoint.y, leftKeypoint.x],
-            [rightKeypoint.y, rightKeypoint.x],
-            color,
-            1,
-            ctx
-          );
+    const leftIndex = adjacentKeyPoints[i]?.[0];
+    const rightIndex = adjacentKeyPoints[i]?.[1];
+    if (leftIndex !== undefined && rightIndex !== undefined) {
+      const leftKeypoint = keypoints[leftIndex];
+      const rightKeypoint = keypoints[rightIndex];
+      if (leftKeypoint?.score && rightKeypoint?.score && leftKeypoint.score > 0.3 && rightKeypoint.score > 0.3) {
+        drawSegment(
+          [leftKeypoint.y, leftKeypoint.x],
+          [rightKeypoint.y, rightKeypoint.x],
+          color,
+          1,
+          ctx
+        );
 
-        }
       }
+    }
   }
 }
 
@@ -96,7 +103,7 @@ export function getAngle(
   if (angle < 0) {
     angle = angle + 360;
   }
-  if (angle > 200){
+  if (angle > 200) {
     angle = angle - 180
   }
   return angle
@@ -120,11 +127,11 @@ export function drawAngle(
 
 //isNoseaboveElbow function
 export function isNoseAboveElbow(keypoints: Keypoint[]) {
-  if (keypoints[0] && keypoints[7] && keypoints[8])  {
+  if (keypoints[0] && keypoints[7] && keypoints[8]) {
 
     //if elbow is above the nose condition
-        if (keypoints[7].y < keypoints[0].y || keypoints[8].y < keypoints[0].y ) {
-            return true;
+    if (keypoints[7].y < keypoints[0].y || keypoints[8].y < keypoints[0].y) {
+      return true;
     }
     else {
       console.log("Keep your elbows above your nose")
@@ -142,13 +149,13 @@ export function isBackStraight(keypoints: Keypoint[]) {
   const leftHip = keypoints[11];
   const leftKnee = keypoints[13];
 
-  if( leftShoulder?.score && leftHip?.score && leftKnee?.score && leftShoulder.score > 0.3 && leftHip.score > 0.3 && leftKnee.score > 0.3) {
+  if (leftShoulder?.score && leftHip?.score && leftKnee?.score && leftShoulder.score > 0.3 && leftHip.score > 0.3 && leftKnee.score > 0.3) {
 
-  const degree = getAngle(
-    [leftShoulder.y, leftShoulder.x],
-    [leftHip.y, leftHip.x],
-    [leftKnee.y, leftKnee.x]
-  )
+    const degree = getAngle(
+      [leftShoulder.y, leftShoulder.x],
+      [leftHip.y, leftHip.x],
+      [leftKnee.y, leftKnee.x]
+    )
     //convert to degree
     if (degree > 160 && degree < 200) {
       return true;
@@ -159,38 +166,38 @@ export function isBackStraight(keypoints: Keypoint[]) {
   }
 }
 
+ 
+export function inUpPosition(callback: () => void) {
 
-export function inUpPosition() {
-
-    if (elbowAngle > 170 && elbowAngle < 200) {
-
-      if(godown === true) {
-        count = count + 1;
-      }
-      godown = false;
-      goup = true;
+  if (elbowAngle > 170 && elbowAngle < 200) {
+    if (godown === true) {
+      count = count + 1;
+      //callback function to update count state in index.tsx
+      callback();
     }
+    godown = false;
+    goup = true;
   }
+}
 
 
 
 export function inDownPosition(keypoints: Keypoint[]) {
   let elbowAboveNose = false
-  
-  if( keypoints[0] && keypoints[7]) {
-    if (keypoints[7].y < keypoints[0].y ) {
+
+  if (keypoints[0] && keypoints[7]) {
+    if (keypoints[7].y < keypoints[0].y) {
       elbowAboveNose = true;
     }
   }
-      // if( isNoseAboveElbow(keypoints) && isBackStraight(keypoints) ) {
-        if (elbowAngle > 70 && elbowAngle < 100 && elbowAboveNose === true ) {
-          if (goup === true) {
-            console.log("in down position")        
-            godown = true;
-          
-          }
-          goup = false;
-        }
+  // if( isNoseAboveElbow(keypoints) && isBackStraight(keypoints) ) {
+  if (elbowAngle > 70 && elbowAngle < 100 && elbowAboveNose === true) {
+    if (goup === true) {
+      // console.log("in down position")
+      godown = true;
+    }
+    goup = false;
+  }
 }
 
 function updateArmAngle(keypoints: Keypoint[]) {
@@ -198,25 +205,20 @@ function updateArmAngle(keypoints: Keypoint[]) {
   const leftShoulder = keypoints[5];
   const leftElbow = keypoints[7];
 
-  if( leftWrist?.score && leftShoulder?.score && leftElbow?.score && leftWrist.score > 0.3 && leftShoulder.score > 0.3 && leftElbow.score > 0.3) {
-  const angle = getAngle(
-    [leftShoulder.y, leftShoulder.x],
-    [leftElbow.y, leftElbow.x],
-    [leftWrist.y, leftWrist.x]
-  );
+  if (leftWrist?.score && leftShoulder?.score && leftElbow?.score && leftWrist.score > 0.3 && leftShoulder.score > 0.3 && leftElbow.score > 0.3) {
+    const angle = getAngle(
+      [leftShoulder.y, leftShoulder.x],
+      [leftElbow.y, leftElbow.x],
+      [leftWrist.y, leftWrist.x]
+    );
     // console.log(angle);
-  if (angle < 0) {
-    //angle = angle + 360;
+    if (angle < 0) {
+      //angle = angle + 360;
+    }
+
+    if (leftWrist.score > 0.3 && leftElbow.score > 0.3 && leftShoulder.score > 0.3) {
+      //console.log(angle);
+      elbowAngle = angle;
+    }
   }
-
-  if (leftWrist.score > 0.3 && leftElbow.score > 0.3 && leftShoulder.score > 0.3) {
-    //console.log(angle);
-    elbowAngle = angle;
-  }
-}
-}
-
-
-export default function drawPose() {
-  console.log("hi");
 }

@@ -33,7 +33,7 @@ export const repsRouter = createTRPCRouter({
                 },
             });
 
-            if (todayReps === null) {
+            if (todayReps === null || role?.Role === "MEM" || role?.Role === "SUBS") {
                 const rep = await ctx.prisma.pushups.create({
                     data: {
                         user: {

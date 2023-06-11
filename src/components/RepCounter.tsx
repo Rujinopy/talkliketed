@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { is } from "date-fns/locale";
 import React, { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 
@@ -7,6 +8,7 @@ interface RepCounterProps {
   userId: string | undefined | null;
   date: Date
   goal: number
+  isSignedIn: boolean
 }
 
 // interface User {
@@ -17,6 +19,8 @@ interface RepCounterProps {
 export default function RepCounter(props: RepCounterProps) {
   const checkIfUserIsSubsOrMem = api.reps.checkIfUserExists.useQuery({
     userId: props.userId ?? "",
+  }, {
+    enabled: props.isSignedIn === true,
   })
 
   const SubsOrMem = checkIfUserIsSubsOrMem.data?.Role
