@@ -22,8 +22,8 @@ const CustomDonationInput = ({
   onChange,
   className,
 }: Props) => (
-  <label className='flex flex-col text-5xl text-center'>
-    <span className='text-[#fdfd96]'>Pledge </span>Amount
+  <label className='flex flex-col text-5xl text-center font-mono'>
+    <span className='font-mono'>Pledge </span>Amount
     <input
       className={className}
       type="number"

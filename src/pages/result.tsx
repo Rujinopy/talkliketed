@@ -4,7 +4,7 @@ import { api } from '../utils/api'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { useEffect } from 'react'
-
+import { useStore } from "store/stores"
 type ChangeRoleToSubsArgs = {
     userId: string;
     pledge: number;
@@ -19,9 +19,20 @@ type PaymentData = {
       id: string;
     }
   }
-
+  interface storeProps {
+    startDate: Date;
+    endDate: Date;
+    repsPerDay: number;
+    setStartDate: (date: Date) => void;
+    setEndDate: (date: Date) => void;
+    setRepsPerDay: (reps: number) => void;
+  }
+  
 const Result: NextPage = () => {
-
+        const startDate = useStore(
+          (state: unknown) => (state as storeProps).startDate
+        );
+        const endDate = useStore((state: unknown) => (state as storeProps).endDate);
         const router = useRouter()
        
         const { data }: {data?: PaymentData | undefined} = useSWR<PaymentData>(
@@ -39,7 +50,9 @@ const Result: NextPage = () => {
                 changeRoleToSubs.mutate({
                     userId: data.metadata.userId,
                     pledge: data.payment_intent.amount / 100,
-                    payment_intent: data.payment_intent.id
+                    payment_intent: data.payment_intent.id,
+                    startDate: startDate,
+                    endDate: endDate,
                 })
             }
         }, [data])

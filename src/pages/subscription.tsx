@@ -64,9 +64,6 @@ export default function Subs() {
     const newDate = new Date(startDate.toString().slice(0, 15));
     setStartDate(date);
   };
-  useEffect(() => {
-    console.log(endDate);
-  }, [endDate]);
 
   const handleChange2 = (date: Date) => {
     setEndDate(date);
@@ -95,20 +92,6 @@ export default function Subs() {
     setCheckoutForm(!checkoutForm);
   };
 
-  const useMutation = api.reps.updateStartEndDates.useMutation();
-
-  //turn repsPerDay into number
-  const updateDatesToDb = async () => {
-    if (startDate && endDate) {
-      await useMutation.mutateAsync({
-        userId: userId ?? "",
-        startDate: startDate,
-        endDate: endDate,
-        repPerDay: repsPerDay,
-      });
-    }
-  };
-
   const checkOut = async () => {
     if (startDate && endDate) {
       const diff = endDate.getTime() - startDate.getTime();
@@ -120,12 +103,10 @@ export default function Subs() {
         if (days > 30) {
           toast.error("Please select a date range less than 30 days");
         } else {
-          if (startDate < new Date()) {
+          if (startDate.getDate() < new Date().getDate()) {
             toast.error("Please select startDate at least today or after");
-            // alert("Please select startDate today or after");
           } else {
             toggleCheckoutForm();
-            await updateDatesToDb();
           }
         }
       }
@@ -135,14 +116,17 @@ export default function Subs() {
   };
 
   return (
-    <div className="flex h-screen w-screen flex-col justify-center bg-[#a388ee]">
+    <div
+      className="flex min-h-screen 
+    w-screen flex-col justify-center bg-yellow-200"
+    >
       <Toaster
         toastOptions={{
           className: "font-mono border-2 border-black ",
         }}
       />
       <NavbarWithoutCam />
-      <Title title={"set up your challenge"} />
+      <Title title={"set up your push-ups challenge"} />
 
       <SignedIn>
         <div className="flex h-screen flex-col items-center justify-center">
@@ -150,7 +134,7 @@ export default function Subs() {
             <ArrowBigLeft
               color="white"
               size={60}
-              onClick={void toggleCheckoutForm}
+              onClick={toggleCheckoutForm}
               className="absolute bottom-5 left-5 hover:cursor-pointer md:top-20"
             />
           ) : null}
@@ -158,8 +142,7 @@ export default function Subs() {
             !picker ? (
               <section className="flex w-full flex-col items-center justify-center border-black md:border-r-2">
                 <h1 className="pt-0 text-center font-mono text-5xl text-black md:mt-10 md:pb-10">
-                  Set Your{" "}
-                  <span className="mt-3 flex text-[#fdfd96]">Deadline</span>{" "}
+                  Set Your <span className="mt-3 flex">Deadline</span>{" "}
                 </h1>
                 <div className="mx-auto w-full md:w-1/3">
                   <h2 className="py-1 font-mono text-2xl">start</h2>
@@ -188,7 +171,7 @@ export default function Subs() {
                 </div>
 
                 <p
-                  onClick={void checkOut}
+                  onClick={checkOut}
                   className="mx-auto mt-8 w-2/3 rounded-lg border-2 border-black bg-[#fdfd96]  p-2 text-center font-mono text-xl shadow-neo hover:cursor-pointer hover:bg-[#ffdb58] md:w-1/3"
                 >
                   Confirm deadline and reps
@@ -204,7 +187,7 @@ export default function Subs() {
                   <button
                     className="border-2 border-black bg-white py-3 font-mono text-xl
                shadow-neo hover:bg-amber-300 md:px-10"
-                    onClick={void toggleCheckoutForm}
+                    onClick={toggleCheckoutForm}
                   >
                     Pledge(optional)
                   </button>
@@ -222,12 +205,13 @@ export default function Subs() {
           ) : null}
           {checkoutForm ? (
             !pledgeLayout ? (
-              <CheckoutForm
-                Toggle={checkoutForm}
-                // startDate={startDate}
-                // endDate={endDate}
-                // repsPerDay={repsPerDay}
-              />
+              <div>
+                <CheckoutForm
+                  Toggle={checkoutForm}
+                  Id={userId ?? ""}
+                  RepsPerDay={repsPerDay}
+                />
+              </div>
             ) : (
               <div className="flex flex-col">
                 <p className="mb-5 text-center font-mono text-3xl md:text-4xl">
@@ -249,7 +233,7 @@ export default function Subs() {
         </div>
       </SignedIn>
       <SignedOut>
-        <div className="container mx-auto flex flex-col items-center">
+        <div className="flex h-screen flex-col items-center justify-center">
           <p className="py-5 font-mono text-3xl">
             You need to sign in! &#128512;
           </p>

@@ -25,15 +25,18 @@ export const repsRouter = createTRPCRouter({
                     Role: true,
                 },
             });
+            const inputDate = new Date(input.date);
+            inputDate.setHours(inputDate.getHours() + 7);
 
             const todayReps = await ctx.prisma.pushups.findFirst({
                 where: {
                     userId: ctx.auth?.userId,
-                    date: input.date,
+                    date: new Date(inputDate.toISOString()),
                 },
             });
-
-            if (todayReps === null || role?.Role === "MEM" || role?.Role === "SUBS") {
+            
+            if ((todayReps === null) && ( role?.Role === "MEM" || role?.Role === "SUBS")) {
+                console.log(todayReps)
                 const rep = await ctx.prisma.pushups.create({
                     data: {
                         user: {
@@ -41,7 +44,7 @@ export const repsRouter = createTRPCRouter({
                                 userId: ctx.auth?.userId ?? "",
                             },
                         },
-                        date: input.date,
+                        date: new Date(inputDate.toISOString()),
                         count: input.reps,
                     },
                 });
@@ -61,11 +64,13 @@ export const repsRouter = createTRPCRouter({
         )
         .query(async ({ input, ctx }) => {
             //if user is logged in, return reps for that user
-            console.log(input.date)
+            const inputDate = new Date(input.date);
+            inputDate.setHours(inputDate.getHours() + 7);
+
             const reps = await ctx.prisma.pushups.findFirst({
                 where: {
                     userId: ctx.auth?.userId ?? input.userId,
-                    date: input.date,
+                    date: new Date(inputDate.toISOString()),
                 },
                 select: {
                     count: true,
@@ -117,6 +122,7 @@ export const repsRouter = createTRPCRouter({
                     startDate: input.startDate,
                     endDate: input.endDate,
                     repsAmount: input.repPerDay,
+                    Role: "MEM"
                 },
             });
             return rep;
@@ -208,6 +214,7 @@ export const repsRouter = createTRPCRouter({
             select: {
                 count: true,
             },
+            
         });
         return reps;
     }
@@ -234,7 +241,10 @@ export const repsRouter = createTRPCRouter({
         z.object({
             userId: z.string(),
             pledge: z.number(),
-            payment_intent: z.string()
+            payment_intent: z.string(),
+            startDate: z.date(),
+            endDate: z.date()
+
         }))
     .mutation(async ({ input, ctx }) => {
         const user = await ctx.prisma.users.updateMany({
@@ -252,10 +262,19 @@ export const repsRouter = createTRPCRouter({
     ),
 
     getAllRepsForUser: publicProcedure
-    .query(async ({ ctx }) => {
+    .input( z.object({
+        startDate: z.date(),
+        endDate: z.date(),
+    }))
+    .query(async ({ input, ctx }) => {
+        
         const reps = await ctx.prisma.pushups.findMany({
             where:{
-                userId: ctx.auth?.userId
+                userId: ctx.auth?.userId,
+                date: {
+                    gte: input.startDate,
+                    lte: input.endDate,
+                }
             },
             select: {
                 userId: true,

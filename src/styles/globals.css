@@ -11,5 +11,8 @@
 .text-stroke-1 {
     -webkit-text-stroke: 1px #000;
     text-shadow: 1px 1px #000;
+}
 
+.text-stroke-2 {
+    -webkit-text-stroke: 1px #000;
 }

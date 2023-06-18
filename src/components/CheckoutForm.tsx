@@ -6,18 +6,32 @@ import { formatAmountForDisplay } from '~/utils/stripe-helpers'
 import * as config from 'config/config'
 import Link from 'next/link'
 import { api } from '~/utils/api'
-
+import { useStore } from "store/stores";
 
 interface Form {
   Toggle: boolean
+  Id: string
+  RepsPerDay: number
+}
+interface storeProps {
+  startDate: Date;
+  endDate: Date;
+  repsPerDay: number;
+  setStartDate: (date: Date) => void;
+  setEndDate: (date: Date) => void;
+  setRepsPerDay: (reps: number) => void;
 }
 
-
 const CheckoutForm = (props: Form) => {
+  const startDate = useStore(
+    (state: unknown) => (state as storeProps).startDate
+  );
+  const endDate = useStore((state: unknown) => (state as storeProps).endDate);
     const [loading, setLoading] = useState(false)
     const [input, setInput] = useState({
       customDonation: Math.round(config.MAX_AMOUNT / config.AMOUNT_STEP),
     })
+  
   
     const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (e) =>
       setInput({
@@ -57,15 +71,20 @@ const CheckoutForm = (props: Form) => {
     if(!props.Toggle) {
       return null
     }
-    const mutateToMem = api.reps.changeUserToMem.useMutation();
-    const addMem = () => {
-      mutateToMem.mutateAsync().then(() => {
-        console.log("changed to mem")
-      }).catch((err) => {
-        console.log(err)
+
+    const useMutation = api.reps.updateStartEndDates.useMutation();
+
+    //turn repsPerDay into number
+    const updateDatesToDb = async () => {
+      if (startDate && endDate) {
+        await useMutation.mutateAsync({
+          userId: props.Id ?? "",
+          startDate: startDate,
+          endDate: endDate,
+          repPerDay: props.RepsPerDay,
+        });
       }
-      )
-    }
+    };
 
   return (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
@@ -89,7 +108,7 @@ const CheckoutForm = (props: Form) => {
         Pledge {formatAmountForDisplay(input.customDonation, config.CURRENCY)}
       </button>
       <Link href="/">
-        <button onClick={void addMem} className="px-12 mt-10 md:mt-5 py-2 shadow-neo rounded-lg font-mono text-2xl
+        <button onClick={updateDatesToDb} className="px-12 md:mt-5 py-2 shadow-neo rounded-lg font-mono text-2xl
           hover:cursor-pointer bg-[#fdfd96] hover:bg-[#ffdb58] border-2 border-black">Go without pledge</button>
       </Link>
     </form>

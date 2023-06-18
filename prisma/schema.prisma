@@ -25,7 +25,7 @@ model Pushups {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
-    date      DateTime?
+    date      DateTime? 
     count     Int?
     user      Users? @relation(fields: [userId], references: [userId])
     userId    String?
@@ -45,16 +45,17 @@ model Users {
     pledge    Int?      @default(0)
     repsAmount Int?     @default(0)
     payment_intent String? 
+    
     @@unique([userId])
 }
 
-// model session {
-//   id Int @id @default(autoincrement())
-//   startDate DateTime?
-//   enDate DateTime?
-//   pushups Pushups[]
-//   pledge Int?
-// }
+model session {
+  id Int @id @default(autoincrement())
+  startDate DateTime?
+  endDate DateTime?
+  userId String
+  
+}
 
 enum Role {
   USER

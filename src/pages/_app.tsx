@@ -4,7 +4,8 @@ import { api } from "~/utils/api";
 import "~/styles/globals.css";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
-  return(  <ClerkProvider {...pageProps} 
+  return(  
+  <ClerkProvider {...pageProps} 
   appearance={
     {
       layout: {
@@ -16,7 +17,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     {
       signIn: {
         start: {
-          subtitle: "to continue to pushup",
+          subtitle: "to continue to Motiflex",
         }
       }
     }

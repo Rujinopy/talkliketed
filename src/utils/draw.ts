@@ -1,13 +1,13 @@
 
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import { type Keypoint } from "@tensorflow-models/pose-detection/dist/types";
-import { ca } from "date-fns/locale";
 
 export let count = 0
 const color = "aqua";
-const lineWidth = 6;
+const lineWidth = 3;
 export let godown = true;
 let goup = false;
+let back = false
 // export let countReps = 0;
 let elbowAngle = 0;
 function isAndroid() {
@@ -30,7 +30,7 @@ export function setCountUpdateCallback(callback: () => void) {
 export function drawPoint(ctx: CanvasRenderingContext2D, y: number, x: number, r: number, color: string) {
   ctx.beginPath();
   ctx.arc(x, y, r, 0, 2 * Math.PI);
-  ctx.fillStyle = color;
+  ctx.fillStyle = "white";
   ctx.fill();
 }
 
@@ -43,14 +43,14 @@ export function drawKeypoints(keypoints: Keypoint[], ctx: CanvasRenderingContext
       const y = keypoint.y;
       const score = keypoint.score;
       if (score >= 0.3) {
-        drawPoint(ctx, y, x, 3, color);
+        drawPoint(ctx, y, x, 6, color);
         updateArmAngle(keypoints);
+        isBackStraight(keypoints);
         inUpPosition(callback);
         inDownPosition(keypoints);
       }
     }
   }
-
 }
 
 export function drawSegment(
@@ -65,7 +65,7 @@ export function drawSegment(
   ctx.moveTo(ax * scale, ay * scale);
   ctx.lineTo(bx * scale, by * scale);
   ctx.lineWidth = lineWidth;
-  ctx.strokeStyle = "white";
+  ctx.strokeStyle = color;
   ctx.stroke();
 }
 
@@ -80,13 +80,36 @@ export function drawSkeleton(keypoints: Keypoint[], ctx: CanvasRenderingContext2
       const leftKeypoint = keypoints[leftIndex];
       const rightKeypoint = keypoints[rightIndex];
       if (leftKeypoint?.score && rightKeypoint?.score && leftKeypoint.score > 0.3 && rightKeypoint.score > 0.3) {
+        if((i === 6 )){
+          if(back ===false){
+            drawSegment(
+              [leftKeypoint.y, leftKeypoint.x],
+              [rightKeypoint.y, rightKeypoint.x],
+              "red",
+              1,
+              ctx
+            );
+          }
+          if(back === true){
+          drawSegment(
+            [leftKeypoint.y, leftKeypoint.x],
+            [rightKeypoint.y, rightKeypoint.x],
+            "green",
+            1,
+            ctx
+          );
+          }
+        }
+
+        else {
         drawSegment(
           [leftKeypoint.y, leftKeypoint.x],
           [rightKeypoint.y, rightKeypoint.x],
-          color,
+          "white",
           1,
           ctx
         );
+        }
 
       }
     }
@@ -156,17 +179,20 @@ export function isBackStraight(keypoints: Keypoint[]) {
       [leftHip.y, leftHip.x],
       [leftKnee.y, leftKnee.x]
     )
+      
     //convert to degree
     if (degree > 160 && degree < 200) {
-      return true;
+      back = true;
+      console.log("Your back is straight" + degree)
     }
     else {
-      console.log("Keep your back straight")
+      back = false;
+      console.log("Keep your back straight" + degree)
     }
   }
 }
 
- 
+
 export function inUpPosition(callback: () => void) {
 
   if (elbowAngle > 170 && elbowAngle < 200) {
@@ -180,8 +206,6 @@ export function inUpPosition(callback: () => void) {
   }
 }
 
-
-
 export function inDownPosition(keypoints: Keypoint[]) {
   let elbowAboveNose = false
 
@@ -191,7 +215,8 @@ export function inDownPosition(keypoints: Keypoint[]) {
     }
   }
   // if( isNoseAboveElbow(keypoints) && isBackStraight(keypoints) ) {
-  if (elbowAngle > 70 && elbowAngle < 100 && elbowAboveNose === true) {
+  if (elbowAngle > 70 && elbowAngle < 100 && elbowAboveNose === true && back == true) {
+    console.log("in down position")
     if (goup === true) {
       // console.log("in down position")
       godown = true;

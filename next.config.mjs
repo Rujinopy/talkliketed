@@ -6,8 +6,10 @@ await import("./src/env.mjs");
 
 /** @type {import("next").NextConfig} */
 const config = {
-  reactStrictMode: true,
-
+  reactStrictMode: false,
+  images: {
+    domains: ["images.squarespace-cdn.com", "media4.giphy.com", "drive.google.com"],
+  },
   /**
    * If you have `experimental: { appDir: true }` set, then you must comment the below `i18n` config
    * out.

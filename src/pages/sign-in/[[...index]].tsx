@@ -1,19 +1,19 @@
 import { SignIn } from "@clerk/nextjs";
 import { useRouter } from "next/router";
-
+import Link from "next/link";
 function SignInPage() {
 
     //check previous page
     const router = useRouter();
     const { previousPage } = router.query;
-    console.log(previousPage);
+    
 
     return (
       <div className="flex flex-col items-center h-screen justify-center bg-[#a388ee]">
-      <p className="font-mono text-6xl p-5 font-bold text-stroke-3 text-[#fdfd96]">pushup</p>
+      <Link href="/" className="font-mono text-6xl p-5 font-bold text-stroke-3 text-[#fdfd96]">Motiflex</Link>
         <div className="px-2 md:px-2">
         <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up"
-        afterSignInUrl="/"
+        afterSignInUrl={previousPage ? previousPage as string : "/pushup"} 
         appearance={
           {
             layout: {},

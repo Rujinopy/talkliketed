@@ -1,265 +1,127 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import * as poseDetection from "@tensorflow-models/pose-detection";
-import * as tf from "@tensorflow/tfjs-core";
-import "@tensorflow/tfjs-backend-webgl";
-import {
-  Navbar,
-  RepCounter,
-  Canvas,
-  type Webcam,
-  drawSkeleton,
-  drawCanvas,
-  VideoMock,
-} from "./app";
-import {
-  useState,
-  useRef,
-  useEffect,
-  useMemo,
-  useCallback,
-  type MutableRefObject,
-} from "react";
-import { useUser } from "@clerk/nextjs";
+import NavbarWithoutCam from "~/components/NavbarWithoutCam";
 import type { NextPage } from "next";
-import { api } from "~/utils/api";
+import Image from "next/image";
+import { toast } from "react-hot-toast";
 import Link from "next/link";
-
-//movenet model
-const model = poseDetection.SupportedModels.MoveNet;
-
-//movenet config
-const detectorConfig = {
-  modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
-  maxPoses: 1,
-  type: "lightning",
-  scoreThreshold: 0.3,
-  customModel: "",
-  enableTracking: false,
-};
-
-const convertDate = () => {
-  const today = new Date().toString().slice(0, 15);
-  const newToday = new Date(today);
-  return newToday;
-};
-
-export const Home: NextPage = (props) => {
-  const { user, isSignedIn } = useUser();
-  const webRef = useRef<Webcam | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isChecked, setChecked] = useState(false);
-  const [reps, updateReps] = useState(0);
-
-  //create custom mutation hooks
-  const createRep = api.reps.createRepForUser.useMutation();
-  const useUpdateRep = api.reps.updateRepsForUser.useMutation({
-    onSuccess: () => {
-      setIsUpdating(false);
-    },
-  });
-  //today's date in yyyy-mm-dd format
-  const newToday = convertDate();
-
-  const [isUpdating, setIsUpdating] = useState(false);
-  //fetch today's reps from db
-  const dataQuery = api.reps.getRepsForUser.useQuery({
-    userId: user?.id ?? "",
-    date: newToday,
-  }, {
-    enabled: isSignedIn === true,
-  });
-
-  const cachedData = useMemo(() => {
-    if (!dataQuery.isSuccess) return null;
-    if (dataQuery.data) {
-      updateReps(dataQuery.data.count ?? 0);
-      // console.log(dataQuery.data.date);
-      return dataQuery.data;
-    }
-  }, [dataQuery.data?.count]);
-
-  // create reps only one time when page loads
-  useEffect(() => {
-    if (isSignedIn === undefined || isSignedIn === null) {
-      return;
-    }
-    if (isSignedIn) {
-      if (
-        dataQuery.data?.count !== undefined &&
-        dataQuery.data?.count !== null
-      ) {
-        return;
-      }
-      if (
-        dataQuery.data?.count === undefined ||
-        dataQuery.data?.count === null
-      ) {
-        
-        createRep.mutate({
-          userId: user?.id ?? "",
-          date: newToday,
-          reps: 0,
-        });
-      }
-    }
-  }, [isSignedIn]);
-
-  // update reps in db
-  useEffect(() => {
-    //send reps to db
-    if (reps > 0) {
-      if (isSignedIn) {
-        //isUpdating is used to prevent multiple calls to the db
-        if (!isUpdating) {
-          void Promise.resolve(setIsUpdating(true)).then(() => {
-            void useUpdateRep.mutateAsync({
-              date: newToday,
-              reps: reps,
-            });
-          });
-        }
-      }
-    }
-  }, [reps]);
-
-  //detect the pose in real time
-  const detectPoseInRealTime = async (
-    video: Webcam,
-    net: poseDetection.PoseDetector
-  ) => {
-    if (video.video) {
-      const videoWidth = video.video.videoWidth;
-      const videoHeight = video.video.videoHeight;
-      canvasRef.current?.setAttribute("width", videoWidth.toString());
-      canvasRef.current?.setAttribute("height", videoHeight.toString());
-      video.video.width = videoWidth;
-      video.video.height = videoHeight;
-      const pose = await net.estimatePoses(video.video);
-
-      if (pose[0]) {
-        const keypoints = pose[0].keypoints;
-        const context = canvasRef.current?.getContext("2d"); // Use optional chaining operator to avoid undefined
-        if (context) {
-          // Add a check to ensure 'context' is not undefined
-          drawCanvas(pose[0], video, videoWidth, videoHeight, canvasRef, handleCountUpdate);
-          drawSkeleton(keypoints, context);
-        }
-      }
+import { useRef } from "react";
+const Home: NextPage = (props) => {
+  //go to ref section
+  const ref = useRef<HTMLDivElement>(null);
+  const scrollToRef = () => {
+    if (ref.current) {
+      //to the top of the div
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
-  const handleCountUpdate = () => {
-    updateReps((prevCount) => prevCount + 1);
-  };
-
-  //run movenet
-  const runMovenet = async () => {
-    const net = await poseDetection.createDetector(model, detectorConfig);
-    //detect the pose in real time
-    const intervalId = setInterval(() => {
-      if (webRef.current && net) {
-        detectPoseInRealTime(webRef.current, net).catch(console.error);
-      }
-    }, 100);
-    //clear interval
-    return () => {
-      clearInterval(intervalId);
-    };
-  };
-
-  //get isChecked state from Navbar for toggling the video
-  const handleChecked = () => {
-    setChecked(!isChecked);
-  };
-
-  //select available camera
-
-  useEffect(() => {
-    if (isChecked) {
-      void tf.ready().catch(console.error);
-      runMovenet().catch(console.error);
-    }
-  }, [isChecked]);
-
-  const handleWebcamRef = useCallback(
-    (ref: MutableRefObject<Webcam | null>) => {
-      webRef.current = ref.current;
-    },
-    []
-  );
-
-  const handleCanvasRef = useCallback(
-    (ref: MutableRefObject<HTMLCanvasElement | null>) => {
-      canvasRef.current = ref.current;
-    },
-    []
-  );
-
-  // const handleGodown = () => {
-  //   if (godown) {
-  //     updateReps((prevReps) => prevReps + 1);
-  //   }
-  // };
-  
   return (
-    <div className="flex h-auto w-screen flex-col justify-center">
-      <button
-        className="text-stroke-3 font-mono text-7xl font-bold text-red-400"
-        onClick={() => updateReps((prev) => prev + 1)}
-      >
-        test
-      </button>
-      <section className="border-b border-black">
-        <Navbar onStateChanged={handleChecked} />
-      </section>
-      <section aria-label="body" className="h-auto w-screen bg-[#daf5f0]">
-        <section className="flex h-auto flex-col-reverse justify-center border-b-2 border-black md:h-screen md:flex-row">
-          {/* left */}
-          {/* <div className="flex h-72 flex-col justify-center bg-white pb-20 md:h-auto md:basis-1/4 md:pl-8"></div> */}
-
-          {/* middle */}
-          <div
-            aria-label="video"
-            className="relative h-[70vh] w-screen border-black bg-white md:h-auto md:w-auto md:basis-1/2 md:border-x-2"
-          >
-            <RepCounter
-              date={newToday}
-              userId={user?.id}
-              reps={reps}
-              goal={dataQuery.data?.user?.repsAmount as number}
-              isSignedIn={isSignedIn ?? false}
-            />
-            {isChecked ? (
-              <Canvas
-                onWebcamRef={handleWebcamRef}
-                onCanvasRef={handleCanvasRef}
-              />
-            ) : (
-              <VideoMock />
-            )}
-          </div>
-
-          {/* right */}
-          <div className="flex h-[8rem] flex-col items-center justify-center border-black bg-[#ffb2ef] md:h-auto md:basis-1/4 md:border-r-2">
-            {!isSignedIn ? (
-              <Link
-                className="transform border-y-2 border-black bg-[#fdfd96] 
-            px-5 py-2 font-mono text-2xl font-medium text-black shadow-lg transition duration-200 hover:bg-[#ffdb58] hover:shadow-neo
-            "
-                href={"/sign-in"}
-              >
-                Login to track your goal &#128547;
-              </Link>
-            ) : (
-              <p className="text-stroke-3 rounded-2xl border-black px-5 font-mono text-[8rem] font-bold text-white md:border-2 md:bg-[#fdfd96] md:text-[12rem]">
-                {reps}
+    <>
+      <NavbarWithoutCam style="sticky top-0 z-50" />
+      <div className="flex min-h-screen flex-col items-center justify-center border-b-2 border-black bg-pink-300">
+        <main
+          className="flex h-screen w-screen flex-col items-center justify-center border-black 
+        bg-yellow-200 text-center font-mono md:w-[70vw] md:border-x-2 md:pb-10"
+        >
+          <div className="flex h-full w-full flex-col py-10 md:flex-row md:pb-5">
+            <div className="flex flex-col justify-center px-5 pb-10 md:w-3/6 md:pb-0">
+              <h2 className="fomt-mono ml-5 mr-auto rounded-2xl border-2 border-black bg-pink-200 px-5 py-1 font-bold md:mb-2">
+                AI as a trainer
+              </h2>
+              <h1 className="text-stroke-2 py-2 text-left text-4xl font-bold text-black md:pl-5 md:text-6xl">
+                Goodbye{" "}
+                <span className="mt-2 inline-block">Procrastination.</span>
+              </h1>
+              <h1 className="text-stroke-2 py-2 pl-5 text-left text-4xl font-bold text-black md:text-5xl"></h1>
+              <p className="text-left text-xl md:pl-5">
+                Pledge your money. Finish your goal and Get it back.
               </p>
-            )}
+              <div className="mt-2 flex space-x-2 md:ml-5">
+                <Link
+                  href="/pushup"
+                  className="mt-3 self-center rounded-lg border-2 border-black bg-white px-5 py-5 text-lg duration-200 hover:translate-y-2 hover:bg-pink-300 hover:shadow-neo"
+                >
+                  Push up
+                </Link>
+                <button className=" mt-3 rounded-lg border-2 border-black bg-white px-5 py-2 text-lg duration-200 hover:translate-y-2 hover:bg-pink-300 hover:shadow-neo">
+                  Squat <span className="block text-xs">Coming soon...</span>
+                </button>
+                <button className=" mt-3 rounded-lg border-2 border-black bg-white px-5 py-2 text-lg duration-200 hover:translate-y-2 hover:bg-pink-300 hover:shadow-neo">
+                  Reading <span className="block text-xs">Coming soon...</span>
+                </button>
+              </div>
+              <p onClick={scrollToRef} className="mt-5 pl-5 text-left text-sm hover:cursor-pointer hover:underline">
+                What's this?
+              </p>
+            </div>
+            <div className="flex items-center justify-center md:w-3/6">
+              <Image
+                src="https://media4.giphy.com/media/ZCZfmutKBmEVgSN3NE/giphy.gif?cid=6c09b952903v0n1w95th53wg35gml0c4u271h4c4gl3r2jtp&ep=v1_stickers_related&rid=giphy.gif&ct=s"
+                alt="nextjs logo"
+                className="z-0 transform hover:-scale-x-100"
+                priority={true}
+                width={600}
+                height={600}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                onLoadingComplete={() => toast.success}
+              />
+            </div>
           </div>
-        </section>
-      </section>
-      <section className="h-screen bg-yellow-500"></section>
-    </div>
+        </main>
+      </div>
+      <div className="flex h-[50vh] flex-col items-center justify-center border-black md:h-[70vh]">
+        <h1 className="block text-center font-mono text-xl leading-loose md:max-w-4xl md:text-3xl">
+          Pledge money to overcome procrastination and achieve your goals 🎯{" "}
+          <span className="mt-10 block"> or risk losing it !</span>
+        </h1>
+      </div>
+      <div ref={ref} className="flex h-[15vh] items-center justify-center border-y-2 border-black bg-purple-200 p-2">
+        <h1 className="text-center font-mono text-3xl">
+          How does Motiflex works?
+        </h1>
+      </div>
+      <div className="flex h-[100vh] relative flex-col divide-y-2 divide-black border-b-2 border-black bg-pink-300 font-mono text-xl md:divide-y-0 md:text-2xl">
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Image
+                src={`https://images.squarespace-cdn.com/content/v1/55e5dbc1e4b08f65bc69d96d/1579710354488-RH6N1143AKJ42UJQ5NVO/halterJommeke.gif?format=500w`}
+                className="z-40 md:max-w-none hidden md:flex"
+                alt="Motiflex setup"
+                // breakpoint sizes
+                width={300}
+                height={300}
+              />
+            <div className="w-full md:w-[95vw] h-[90vh] bg-yellow-200 z-0 md:rounded-full absolute md:border-2 border-y-2 border-black">
+
+            </div>
+        </div>
+        <div className=" flex h-1/2 w-full flex-col divide-y-2 divide-black md:flex-row  md:divide-y-0 z-10">
+          <div className="flex flex-col h-1/2 w-full items-center justify-center p-2 md:h-full  md:w-1/2">
+            <h1 className="text-center">1. Set your custom goal.</h1>
+            
+          </div>
+          <div className="flex h-1/2 w-full items-center justify-center p-2 md:h-full md:w-1/2">
+            <h1 className="text-center">
+              2. Make a pledge or go without pledge
+            </h1>
+          </div>
+        </div>
+        <div className=" flex h-1/2 w-full flex-col divide-y-2 divide-black md:flex-row-reverse md:divide-y-0 md:divide-x-reverse z-10">
+          <div className="flex h-1/2 w-full items-center justify-center p-2 md:h-full md:w-1/2">
+            <h1 className=" text-center">
+              3. Begin exercising on webcam.{" "}
+              <span className="block">
+                Our AI tracks and counts your push-ups.
+              </span>
+            </h1>
+          </div>
+          <div className="flex h-1/2 w-full items-center justify-center p-2 md:h-full md:w-1/2">
+            <h1 className="  text-center">
+              4. Retrieve your result{" "}
+              <span className="block"> and reclaim your pledge.</span>
+            </h1>
+          </div>
+        </div>
+      </div>
+    </>
   );
 };
 
