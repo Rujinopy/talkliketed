@@ -72,7 +72,9 @@ export const Home: NextPage = (props) => {
   const createRep = api.reps.createRepForUser.useMutation({
     onSuccess: () => {
       //refetch data
-      dataQuery.refetch();
+      dataQuery.refetch().catch((e) => {
+        console.log(e);
+      });
     },
   });
   const cachedData = useMemo(() => {

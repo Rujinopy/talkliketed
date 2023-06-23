@@ -50,7 +50,7 @@ const Home: NextPage = (props) => {
                 </button>
               </div>
               <p onClick={scrollToRef} className="mt-5 pl-5 text-left text-sm hover:cursor-pointer hover:underline">
-                What's this?
+                What&apos;s this?
               </p>
             </div>
             <div className="flex items-center justify-center md:w-3/6">

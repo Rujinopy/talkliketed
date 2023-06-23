@@ -4,7 +4,7 @@ import { fetchPostJSON } from "~/utils/api-helpers";
 import { Toaster, toast } from "react-hot-toast";
 import { api } from "~/utils/api";
 import { useStore } from "store/stores";
-import { redirect } from 'next/navigation'
+import { useRouter } from "next/router";
 interface RefundData {
   endDate: Date;
   role: string;
@@ -21,6 +21,7 @@ const RefundButton = (props: RefundData) => {
   const setRefundResponse = useStore((state: unknown) => (state as dateStore).setRefundResponse)
   const today = new Date();
   const [isModalOpen, SetModalOpen] = useState(false)
+  const router = useRouter()
   const handleSubmit = async () => {
 
     //create checkout session
@@ -39,7 +40,9 @@ const RefundButton = (props: RefundData) => {
       }
       if(response.status as string === "succeeded"){
         setRefundResponse(response)
-        redirect(`/refund/${response.id}`)
+        router.push(`/refund/${response.id ? response.id : "noId"}`).catch((e) => {
+          console.log(e)
+        })
       }
     }
   };
@@ -53,7 +56,7 @@ const RefundButton = (props: RefundData) => {
 
 
 
-  const isUserEnded = async () => {
+  const isUserEnded = async (): Promise<void> => {
     if (today > props.endDate || today === props.endDate) {
     if(props.role === "SUBS"){
       await handleSubmit();
@@ -117,14 +120,14 @@ const MakingSureModal = ({open, SetModalOpen, isUserEnded }: OpenModalProps) => 
             <div className="bg-white p-8 rounded-3xl z-50 border-2 border-black">
               <h2 className="text-2xl font-bold mb-4">Refund Status</h2>
               <p>Your refund Status:</p>
-              <p>Your money will be added back to your bank account within 5-10 days, in accordance with Stripe's policy.</p>
+              <p>Your money will be added back to your bank account within 5-10 days, in accordance with Stripe&apos;s policy.</p>
               <a href="https://support.stripe.com/questions/understanding-fees-for-refunded-payments">
                 <a href="https://support.stripe.com/questions/customer-refund-processing-time"><p className="inline text-gray-400
               hover:underline">1.fees policy</p></a><p className="inline text-gray-400 hover:underline">2.customer refund processing time</p></a>
                 <p>Thank you for using Motiflex!</p>
               <button
                 className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
-                onClick={isUserEnded}
+                onClick={() => void isUserEnded}
               >
                 Close
               </button>

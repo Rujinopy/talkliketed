@@ -92,7 +92,7 @@ export default function Subs() {
     setCheckoutForm(!checkoutForm);
   };
 
-  const checkOut = async () => {
+  const checkOut = () => {
     if (startDate && endDate) {
       const diff = endDate.getTime() - startDate.getTime();
       const days = diff / (1000 * 3600 * 24);

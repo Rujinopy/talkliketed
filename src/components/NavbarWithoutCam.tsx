@@ -5,7 +5,7 @@ export default function Navbar(props: { style?: string }) {
   const user = useUser();
 
   return (
-    <div className={`flex h-16 w-screen items-center border-b-2 border-black bg-white ${props.style}`}>
+    <div className={`flex h-16 w-screen items-center border-b-2 border-black bg-white ${props.style ?? ""}`}>
       <Link href={"/"}>
         <p className="px-3 font-mono text-3xl md:mx-5 md:my-5 md:text-4xl">
           Motiflex
@@ -25,7 +25,7 @@ export default function Navbar(props: { style?: string }) {
         <Link
           href="/sign-in"
           className={`my-5 transform border-r-2  border-black px-5 py-1 font-mono ${
-            user.isSignedIn ? null : "border-l-2"
+            user.isSignedIn ? "" : "border-l-2"
           }
                flex h-full items-center text-xl font-medium text-black transition
                duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:bg-[#87ceeb] hover:shadow-neo md:visible`}

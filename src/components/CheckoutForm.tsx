@@ -75,13 +75,15 @@ const CheckoutForm = (props: Form) => {
     const useMutation = api.reps.updateStartEndDates.useMutation();
 
     //turn repsPerDay into number
-    const updateDatesToDb = async () => {
+    const updateDatesToDb = () => {
       if (startDate && endDate) {
-        await useMutation.mutateAsync({
+        useMutation.mutateAsync({
           userId: props.Id ?? "",
           startDate: startDate,
           endDate: endDate,
           repPerDay: props.RepsPerDay,
+        }).catch((err) => {
+          console.error(err);
         });
       }
     };

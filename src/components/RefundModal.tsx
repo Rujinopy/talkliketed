@@ -13,7 +13,7 @@ const RefundModal = ({open, toggleModal} : ModalProps) => {
             <div className="bg-white p-8 rounded-3xl z-50 border-2 border-black">
               <h2 className="text-2xl font-bold mb-4">Refund Status</h2>
               <p>Your refund Status:</p>
-              <p>Your money will be added back to your bank account within 5-10 days, in accordance with Stripe's policy.</p>
+              <p>Your money will be added back to your bank account within 5-10 days, in accordance with Stripe&apos;s policy.</p>
               <a href="https://support.stripe.com/questions/understanding-fees-for-refunded-payments">
                 <a href="https://support.stripe.com/questions/customer-refund-processing-time"><p className="inline text-gray-400
               hover:underline">1.fees policy</p></a><p className="inline text-gray-400 hover:underline">2.customer refund processing time</p></a>

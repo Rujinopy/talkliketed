@@ -21,11 +21,11 @@ function isiOS() {
 export function isMobile() {
   return isAndroid() || isiOS();
 }
-let countUpdateCallback: () => void = () => { };
+// let countUpdateCallback: () => void = () => { };
 
-export function setCountUpdateCallback(callback: () => void) {
-  countUpdateCallback = callback;
-}
+// export function setCountUpdateCallback(callback: () => void) {
+//   countUpdateCallback = callback;
+// }
 
 export function drawPoint(ctx: CanvasRenderingContext2D, y: number, x: number, r: number, color: string) {
   ctx.beginPath();
@@ -183,11 +183,11 @@ export function isBackStraight(keypoints: Keypoint[]) {
     //convert to degree
     if (degree > 160 && degree < 200) {
       back = true;
-      console.log("Your back is straight" + degree)
+      console.log("Your back is straight" + `${degree}`)
     }
     else {
       back = false;
-      console.log("Keep your back straight" + degree)
+      console.log("Keep your back straight" + `${degree}`)
     }
   }
 }

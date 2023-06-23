@@ -21,7 +21,7 @@ const StatusBar = (props: StatusBarProps) => {
           pledged
         </h2>
         <h3 className="absolute bg-white rounded-md h-auto w-48 mt-1 p-2 hidden group-hover:block"> 
-        Pledged with some money, get it back after the promise end at the "claim pledge" button.</h3>
+        Pledged with some money, get it back after the promise end at the &quot;claim pledge&quot; button.</h3>
         </div>
       )}
       {role === "USER" && (
