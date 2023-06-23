@@ -8,7 +8,7 @@ const StatusBar = (props: StatusBarProps) => {
     <div className="flex space-x-3 font-mono z-0">
       {(role === "MEM" || role === "SUBS") && (
         <div className="relative group">
-        <h2 className="tex-center h-10 rounded-lg border-2 border-black bg-white px-3 py-2 font-mono">
+        <h2 className="text-center h-10 rounded-lg border-2 border-black bg-white px-3 py-2 font-mono">
           promised
         </h2>
         <h3 className="absolute bg-white rounded-md h-auto w-48 mt-1 p-2 hidden group-hover:block"> 
@@ -26,7 +26,7 @@ const StatusBar = (props: StatusBarProps) => {
       )}
       {role === "USER" && (
         <div className="relative group">
-        <h2 className="tex-center h-10 rounded-lg border-2 border-black bg-white px-3 py-2 font-mono">
+        <h2 className="text-center h-10 rounded-lg border-2 border-black bg-white px-3 py-2 font-mono z-10">
             no promised
             </h2>
             <h3 className="absolute bg-white rounded-md h-auto w-48 mt-1 p-2 hidden group-hover:block"> 

@@ -1,80 +1,99 @@
 import { api } from "~/utils/api";
 import type { NextPage } from "next";
-import MenuBar from "~/components/MenuBar";
 import NavbarWithoutCam from "~/components/NavbarWithoutCam";
 import Title from "~/components/Title";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import RefundButton from "~/components/RefundButton";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import StatusBar from "~/components/StatusBar";
+import RefundModal from "~/components/RefundModal";
 const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
-  const { isSignedIn } = useUser();
-  
+  const { isSignedIn, user } = useUser();
+  const [modalOpen, setModalOpen] = useState(false);
+ 
   const { data } = api.profiles.getProfile.useQuery(undefined, {
     enabled: isSignedIn === true,
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchInterval: Infinity,
   });
 
-
-
-  const sessionData = api.reps.checkIfUserExists.useQuery({
-    userId: data?.id ?? "",
-  }, {
-    enabled: isSignedIn === true,
-    refetchOnWindowFocus: false,
-  });
+  const sessionData = api.reps.checkIfUserExists.useQuery(
+    {
+      userId: data?.id ?? "",
+    },
+    {
+      enabled: isSignedIn === true,
+      refetchOnWindowFocus: false,
+    }
+  );
 
   const role = useMemo(() => sessionData.data?.Role, [sessionData.data?.Role]);
-  const endDate = useMemo(() => sessionData.data?.endDate, [
-    sessionData.data?.endDate,
-  ]);
+  const endDate = useMemo(
+    () => sessionData.data?.endDate,
+    [sessionData.data?.endDate]
+  );
 
-  const progress = api.reps.getAllRepsForUser.useQuery({
-    startDate: sessionData.data?.startDate ?? new Date(),
-    endDate: sessionData.data?.endDate ?? new Date(),
-  });
-  
-  if (isSignedIn === false || !data){
+  const progress = api.reps.getAllRepsForUser.useQuery(
+    {
+      startDate: sessionData.data?.startDate ?? new Date(),
+      endDate: sessionData.data?.endDate ?? new Date(),
+    },
+    {
+      enabled: isSignedIn === true,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    }
+  );
+
+  if (isSignedIn === false || !data) {
     return (
       <>
-      <NavbarWithoutCam style="z-50"/>
-      <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-4xl font-bold text-center">Please sign in to view your profile</h1>
-      </div>
+        <NavbarWithoutCam style="z-50" />
+        <div className="flex h-screen flex-col items-center justify-center">
+          <h1 className="text-center text-4xl font-bold">
+            Please sign in to view your profile
+          </h1>
+        </div>
       </>
-    )
+    );
   }
+
+  const toggleModal = () => {
+    setModalOpen(!modalOpen);
+  };
   return (
     <div className="relative w-screen">
-      <NavbarWithoutCam style="sticky top-0 z-50"/>
+      <RefundModal open={modalOpen} toggleModal={toggleModal} />
+      <NavbarWithoutCam style="sticky top-0 z-50" />
       <Title title={"Dashboard"} />
       {/* <MenuBar /> */}
-      <div className="flex h-[25vh] md:h-[25vh] flex-col items-center justify-center border-b-2 border-black bg-[#ffb2ef] md:flex-row md:justify-start md:px-44">
-        <img
-          className="mt-10 h-24 w-24 rounded-full border-2 border-black md:mr-10 md:mt-0"
+      <div className="flex h-[40vh] flex-col items-center justify-center border-b-2 border-black bg-[#ffb2ef] md:h-[25vh] md:flex-row md:justify-start md:px-44">
+        <Image
+          className="mt-10 rounded-full border-2 border-black md:mr-10 md:mt-0"
           src={data ? data.profileImageUrl : ""}
           alt=""
           width={80}
-          height={80}>
-        </img>
-        <div className="">
+          height={80}
+        />
+        <div className="flex flex-col items-center justify-center md:items-start md:justify-normal">
           <h1 className="text-stroke-3 text-[3rem] font-semibold text-[#fdfd96] dark:text-white md:text-[3rem]">
             {data?.firstName}
           </h1>
-         <StatusBar role={role ?? ""}/>
+          <StatusBar role={role ?? ""} />
         </div>
       </div>
       <div className="flex w-screen flex-col border-b-2 border-black bg-[#87ceeb] md:h-[75vh] md:flex-row">
         <div
           aria-label="promises"
-          className="mx-auto w-full md:border-r-2 border-black md:w-1/3"
+          className="mx-auto w-full border-black md:w-1/2 md:border-r-2"
         >
           <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold">
             Promises
           </h1>
           <div className="flex h-[60vh] items-center justify-center text-left text-sm text-gray-500 dark:text-gray-400 md:mx-auto">
-            <div className="flex md:rounded-lg bg-white md:shadow-neo w-96">
+            <div className="flex w-96 bg-white md:rounded-lg md:shadow-neo">
               <div
                 aria-label="titles"
                 className="flex w-3/12 flex-col font-mono text-2xl uppercase text-black md:text-xl"
@@ -106,9 +125,11 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
                     {sessionData.data?.endDate?.toDateString() ?? "N/A"}
                   </h1>
                 </div>
-                <div className="flex h-[15vh] items-center justify-center border border-black bg-[#fdfd96]">
-                  <h1 className="p-5">{sessionData.data?.pledge} USD</h1>
-                  { role && endDate ? <RefundButton endDate={endDate} role={role}/> : null}
+                <div className="flex h-[15vh] flex-col items-center justify-center border border-black bg-[#fdfd96]">
+                  <h1 className="p-1">{sessionData.data?.pledge} USD</h1>
+                  {role && endDate ? (
+                    <RefundButton endDate={endDate} role={role} id={user?.id ?? ""}/>
+                  ) : null}
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-b-2 border-black bg-[#fdfd96] md:rounded-br-lg">
                   <h1 className="p-5">{sessionData.data?.repsAmount}</h1>
@@ -125,14 +146,12 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
             Current Progress
           </h1>
 
-          <div className="mx-auto flex w-full justify-between px-5 space-x-14 rounded-2xl border-black py-2 font-mono md:w-2/3">
+          <div className="mx-auto flex w-full justify-between space-x-14 rounded-2xl border-black px-5 py-2 font-mono md:w-2/3">
             <h1 className="font-mono text-2xl font-bold">No.</h1>
             <h1 className="font-mono text-2xl font-bold">Date</h1>
             <h1 className="font-mono text-2xl font-bold">Count</h1>
           </div>
-          <div
-            className="flex flex-col overflow-y-scroll px-5 h-3/4 items-center py-5 space-y-2"
-          >
+          <div className="flex h-3/4 flex-col items-center space-y-2 overflow-y-scroll px-5 py-5">
             {progress.data?.map((rep, id) => (
               <div
                 className="flex w-full justify-between space-x-3 rounded-lg border border-black bg-white py-2 pl-5 pr-12 font-mono md:w-2/3"
@@ -147,7 +166,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
         </div>
       </div>
       <div className="w-screen">
-        <h1 className="text-center text-4xl py-5 font-mono">history</h1>
+        <h1 className="py-5 text-center font-mono text-4xl">history</h1>
       </div>
     </div>
   );
