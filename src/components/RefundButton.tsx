@@ -85,7 +85,7 @@ const RefundButton = (props: RefundData) => {
   return (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     <div>
-      <MakingSureModal open={isModalOpen} SetModalOpen={toggleModal} isUserEnded={isUserEnded}/>
+      <MakingSureModal open={isModalOpen} SetModalOpen={toggleModal} isUserEnded={() => isUserEnded}/>
       <Toaster 
       toastOptions={{
         className: "font-mono text-xl border-2 border-black ",
