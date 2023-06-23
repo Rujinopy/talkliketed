@@ -42,6 +42,7 @@ model Users {
     name      String?
     userId    String 
     Role      Role     @default(USER)
+    session   ActivitiesSession[]
     pledge    Int?      @default(0)
     repsAmount Int?     @default(0)
     payment_intent String? 
@@ -49,12 +50,15 @@ model Users {
     @@unique([userId])
 }
 
-model session {
+model ActivitiesSession {
   id Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
   startDate DateTime?
   endDate DateTime?
   userId String
-  
+  user Users @relation(fields: [userId], references: [userId])
+
+  @@index([userId])
 }
 
 enum Role {

@@ -40,7 +40,6 @@ const detectorConfig = {
 const convertDate = () => {
   const today = new Date().toString().slice(0, 15);
   const newToday = new Date(today);
-  //add 7 hour
   return newToday;
 };
 
@@ -74,7 +73,7 @@ export const Home: NextPage = (props) => {
       //refetch data
       dataQuery.refetch().catch((e) => {
         console.log(e);
-      });
+      })
     },
   });
   const cachedData = useMemo(() => {
@@ -180,9 +179,7 @@ export const Home: NextPage = (props) => {
   const handleChecked = () => {
     setChecked(!isChecked);
   };
-
-  //select available camera
-
+  
   useEffect(() => {
     if (isChecked) {
       void tf.ready().catch(console.error);
@@ -223,7 +220,7 @@ export const Home: NextPage = (props) => {
           {/* middle */}
           <div
             aria-label="video"
-            className="relative h-[70vh] w-screen border-black bg-white md:h-auto md:w-auto md:basis-1/2 md:border-x-2"
+            className="relative h-[80vh] w-screen border-black bg-white md:h-auto md:w-auto md:basis-1/2 md:border-x-2"
           >
             <RepCounter
               date={newToday}

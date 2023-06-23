@@ -34,6 +34,10 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
     () => sessionData.data?.endDate,
     [sessionData.data?.endDate]
   );
+  const startDate = useMemo(
+    () => sessionData.data?.startDate,
+    [sessionData.data?.startDate]
+  );
 
   const progress = api.reps.getAllRepsForUser.useQuery(
     {
@@ -90,7 +94,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           className="mx-auto w-full border-black md:w-1/2 md:border-r-2"
         >
           <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold">
-            Promises
+            Sessions
           </h1>
           <div className="flex h-[60vh] items-center justify-center text-left text-sm text-gray-500 dark:text-gray-400 md:mx-auto">
             <div className="flex w-96 bg-white md:rounded-lg md:shadow-neo">
@@ -113,7 +117,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
               </div>
               <div
                 aria-label="content"
-                className=" flex w-9/12 flex-col font-mono text-2xl uppercase text-black"
+                className=" flex w-9/12 flex-col font-mono text-2xl text-black"
               >
                 <div className="flex h-[15vh] items-center justify-center border border-r-2 border-t-2 border-black bg-[#fdfd96] md:rounded-tr-lg">
                   <h1 className="p-5 text-center">
@@ -128,7 +132,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
                 <div className="flex h-[15vh] flex-col items-center justify-center border border-black bg-[#fdfd96]">
                   <h1 className="p-1">{sessionData.data?.pledge} USD</h1>
                   {role && endDate ? (
-                    <RefundButton endDate={endDate} role={role} id={user?.id ?? ""}/>
+                    <RefundButton startDate={startDate ?? new Date()} endDate={endDate} role={role} id={user?.id ?? ""}/>
                   ) : null}
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-b-2 border-black bg-[#fdfd96] md:rounded-br-lg">

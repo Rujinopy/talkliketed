@@ -6,24 +6,25 @@ import { api } from "~/utils/api";
 import { useStore } from "store/stores";
 import { useRouter } from "next/router";
 interface RefundData {
+  startDate: Date
   endDate: Date;
   role: string;
   id: string;
 }
 
 interface dateStore {
-  refundResponse: Record<string, null>
-  setRefundResponse: (data: Record<string, null>) => void
-  
+  refundResponse: Record<string, null>;
+  setRefundResponse: (data: Record<string, null>) => void;
 }
 
 const RefundButton = (props: RefundData) => {
-  const setRefundResponse = useStore((state: unknown) => (state as dateStore).setRefundResponse)
+  const setRefundResponse = useStore(
+    (state: unknown) => (state as dateStore).setRefundResponse
+  );
   const today = new Date();
-  const [isModalOpen, SetModalOpen] = useState(false)
-  const router = useRouter()
+  const [isModalOpen, SetModalOpen] = useState(false);
+  const router = useRouter();
   const handleSubmit = async () => {
-
     //create checkout session
     const response = await fetchPostJSON("/api/trpc/refund");
 
@@ -34,15 +35,17 @@ const RefundButton = (props: RefundData) => {
         console.warn("response.id is undefined");
         return;
       }
-      if(response.status === undefined || response.status === null) {
-        console.log("response.status is null")
-        return 
+      if (response.status === undefined || response.status === null) {
+        console.log("response.status is null");
+        return;
       }
-      if(response.status as string === "succeeded"){
-        setRefundResponse(response)
-        router.push(`/refund/${response.id ? response.id : "noId"}`).catch((e) => {
-          console.log(e)
-        })
+      if ((response.status as string) === "succeeded") {
+        setRefundResponse(response);
+        router
+          .push(`/refund/${response.id ? response.id : "noId"}`)
+          .catch((e) => {
+            console.log(e);
+          });
       }
     }
   };
@@ -51,54 +54,57 @@ const RefundButton = (props: RefundData) => {
   const changeRoleToUser = api.reps.changeSubsToUser.useMutation({
     onSuccess: () => {
       toast.success("Successfully refunded");
-    }
+    },
   });
-
-
 
   const isUserEnded = async (): Promise<void> => {
     if (today > props.endDate || today === props.endDate) {
-    if(props.role === "SUBS"){
-      await handleSubmit();
-    }
+      if (props.role === "SUBS") {
+        await handleSubmit();
+      }
 
-    if(props.role === "MEM"){
-      changeRoleToUser.mutate({
-        userId: props.id,
-      });
-      
+      if (props.role === "MEM") {
+        changeRoleToUser.mutate({
+          userId: props.id,
+          startDate: props.startDate,
+          endDate: props.startDate
+        });
+      }
+    } else {
+      toast.error("you have not reached the end date yet");
     }
-  
-  }
-  else {
-    
-    alert("you have not ended your promise yet");
-
-  }
   };
 
   const toggleModal = () => {
-    SetModalOpen(!open)
-  }
-
+    SetModalOpen(!isModalOpen);
+  };
 
   return (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     <div>
-      <MakingSureModal open={isModalOpen} SetModalOpen={toggleModal} isUserEnded={() => isUserEnded}/>
-      <Toaster 
-      toastOptions={{
-        className: "font-mono text-xl border-2 border-black ",
-      }}/>
+      <MakingSureModal
+        open={isModalOpen}
+        SetModalOpen={toggleModal}
+        isUserEnded={() => isUserEnded}
+        role={props.role}
+      />
+      <Toaster
+        toastOptions={{
+          className: "font-mono text-xl border-2 border-black ",
+        }}
+      />
       <button
         className="rounded-lg border-2 border-black bg-red-200 px-1 py-1
                   font-mono text-sm duration-200 hover:translate-x-1 hover:cursor-pointer hover:bg-red-400 
                   "
-        onClick={ () => props.role === "USER" ? toast.error("You haven't set custom goal.") : toggleModal}
+        onClick={() =>
+          props.role === "SUBS"
+            ? toast.error("You haven't set custom goal.")
+            : SetModalOpen(!isModalOpen)
+        }
       >
         claim pledge &#128181;
       </button>
-      
     </div>
   );
 };
@@ -106,40 +112,76 @@ const RefundButton = (props: RefundData) => {
 export default RefundButton;
 
 interface OpenModalProps {
-  open: boolean,
-  SetModalOpen: () => void
-  isUserEnded: () => void
+  open: boolean;
+  SetModalOpen: () => void;
+  isUserEnded: () => void;
+  role: string;
 }
 
-const MakingSureModal = ({open, SetModalOpen, isUserEnded }: OpenModalProps) => {
-  
-  return(
+const MakingSureModal = ({
+  open,
+  SetModalOpen,
+  isUserEnded,
+  role,
+}: OpenModalProps) => {
+  return (
     <>
-        {open && (
-          <div className="fixed top-0 left-0 right-0 bottom-0 flex justify-center items-center bg-gray-900 bg-opacity-50 z-40 font-mono ">
-            <div className="bg-white p-8 rounded-3xl z-50 border-2 border-black">
-              <h2 className="text-2xl font-bold mb-4">Refund Status</h2>
-              <p>Your refund Status:</p>
-              <p>Your money will be added back to your bank account within 5-10 days, in accordance with Stripe&apos;s policy.</p>
+      {open && (
+        <div className="fixed bottom-0 left-0 right-0 top-0 z-40 flex items-center justify-center bg-gray-900 bg-opacity-50 font-mono ">
+          <div className="z-50 max-w-3xl rounded-3xl border-2 border-black bg-[#fdfd96] p-8 text-lg">
+            
+            {role === "USER" ?
+            <div>
+              <h2 className="mb-4 text-2xl font-bold">The session has reached its end date.</h2>
+              <p>All progresses will be displayed in the history section of your profile.</p> 
+              <p className="mt-2">
+                Your pledge will be added back to your bank account within 5-10
+                days, in accordance with Stripe&apos;s policy.
+              </p>
               <a href="https://support.stripe.com/questions/understanding-fees-for-refunded-payments">
-                <a href="https://support.stripe.com/questions/customer-refund-processing-time"><p className="inline text-gray-400
-              hover:underline">1.fees policy</p></a><p className="inline text-gray-400 hover:underline">2.customer refund processing time</p></a>
-                <p>Thank you for using Motiflex!</p>
+                <p
+                  className="inline text-sm text-gray-400
+              underline"
+                >
+                  fees policy
+                </p>
+              </a>
+              <a href="https://support.stripe.com/questions/customer-refund-processing-time">
+                <p className="ml-5 inline text-sm text-gray-400 underline">
+                  Refund processing time
+                </p>
+              </a>
+            </div>
+            : 
+            <div>
+              <h2 className="mb-4 text-2xl font-bold">The session has reached its end date.</h2>
+              <p>The session has reached its end date.</p> 
+              <p className="mt-2">Your session results and all records will be displayed in the history section of your profile.</p>             
+            </div>}
+
+            <div className="flex flex-row space-x-5">
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
-                onClick={() => void isUserEnded}
+                className="mt-4 rounded border-2 border-black bg-white px-4 py-2 font-bold text-black hover:bg-red-300 shadow-neo"
+                onClick={ () => isUserEnded }
               >
-                Close
+                {role === "SUBS" ? "Refund/End Session" : "End session"}
               </button>
-              <footer>
-                <div className="flex justify-center items-center">
-                    <p className="text-sm text-gray-400">© 2023 Motiflex</p>
-                </div>
-            </footer>
+              <button
+                className="mt-4 rounded border-2 border-black bg-white px-4 py-2 font-bold text-black hover:bg-blue-300 shadow-neo"
+                onClick={SetModalOpen}
+              >
+                Not now
+              </button>
             </div>
 
+            <footer className="mt-5">
+              <div className="flex items-center justify-center">
+                <p className="text-sm text-gray-400">© 2023 Motiflex</p>
+              </div>
+            </footer>
           </div>
-        )}
-        </>
-  )
-}
+        </div>
+      )}
+    </>
+  );
+};

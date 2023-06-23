@@ -293,6 +293,8 @@ export const repsRouter = createTRPCRouter({
     .input(
         z.object({
             userId: z.string(),
+            startDate: z.date(),
+            endDate: z.date()
         }))
     .mutation(async ({input, ctx}) => {
         const user = await ctx.prisma.users.update({
@@ -306,6 +308,15 @@ export const repsRouter = createTRPCRouter({
                 startDate: null,
                 endDate: null,
                 repsAmount: 0
+            }
+        })
+
+        const session = await ctx.prisma.activitiesSession.create({
+            data: {
+                userId: ctx.auth?.userId ?? input.userId,
+                startDate: input.startDate,
+                endDate: input.endDate
+
             }
         })
         return user;
