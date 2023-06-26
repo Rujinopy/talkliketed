@@ -26,7 +26,10 @@ const RefundButton = (props: RefundData) => {
   const router = useRouter();
   const handleSubmit = async () => {
     //create checkout session
-    const response = await fetchPostJSON("/api/trpc/refund");
+    const response = await fetchPostJSON("/api/trpc/refund",{
+      startDate: props.startDate,
+      endDate: props.endDate,
+    });
 
     const stripe = await getStripe();
 
@@ -39,13 +42,16 @@ const RefundButton = (props: RefundData) => {
         console.log("response.status is null");
         return;
       }
-      if ((response.status as string) === "succeeded") {
+      if (response.status) {
         setRefundResponse(response);
+        console.log(response);
+        if(response.status === "succeeded"){
         router
           .push(`/refund/${response.id ? response.id : "noId"}`)
           .catch((e) => {
             console.log(e);
           });
+        }
       }
     }
   };
@@ -53,25 +59,36 @@ const RefundButton = (props: RefundData) => {
   //change role to USER
   const changeRoleToUser = api.reps.changeSubsToUser.useMutation({
     onSuccess: () => {
-      toast.success("Successfully refunded");
+      toast.success("End the promised session.");
+    },
+  });
+
+  const addSessionToDB = api.reps.addSessionHistory.useMutation({
+    onSuccess: () => {
+      toast.success("Successfully reclaim pledge!");
     },
   });
 
   const isUserEnded = async (): Promise<void> => {
     if (today > props.endDate || today === props.endDate) {
+  
       if (props.role === "SUBS") {
         await handleSubmit();
+        
       }
 
       if (props.role === "MEM") {
         changeRoleToUser.mutate({
           userId: props.id,
+        });
+        addSessionToDB.mutate({
+          userId: props.id,
           startDate: props.startDate,
-          endDate: props.startDate
+          endDate: props.endDate,
         });
       }
     } else {
-      toast.error("you have not reached the end date yet");
+      toast.error("You have not reached the end date yet.");
     }
   };
 
@@ -85,7 +102,7 @@ const RefundButton = (props: RefundData) => {
       <MakingSureModal
         open={isModalOpen}
         SetModalOpen={toggleModal}
-        isUserEnded={() => isUserEnded}
+        isUserEnded={isUserEnded}
         role={props.role}
       />
       <Toaster
@@ -98,7 +115,7 @@ const RefundButton = (props: RefundData) => {
                   font-mono text-sm duration-200 hover:translate-x-1 hover:cursor-pointer hover:bg-red-400 
                   "
         onClick={() =>
-          props.role === "SUBS"
+          props.role === "USER"
             ? toast.error("You haven't set custom goal.")
             : SetModalOpen(!isModalOpen)
         }
@@ -130,9 +147,9 @@ const MakingSureModal = ({
         <div className="fixed bottom-0 left-0 right-0 top-0 z-40 flex items-center justify-center bg-gray-900 bg-opacity-50 font-mono ">
           <div className="z-50 max-w-3xl rounded-3xl border-2 border-black bg-[#fdfd96] p-8 text-lg">
             
-            {role === "USER" ?
+            {role === "SUBS" ?
             <div>
-              <h2 className="mb-4 text-2xl font-bold">The session has reached its end date.</h2>
+              <h2 className="mb-4 text-2xl font-bold">End The Session?</h2>
               <p>All progresses will be displayed in the history section of your profile.</p> 
               <p className="mt-2">
                 Your pledge will be added back to your bank account within 5-10
@@ -154,15 +171,14 @@ const MakingSureModal = ({
             </div>
             : 
             <div>
-              <h2 className="mb-4 text-2xl font-bold">The session has reached its end date.</h2>
-              <p>The session has reached its end date.</p> 
+              <h2 className="mb-4 text-2xl font-bold">Summarize Session?</h2>
               <p className="mt-2">Your session results and all records will be displayed in the history section of your profile.</p>             
             </div>}
 
             <div className="flex flex-row space-x-5">
               <button
                 className="mt-4 rounded border-2 border-black bg-white px-4 py-2 font-bold text-black hover:bg-red-300 shadow-neo"
-                onClick={ () => isUserEnded }
+                onClick={ () => isUserEnded() }
               >
                 {role === "SUBS" ? "Refund/End Session" : "End session"}
               </button>

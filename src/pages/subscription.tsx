@@ -107,6 +107,8 @@ export default function Subs() {
             toast.error("Please select startDate at least today or after");
           } else {
             toggleCheckoutForm();
+            //set reps per day with current form value
+            
           }
         }
       }

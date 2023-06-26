@@ -4,8 +4,14 @@ import { formatAmountForStripe } from '../../../../utils/stripe-helpers'
 import { env } from '~/env.mjs'
 import Stripe from 'stripe'
 import { getAuth } from "@clerk/nextjs/server";
+import { appRouter } from "../../../../server/api/root";
+import { createTRPCContext } from "../../../../server/api/trpc";
 interface PaymentRequestBody {
     amount: number;
+    startDate: string
+    endDate: string;
+    repsAmount: number;
+    userId: string;
   }
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2022-11-15',
@@ -16,9 +22,9 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method === 'POST') {
-    const {userId} = getAuth(req);
-    const { amount }: PaymentRequestBody = req.body as PaymentRequestBody;
-    
+    // const {userId} = getAuth(req);
+    const { amount, startDate, endDate, repsAmount, userId}: PaymentRequestBody = req.body as PaymentRequestBody;
+
     try {
       // Validate the amount that was passed from the client.
       if (!(amount >= MIN_AMOUNT && amount <= MAX_AMOUNT)) {
@@ -29,7 +35,11 @@ export default async function handler(
         submit_type: 'donate',
         payment_intent_data:{
           metadata:{
-            userId: userId
+            userId: userId,
+            startDate: startDate,
+            endDate: endDate,
+            pledge: amount,
+            repsAmount: repsAmount
           }
         },
         metadata: {

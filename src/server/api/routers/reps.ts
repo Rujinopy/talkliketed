@@ -1,3 +1,4 @@
+import { start } from "repl";
 import { z } from "zod";
 
 import {
@@ -110,7 +111,7 @@ export const repsRouter = createTRPCRouter({
                 userId: z.string(),
                 startDate: z.date(),
                 endDate: z.date(),
-                repPerDay: z.number(),
+                repsAmount: z.number(),
             })
         )
         .mutation(async ({ input, ctx }) => {
@@ -121,7 +122,7 @@ export const repsRouter = createTRPCRouter({
                 data: {
                     startDate: input.startDate,
                     endDate: input.endDate,
-                    repsAmount: input.repPerDay,
+                    repsAmount: input.repsAmount,
                     Role: "MEM"
                 },
             });
@@ -240,11 +241,11 @@ export const repsRouter = createTRPCRouter({
     .input(
         z.object({
             userId: z.string(),
-            pledge: z.number(),
+            pledge: z.string(),
             payment_intent: z.string(),
             startDate: z.date(),
-            endDate: z.date()
-
+            endDate: z.date(),
+            repsAmount: z.string(),
         }))
     .mutation(async ({ input, ctx }) => {
         const user = await ctx.prisma.users.updateMany({
@@ -253,8 +254,11 @@ export const repsRouter = createTRPCRouter({
             },
             data: {
                 Role: "SUBS",
-                pledge: input.pledge,
-                payment_intent: input.payment_intent
+                pledge: parseInt(input.pledge),
+                payment_intent: input.payment_intent,
+                startDate: input.startDate,
+                endDate: input.endDate,
+                repsAmount: parseInt(input.repsAmount),
             },
         });
         return user;
@@ -293,8 +297,6 @@ export const repsRouter = createTRPCRouter({
     .input(
         z.object({
             userId: z.string(),
-            startDate: z.date(),
-            endDate: z.date()
         }))
     .mutation(async ({input, ctx}) => {
         const user = await ctx.prisma.users.update({
@@ -310,16 +312,27 @@ export const repsRouter = createTRPCRouter({
                 repsAmount: 0
             }
         })
-
+        return user;
+    }),
+    
+    addSessionHistory: publicProcedure
+    .input(
+        z.object({
+            userId: z.string(),
+            startDate: z.date(),
+            endDate: z.date()
+        }))
+    .mutation(async ({input, ctx}) => {
         const session = await ctx.prisma.activitiesSession.create({
             data: {
-                userId: ctx.auth?.userId ?? input.userId,
+                userId: input.userId,
                 startDate: input.startDate,
                 endDate: input.endDate
-
             }
         })
-        return user;
-    })
+        return session;
+    }
+    ),
+
 });
 

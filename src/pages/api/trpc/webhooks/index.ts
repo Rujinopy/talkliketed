@@ -39,7 +39,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     let event: Stripe.Event
 
     try {
-      event = stripe.webhooks.constructEvent(buf.toString(), sig, process.env.STRIPE_WEBHOOK_SECRE || "")
+      event = stripe.webhooks.constructEvent(buf.toString(), sig, process.env.STRIPE_WEBHOOK_SECRET || "")
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
@@ -56,23 +56,38 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     // Cast event data to Stripe object.
     if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent
-      
-      console.log(paymentIntent.metadata.userId)
+ 
       console.log(`💰 PaymentIntent status: ${paymentIntent.status}`)
     } else if (event.type === 'payment_intent.payment_failed') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent
         `❌ Payment failed: ${paymentIntent.last_payment_error?.message ?? 'unknown error'}`
       
     } else if (event.type === 'charge.succeeded') {
-
+      console.log
       const charge = event.data.object as Stripe.Charge
-
+      const intent = await stripe.paymentIntents.retrieve(charge.payment_intent as string)
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      await caller.reps.changeUserToSubs({
+        userId: paymentIntent.metadata.userId ?? "",
+        startDate: new Date(paymentIntent.metadata.startDate ?? ""),
+        endDate: new Date(paymentIntent.metadata.endDate ?? ""),
+        pledge: paymentIntent.metadata.pledge ?? "0",
+        repsAmount: paymentIntent.metadata.repsAmount ?? "0",
+        payment_intent: charge.payment_intent as string
+      })
+      console.log(paymentIntent)
 
       console.log(`💵 Charge id: ${charge.id}`)
     }
     else if (event.type === 'charge.refunded') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent
+      const charge = event.data.object as Stripe.Charge
       await caller.reps.changeSubsToUser({userId: paymentIntent.metadata.userId ?? ""})
+      await caller.reps.addSessionHistory({
+        userId: paymentIntent.metadata.userId ?? "",
+        startDate: new Date(paymentIntent.metadata.startDate ?? ""),
+        endDate: new Date(paymentIntent.metadata.endDate ?? ""),
+      })
     }
 
     else {

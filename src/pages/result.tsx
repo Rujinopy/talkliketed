@@ -9,6 +9,8 @@ type ChangeRoleToSubsArgs = {
   userId: string;
   pledge: number;
   payment_intent: string;
+  startDate: Date;
+  endDate: Date;
 };
 type PaymentData = {
   metadata: {
@@ -42,21 +44,22 @@ const Result: NextPage = () => {
     (url: string) => fetch(url).then((res) => res.json())
   );
 
-  const changeRoleToSubs =
-    api.reps.changeUserToSubs.useMutation<ChangeRoleToSubsArgs>();
+  // const changeRoleToSubs =
+  //   api.reps.changeUserToSubs.useMutation<ChangeRoleToSubsArgs>();
 
   //after fetch data, update the database
-  useEffect(() => {
-    if (data) {
-      changeRoleToSubs.mutate({
-        userId: data.metadata.userId,
-        pledge: data.payment_intent.amount / 100,
-        payment_intent: data.payment_intent.id,
-        startDate: startDate,
-        endDate: endDate,
-      });
-    }
-  }, [data]);
+  // useEffect(() => {
+  //   if (data) {
+  //     changeRoleToSubs.mutate({
+  //       userId: data.metadata.userId,
+  //       pledge: data.payment_intent.amount / 100,
+  //       payment_intent: data.payment_intent.id,
+  //       startDate: new Date(startDate),
+  //       endDate: new Date(endDate),
+  //       repsAmount: 0,
+  //     });
+  //   }
+  // }, [data]);
 
   return (
     <div className="flex h-screen flex-col items-center justify-center bg-[#a388ee]">

@@ -41,17 +41,17 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
 
   const progress = api.reps.getAllRepsForUser.useQuery(
     {
-      startDate: sessionData.data?.startDate ?? new Date(),
-      endDate: sessionData.data?.endDate ?? new Date(),
+      startDate: sessionData.data?.startDate!,
+      endDate: sessionData.data?.endDate! ,
     },
     {
-      enabled: isSignedIn === true,
+      enabled: role === "SUBS" && isSignedIn === true,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
     }
   );
-
-  if (isSignedIn === false || !data) {
+  
+  if (isSignedIn === false) {
     return (
       <>
         <NavbarWithoutCam style="z-50" />
@@ -85,7 +85,10 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           <h1 className="text-stroke-3 text-[3rem] font-semibold text-[#fdfd96] dark:text-white md:text-[3rem]">
             {data?.firstName}
           </h1>
+          <div className="flex flex-col ">
+          <h2 className="font-mono py-2">status: </h2>
           <StatusBar role={role ?? ""} />
+          </div>
         </div>
       </div>
       <div className="flex w-screen flex-col border-b-2 border-black bg-[#87ceeb] md:h-[75vh] md:flex-row">
@@ -93,10 +96,10 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           aria-label="promises"
           className="mx-auto w-full border-black md:w-1/2 md:border-r-2"
         >
-          <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold">
+          <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold bg-white border-b-2 border-black">
             Sessions
           </h1>
-          <div className="flex h-[60vh] items-center justify-center text-left text-sm text-gray-500 dark:text-gray-400 md:mx-auto">
+          <div className="flex h-[60vh] items-center justify-center text-left text-sm text-gray-500 dark:text-gray-400 md:mx-auto mt-5">
             <div className="flex w-96 bg-white md:rounded-lg md:shadow-neo">
               <div
                 aria-label="titles"
@@ -146,7 +149,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           aria-label="progress"
           className="mx-auto h-screen w-full border-black md:h-[60vh] md:w-1/2 "
         >
-          <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold">
+          <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold border-y-2 md:border-t-0 md:border-b-2 border-black bg-white">
             Current Progress
           </h1>
 
@@ -169,8 +172,8 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           </div>
         </div>
       </div>
-      <div className="w-screen">
-        <h1 className="py-5 text-center font-mono text-4xl">history</h1>
+      <div className="w-screen h-screen">
+        <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold bg-white border-b-2 border-black">history</h1>
       </div>
     </div>
   );

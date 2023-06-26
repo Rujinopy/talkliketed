@@ -203,12 +203,12 @@ export const Home: NextPage = (props) => {
   
   return (
     <div className="flex h-auto w-screen flex-col justify-center">
-      <button
+      {/* <button
         className="text-stroke-3 font-mono text-7xl font-bold text-red-400"
         onClick={() => updateReps((prev) => prev + 1)}
       >
         test
-      </button>
+      </button> */}
       <section className="border-b border-black">
         <Navbar onStateChanged={handleChecked} />
       </section>

@@ -43,10 +43,15 @@ const CheckoutForm = (props: Form) => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
       e.preventDefault()
       setLoading(true)
+      console.log('handleSubmit')
 
       //create checkout session
       const response = await fetchPostJSON('/api/trpc/checkout_session', {
         amount: input.customDonation,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        repsAmount: props.RepsPerDay,
+        userId: props.Id ?? "",
       })
 
       const stripe = await getStripe()
@@ -81,7 +86,7 @@ const CheckoutForm = (props: Form) => {
           userId: props.Id ?? "",
           startDate: startDate,
           endDate: endDate,
-          repPerDay: props.RepsPerDay,
+          repsAmount: props.RepsPerDay,
         }).catch((err) => {
           console.error(err);
         });

@@ -16,35 +16,43 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    
     const { userId } = getAuth(req)
+    const sD= req.body.startDate
+    const eD =req.body.endDate
     const ctx = createTRPCContext({ req, res });
     const caller = appRouter.createCaller(ctx);
     
     const data = await caller.reps.checkIfUserExists({ userId: userId ?? "" })
-
-    if(data){
-    const startDate = data.startDate ?? new Date()
-    const endDate = data.endDate ?? new Date()
-    const actualSessions = await caller.reps.getAllReps({
-        startDate: startDate,
-        endDate: endDate
-    })
    
+    
+    if(data === null){
+        res.status(404).json({ statusCode: 404, message: "User not found" })
+    }
+    
+    if(data != null) {
+        const startDate = data?.startDate ?? sD
+        const endDate = data?.endDate ?? eD
+        const actualSessions = await caller.reps.getAllReps({
+            startDate: startDate ?? new Date(),
+            endDate: endDate ?? new Date(),
+        })
+        
     const payment_intent = data.payment_intent
     const pledge = data.pledge ?? 0
     const repsGoal = data.repsAmount ?? 0
     const refundAmount = calculatedRefundAmount(pledge, actualSessions, startDate, endDate, repsGoal)
-
     if (req.method === 'POST') {
-
         try { 
             const refundSession = await stripe.refunds.create({
                 payment_intent: payment_intent ?? "",
-                amount: refundAmount * 100
+                amount: refundAmount * 100,
+                metadata: {
+                    startDate: startDate.toISOString(),
+                    endDate: endDate.toISOString(),
+                }
             });
-
             res.status(200).json(refundSession)
+            console.log(actualSessions)
         } catch (err) {
             const errorMessage =
                 err instanceof Error ? err.message : 'Internal server error'
@@ -64,19 +72,17 @@ export const calculatedRefundAmount = (pledge: number, pushupSessions: Array<{ c
     let incompletedDays = 0
     const totalDays = daysDifference(startDate, endDate)
         // console.log("days difference" + totalDays)
-    if (pushupSessions && pushupSessions.length > 0) {
-        for (let i = 0; i < pushupSessions.length; i++) {
-            
+        for (let i = 0; i < totalDays; i++) {
             if (((pushupSessions[i]?.count ?? 0 ) < repsGoal)|| pushupSessions[i]?.count === null) {
                 incompletedDays++;
             }
         }
-
+        console.log(incompletedDays)
+        console.log(totalDays)
+        console.log(pledge)
+        console.log(pushupSessions)
+        
         return pledge - (incompletedDays * pledge / totalDays)
-    }
-
-    return pledge
-
 }
 
 
