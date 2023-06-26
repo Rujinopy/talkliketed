@@ -17,73 +17,66 @@ export default async function handler(
     res: NextApiResponse
 ) {
     const { userId } = getAuth(req)
-    const sD= req.body.startDate
-    const eD =req.body.endDate
+    // const { startDate, endDate, pledge, repsGoal, payment_intent } = req.body
     const ctx = createTRPCContext({ req, res });
     const caller = appRouter.createCaller(ctx);
-    
     const data = await caller.reps.checkIfUserExists({ userId: userId ?? "" })
-   
-    
-    if(data === null){
-        res.status(404).json({ statusCode: 404, message: "User not found" })
-    }
-    
-    if(data != null) {
-        const startDate = data?.startDate ?? sD
-        const endDate = data?.endDate ?? eD
-        const actualSessions = await caller.reps.getAllReps({
-            startDate: startDate ?? new Date(),
-            endDate: endDate ?? new Date(),
-        })
+    if (data) {
+        const { startDate, endDate, pledge, repsAmount, payment_intent } = data
         
-    const payment_intent = data.payment_intent
-    const pledge = data.pledge ?? 0
-    const repsGoal = data.repsAmount ?? 0
-    const refundAmount = calculatedRefundAmount(pledge, actualSessions, startDate, endDate, repsGoal)
-    if (req.method === 'POST') {
-        try { 
-            const refundSession = await stripe.refunds.create({
-                payment_intent: payment_intent ?? "",
-                amount: refundAmount * 100,
-                metadata: {
-                    startDate: startDate.toISOString(),
-                    endDate: endDate.toISOString(),
-                }
-            });
-            res.status(200).json(refundSession)
-            console.log(actualSessions)
-        } catch (err) {
-            const errorMessage =
-                err instanceof Error ? err.message : 'Internal server error'
-            res.status(500).json({ statusCode: 500, message: errorMessage })
-        }
-    }
-    else {
-        res.setHeader('Allow', 'POST')
-        res.status(405).end('Method Not Allowed')
-    
-}
-}
-}
+        const userAllExercises = await caller.reps.getAllReps({
+            startDate: new Date(startDate ?? ""),
+            endDate: new Date(endDate ?? ""),
+        })
 
-export const calculatedRefundAmount = (pledge: number, pushupSessions: Array<{ count: number | null }>
-    , startDate: Date, endDate: Date, repsGoal: number) => {
-    let incompletedDays = 0
-    const totalDays = daysDifference(startDate, endDate) + 1    
-        // console.log("days difference" + totalDays)
-        for (let i = 0; i < totalDays; i++) {
-            if (((pushupSessions[i]?.count ?? 0 ) < repsGoal)|| pushupSessions[i]?.count === null) {
-                incompletedDays++;
+        //refund amount is the difference between the pledge and the amount of reps the user has done
+        const refundAmount = () => {
+            let completedDay = 0
+            const days = daysDifference(new Date(startDate!), new Date(endDate!)) + 1
+            if (pledge !== null && pledge !== undefined) {
+                const pledgePerDay = pledge / days;
+
+                userAllExercises.forEach((exercise) => {
+                    if (exercise.count) {
+                        completedDay += 1;
+                    }
+                });
+                return pledgePerDay * completedDay
+            }
+
+
+        }
+
+        if (req.method === 'POST') {
+            console.log("hey")
+            try {
+                if(refundAmount() === 0){
+                    res.status(200).json({
+                        id: "noRefund",
+                        amount: 0,
+                    })
+                }
+                const refundSession = await stripe.refunds.create({
+                    payment_intent: payment_intent!,
+                    amount: refundAmount(),
+                    metadata: {
+                        startDate: startDate!.toISOString(),
+                        endDate: endDate!.toISOString(),
+                    }
+                });
+                res.status(200).json(refundSession)
+
+            } catch (err) {
+                const errorMessage =
+                    err instanceof Error ? err.message : 'Internal server error'
+                res.status(500).json({ statusCode: 500, message: errorMessage })
             }
         }
-        console.log(incompletedDays)
-        console.log(totalDays)
-        console.log(pledge)
-        console.log(pushupSessions)
-        
-        return pledge - (incompletedDays * pledge / totalDays)
+        else {
+            res.setHeader('Allow', 'POST')
+            res.status(405).end('Method Not Allowed')
+
+        }
+    }
 }
-
-
 

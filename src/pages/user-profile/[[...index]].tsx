@@ -30,6 +30,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   );
 
   const role = useMemo(() => sessionData.data?.Role, [sessionData.data?.Role]);
+  const pledge = sessionData.data?.pledge;
   const endDate = useMemo(
     () => sessionData.data?.endDate,
     [sessionData.data?.endDate]
@@ -135,7 +136,11 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
                 <div className="flex h-[15vh] flex-col items-center justify-center border border-black bg-[#fdfd96]">
                   <h1 className="p-1">{sessionData.data?.pledge} USD</h1>
                   {role && endDate ? (
-                    <RefundButton startDate={startDate ?? new Date()} endDate={endDate} role={role} id={user?.id ?? ""}/>
+                    <RefundButton startDate={startDate ?? new Date()} endDate={endDate} 
+                    role={role} 
+                    id={user?.id ?? ""} 
+                    pledge={sessionData.data?.pledge ?? 0} 
+                    payment_intent={sessionData.data?.payment_intent ?? ""}/>
                   ) : null}
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-b-2 border-black bg-[#fdfd96] md:rounded-br-lg">

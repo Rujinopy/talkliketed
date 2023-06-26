@@ -120,7 +120,7 @@ export default function Subs() {
   return (
     <div
       className="flex min-h-screen 
-    w-screen flex-col justify-center bg-yellow-200"
+    w-screen flex-col justify-center bg-[#ffb2ef]"
     >
       <Toaster
         toastOptions={{
@@ -131,7 +131,7 @@ export default function Subs() {
       <Title title={"set up your push-ups challenge"} />
 
       <SignedIn>
-        <div className="flex h-screen flex-col items-center justify-center">
+        <div className="flex h-screen flex-col relative items-center md:justify-center pt-16">
           {checkoutForm ? (
             <ArrowBigLeft
               color="white"
@@ -174,7 +174,7 @@ export default function Subs() {
 
                 <p
                   onClick={checkOut}
-                  className="mx-auto mt-8 w-2/3 rounded-lg border-2 border-black bg-[#fdfd96]  p-2 text-center font-mono text-xl shadow-neo hover:cursor-pointer hover:bg-[#ffdb58] md:w-1/3"
+                  className="mx-auto mt-8 w-2/3 rounded-lg border-2 border-black bg-[#fdfd96]  p-2 text-center font-mono text-2xl shadow-neo hover:cursor-pointer hover:bg-[#ffdb58] md:w-1/3"
                 >
                   Confirm deadline and reps
                 </p>

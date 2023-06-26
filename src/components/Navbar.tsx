@@ -46,7 +46,7 @@ export default function Navbar({onStateChanged}: { onStateChanged: (boolean: boo
               Sign In
             </Link>
           ) : (
-            <div className="my-6 scale-150 px-5 ml-auto md:mr-10">
+            <div className="my-6 px-5 md:scale-150 md:mr-10 ml-auto">
               <UserButton afterSignOutUrl="/"
               userProfileMode="navigation"
               userProfileUrl={

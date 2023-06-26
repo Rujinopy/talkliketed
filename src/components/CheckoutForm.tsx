@@ -114,8 +114,8 @@ const CheckoutForm = (props: Form) => {
       >
         Pledge {formatAmountForDisplay(input.customDonation, config.CURRENCY)}
       </button>
-      <Link href="/">
-        <button onClick={updateDatesToDb} className="px-12 md:mt-5 py-2 shadow-neo rounded-lg font-mono text-2xl
+      <Link href="/" className='mt-5'>
+        <button onClick={updateDatesToDb} className="px-10 md:mt-5 py-2 shadow-neo rounded-lg font-mono text-2xl
           hover:cursor-pointer bg-[#fdfd96] hover:bg-[#ffdb58] border-2 border-black">Go without pledge</button>
       </Link>
     </form>
