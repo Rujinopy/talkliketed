@@ -70,7 +70,7 @@ export default async function handler(
 export const calculatedRefundAmount = (pledge: number, pushupSessions: Array<{ count: number | null }>
     , startDate: Date, endDate: Date, repsGoal: number) => {
     let incompletedDays = 0
-    const totalDays = daysDifference(startDate, endDate)
+    const totalDays = daysDifference(startDate, endDate) + 1    
         // console.log("days difference" + totalDays)
         for (let i = 0; i < totalDays; i++) {
             if (((pushupSessions[i]?.count ?? 0 ) < repsGoal)|| pushupSessions[i]?.count === null) {
