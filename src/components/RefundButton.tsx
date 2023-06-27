@@ -128,7 +128,7 @@ const RefundButton = (props: RefundData) => {
             : SetModalOpen(!isModalOpen)
         }
       >
-        claim pledge &#128181;
+        end session/claim pledge &#128181;
       </button>
     </div>
   );

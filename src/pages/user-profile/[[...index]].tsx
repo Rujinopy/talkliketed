@@ -8,11 +8,32 @@ import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import StatusBar from "~/components/StatusBar";
 import RefundModal from "~/components/RefundModal";
+import Histories from "~/components/Histories";
+import { group } from "console";
+
 const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   const { isSignedIn, user } = useUser();
   const [modalOpen, setModalOpen] = useState(false);
- 
-  const { data } = api.profiles.getProfile.useQuery(undefined, {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+    status,
+  } = api.reps.infiniteSessionHistory.useInfiniteQuery(
+    {
+      userId: user?.id ?? "",
+      limit: 1,
+    },
+    {
+      enabled: isSignedIn === true,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
+  const profile = api.profiles.getProfile.useQuery(undefined, {
     enabled: isSignedIn === true,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -21,7 +42,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
 
   const sessionData = api.reps.checkIfUserExists.useQuery(
     {
-      userId: data?.id ?? "",
+      userId: "",
     },
     {
       enabled: isSignedIn === true,
@@ -30,7 +51,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   );
 
   const role = useMemo(() => sessionData.data?.Role, [sessionData.data?.Role]);
-  const pledge = sessionData.data?.pledge;
+  // const pledge = sessionData.data?.pledge;
   const endDate = useMemo(
     () => sessionData.data?.endDate,
     [sessionData.data?.endDate]
@@ -43,7 +64,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   const progress = api.reps.getAllRepsForUser.useQuery(
     {
       startDate: sessionData.data?.startDate!,
-      endDate: sessionData.data?.endDate! ,
+      endDate: sessionData.data?.endDate!,
     },
     {
       enabled: role === "SUBS" && isSignedIn === true,
@@ -51,7 +72,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
       refetchOnMount: false,
     }
   );
-  
+
   if (isSignedIn === false) {
     return (
       <>
@@ -73,34 +94,20 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
       <RefundModal open={modalOpen} toggleModal={toggleModal} />
       <NavbarWithoutCam style="sticky top-0 z-50" />
       <Title title={"Dashboard"} />
-      {/* <MenuBar /> */}
-      <div className="flex h-[40vh] flex-col items-center justify-center border-b-2 border-black bg-[#ffb2ef] md:h-[25vh] md:flex-row md:justify-start md:px-44">
-        <Image
-          className="mt-10 rounded-full border-2 border-black md:mr-10 md:mt-0"
-          src={data ? data.profileImageUrl : ""}
-          alt=""
-          width={80}
-          height={80}
-        />
-        <div className="flex flex-col items-center justify-center md:items-start md:justify-normal">
-          <h1 className="text-stroke-3 text-[3rem] font-semibold text-[#fdfd96] dark:text-white md:text-[3rem]">
-            {data?.firstName}
-          </h1>
-          <div className="flex flex-col ">
-          <h2 className="font-mono py-2">status: </h2>
-          <StatusBar role={role ?? ""} />
-          </div>
-        </div>
-      </div>
+      <NameAndStatus
+        role={role ?? ""}
+        firstName={profile.data?.firstName ?? "User"}
+        imageURL={profile.data ? profile.data.profileImageUrl : ""}
+      />
       <div className="flex w-screen flex-col border-b-2 border-black bg-[#87ceeb] md:h-[75vh] md:flex-row">
         <div
           aria-label="promises"
           className="mx-auto w-full border-black md:w-1/2 md:border-r-2"
         >
-          <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold bg-white border-b-2 border-black">
+          <h1 className="mx-auto border-b-2 border-black bg-white py-3 text-center font-mono text-4xl font-bold">
             Sessions
           </h1>
-          <div className="flex h-[60vh] items-center justify-center text-left text-sm text-gray-500 dark:text-gray-400 md:mx-auto mt-5">
+          <div className="mt-5 flex h-[60vh] items-center justify-center text-left text-sm text-gray-500 dark:text-gray-400 md:mx-auto">
             <div className="flex w-96 bg-white md:rounded-lg md:shadow-neo">
               <div
                 aria-label="titles"
@@ -136,11 +143,14 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
                 <div className="flex h-[15vh] flex-col items-center justify-center border border-black bg-[#fdfd96]">
                   <h1 className="p-1">{sessionData.data?.pledge} USD</h1>
                   {role && endDate ? (
-                    <RefundButton startDate={startDate ?? new Date()} endDate={endDate} 
-                    role={role} 
-                    id={user?.id ?? ""} 
-                    pledge={sessionData.data?.pledge ?? 0} 
-                    payment_intent={sessionData.data?.payment_intent ?? ""}/>
+                    <RefundButton
+                      startDate={startDate ?? new Date()}
+                      endDate={endDate}
+                      role={role}
+                      id={user?.id ?? ""}
+                      pledge={sessionData.data?.pledge ?? 0}
+                      payment_intent={sessionData.data?.payment_intent ?? ""}
+                    />
                   ) : null}
                 </div>
                 <div className="flex h-[15vh] items-center justify-center border border-b-2 border-black bg-[#fdfd96] md:rounded-br-lg">
@@ -154,10 +164,9 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           aria-label="progress"
           className="mx-auto h-screen w-full border-black md:h-[60vh] md:w-1/2 "
         >
-          <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold border-y-2 md:border-t-0 md:border-b-2 border-black bg-white">
+          <h1 className="mx-auto border-y-2 border-black bg-white py-3 text-center font-mono text-4xl font-bold md:border-b-2 md:border-t-0">
             Current Progress
           </h1>
-
           <div className="mx-auto flex w-full justify-between space-x-14 rounded-2xl border-black px-5 py-2 font-mono md:w-2/3">
             <h1 className="font-mono text-2xl font-bold">No.</h1>
             <h1 className="font-mono text-2xl font-bold">Date</h1>
@@ -177,11 +186,81 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           </div>
         </div>
       </div>
-      <div className="w-screen h-screen">
-        <h1 className="mx-auto py-3 text-center font-mono text-4xl font-bold bg-white border-b-2 border-black">history</h1>
+      <div className="h-screen w-screen">
+        <h1 className="mx-auto border-b-2 border-black bg-white py-3 text-center font-mono text-4xl font-bold">
+          history
+        </h1>
+        <div>
+          <div className="flex w-full divide-x-2 divide-black border-b-2 border-black bg-white font-bold md:text-2xl">
+            <div className="w-1/12">
+              <h1 className="pl-1 text-center font-mono ">No.</h1>
+            </div>
+            <div className="w-1/4">
+              <h1 className="pl-1 font-mono ">Start-End</h1>
+            </div>
+            <div className="w-1/6 md:w-1/12">
+              <h1 className="pl-2 font-mono ">Status</h1>
+            </div>
+            <div className="w-1/6 md:w-1/12">
+              <h1 className="pl-2 font-mono ">Pledge</h1>
+            </div>
+            <div className="w-1/12">
+              <h1 className="pl-3 font-mono ">Activity</h1>
+            </div>
+          </div>
+          {data?.pages.map((group, i) =>
+            group.session.map((session, id) => (
+              <Histories session={session} id={i} />
+            ))
+          )}
+        </div>
+        <div className="flex w-full justify-center pt-5">
+          <button
+            onClick={() => fetchNextPage()}
+            disabled={!hasNextPage || isFetchingNextPage}
+            className="hover:cursor-pointer w-48 border-2 rounded-md border-black px-3 py-2 text-center font-mono text-xl transition delay-100 hover:translate-y-2 hover:bg-[#fdfd96] hover:shadow-neo"
+          >
+            {isFetchingNextPage
+              ? "Loading more..."
+              : hasNextPage
+              ? "Load More"
+              : "Nothing more to load"}
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
 export default UserProfile;
+
+export function NameAndStatus({
+  role,
+  firstName,
+  imageURL,
+}: {
+  role: string;
+  firstName: string;
+  imageURL: string;
+}) {
+  return (
+    <div className="flex h-[40vh] flex-col items-center justify-center border-b-2 border-black bg-[#ffb2ef] md:h-[25vh] md:flex-row md:justify-start md:px-44">
+      <Image
+        className="mt-10 rounded-full border-2 border-black md:mr-10 md:mt-0"
+        src={imageURL}
+        alt=""
+        width={80}
+        height={80}
+      />
+      <div className="flex flex-col items-center justify-center md:items-start md:justify-normal">
+        <h1 className="text-stroke-3 text-[3rem] font-semibold text-[#fdfd96] dark:text-white md:text-[3rem]">
+          {firstName}
+        </h1>
+        <div className="flex flex-col ">
+          <h2 className="py-2 font-mono">status: </h2>
+          <StatusBar role={role ?? ""} />
+        </div>
+      </div>
+    </div>
+  );
+}

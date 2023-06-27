@@ -81,7 +81,6 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     else if (event.type === 'charge.refunded') {
       const paymentIntent = event.data.object as Stripe.PaymentIntent
-      const charge = event.data.object as Stripe.Charge
       await caller.reps.changeSubsToUser({userId: paymentIntent.metadata.userId ?? ""})
       await caller.reps.addSessionHistory({
         userId: paymentIntent.metadata.userId ?? "",

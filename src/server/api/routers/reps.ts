@@ -138,7 +138,10 @@ export const repsRouter = createTRPCRouter({
         .query(async ({ input, ctx }) => {
             const rep = await ctx.prisma.users.findFirst({
                 where: {
-                    userId: input.userId,
+                    userId: ctx.auth?.userId ?? input.userId,
+                },
+                include: {
+                    session: true,
                 },
             });
             return rep;
@@ -334,5 +337,37 @@ export const repsRouter = createTRPCRouter({
     }
     ),
 
+    infiniteSessionHistory: publicProcedure
+    .input(
+        z.object({
+            userId: z.string(),
+            limit: z.number(),
+            cursor: z.string().nullish()
+        }))
+    .query(async ({input, ctx}) => {
+        const session = await ctx.prisma.activitiesSession.findMany({
+            where: {
+                userId: input.userId,   
+            },
+            cursor: input.cursor ? {id: input.cursor} : undefined,
+            take: input.limit + 1,
+            orderBy: {
+                startDate: "asc"
+            }
+            
+        })
+        let nextCursor: typeof input.cursor | undefined = undefined
+        if (session.length > input.limit) {
+            const nextItem = session.pop()
+            nextCursor = nextItem?.id
+        } 
+        
+
+        return {
+            session,
+            nextCursor
+        }
+    }
+    ),
 });
 

@@ -42,7 +42,7 @@ model Users {
     name      String?
     userId    String 
     Role      Role     @default(USER)
-    session   ActivitiesSession[]
+    session   ActivitiesSession[] 
     pledge    Int?      @default(0)
     repsAmount Int?     @default(0)
     payment_intent String? 
@@ -51,11 +51,13 @@ model Users {
 }
 
 model ActivitiesSession {
-  id Int @id @default(autoincrement())
+  id String   @id @default(cuid())
   createdAt DateTime @default(now())
-  startDate DateTime?
+  startDate DateTime? 
   endDate DateTime?
   userId String
+  pledge Int? @default(0)
+  status Status @default(NONE)
   user Users @relation(fields: [userId], references: [userId])
 
   @@index([userId])
@@ -66,4 +68,10 @@ enum Role {
   MEM
   SUBS
   ADMIN
+}
+
+enum Status {
+  FULL
+  PARTIAL
+  NONE
 }
