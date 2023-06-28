@@ -67,8 +67,8 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
 
   const progress = api.reps.getAllRepsForUser.useQuery(
     {
-      startDate: sessionData.data!.startDate ?? new Date(),
-      endDate: sessionData.data!.endDate ?? new Date(),
+      startDate: startDate ?? new Date(),
+      endDate: endDate ?? new Date(),
     },
     {
       enabled: role === "SUBS" && isSignedIn === true,
