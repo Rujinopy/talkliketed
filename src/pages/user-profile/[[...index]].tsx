@@ -63,14 +63,12 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
     () => sessionData.data?.startDate,
     [sessionData.data?.startDate]
   );
-  if(sessionData.data === undefined || sessionData.data === null) {
-    throw new Error("NO USER FOUND");
-  }
+
 
   const progress = api.reps.getAllRepsForUser.useQuery(
     {
-      startDate: sessionData.data.startDate ?? new Date(),
-      endDate: sessionData.data.endDate ?? new Date(),
+      startDate: sessionData.data!.startDate ?? new Date(),
+      endDate: sessionData.data!.endDate ?? new Date(),
     },
     {
       enabled: role === "SUBS" && isSignedIn === true,
