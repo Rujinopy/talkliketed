@@ -16,8 +16,8 @@ const ratelimit = new Ratelimit({
     redis: Redis.fromEnv(),
     limiter: Ratelimit.slidingWindow(5, "30 s"),
     analytics: true,
-  });
-  
+});
+
 
 export const repsRouter = createTRPCRouter({
     createRepForUser: publicProcedure
@@ -31,7 +31,7 @@ export const repsRouter = createTRPCRouter({
         .mutation(async ({ input, ctx }) => {
 
             const { success } = await ratelimit.limit(ctx.auth?.userId ?? input.userId);
-            if(!success) throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+            if (!success) throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
 
             //create only when user's role are "SUBS" or "MEM"
             const role = await ctx.prisma.users.findFirst({
@@ -133,7 +133,7 @@ export const repsRouter = createTRPCRouter({
         .mutation(async ({ input, ctx }) => {
 
             const { success } = await ratelimit.limit(ctx.auth?.userId ?? input.userId);
-            if(!success) throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+            if (!success) throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
             const rep = await ctx.prisma.users.update({
                 where: {
                     userId: ctx.auth?.userId ?? "",
@@ -311,7 +311,7 @@ export const repsRouter = createTRPCRouter({
                     date: "asc",
                 },
             });
-            
+
             return reps;
         }
         ),
@@ -423,8 +423,9 @@ export const repsRouter = createTRPCRouter({
                     endDate: true,
                 }
             });
-
-            const totalday = daysDifference(user?.startDate!, user?.endDate!) + 1;
+            if (!user) throw new Error("User not found")
+            if (!user.startDate || !user.endDate) throw new Error("startdate or enddate not found")
+            const totalday = daysDifference(user.startDate, user.endDate) + 1;
             //check each day if user did enough reps equal or more than repsAmount
             let success = "NONE"
             let count = 0
@@ -448,7 +449,7 @@ export const repsRouter = createTRPCRouter({
                 for (let i = 0; i < user.pushups.length; i++) {
                     console.log(totalday)
                     //count completed days
-                    if (user.pushups[i]?.count! ===  user.repsAmount! || user.pushups[i]?.count! > user.repsAmount!) {
+                    if (user.pushups[i]!.count! === user.repsAmount! || user.pushups[i]!.count! > user.repsAmount!) {
                         count++;
                     }
                 }
@@ -457,16 +458,16 @@ export const repsRouter = createTRPCRouter({
                     success = "PARTIAL";
                 }
 
-                if( count === totalday) {
+                if (count === totalday) {
                     success = "FULL"
                 }
             }
 
-            else if(!user ) {
+            else if (!user) {
                 success = "UNDEFINED"
             }
             //if user is not found, return false
-            
+
             return {
                 success,
                 count,

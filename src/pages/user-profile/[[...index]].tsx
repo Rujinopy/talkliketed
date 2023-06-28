@@ -63,11 +63,14 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
     () => sessionData.data?.startDate,
     [sessionData.data?.startDate]
   );
+  if(sessionData.data === undefined || sessionData.data === null) {
+    throw new Error("NO USER FOUND");
+  }
 
   const progress = api.reps.getAllRepsForUser.useQuery(
     {
-      startDate: sessionData.data?.startDate!,
-      endDate: sessionData.data?.endDate!,
+      startDate: sessionData.data.startDate ?? new Date(),
+      endDate: sessionData.data.endDate ?? new Date(),
     },
     {
       enabled: role === "SUBS" && isSignedIn === true,
@@ -222,13 +225,13 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           </div>
           {data?.pages.map((group, i) =>
             group.session.map((session, id) => (
-              <Histories session={session} id={id} />
+              <Histories key={id} session={session} id={id} />
             ))
           )}
         </div>
         <div className="flex w-full justify-center pt-5">
           <button
-            onClick={() => fetchNextPage()}
+            onClick={void fetchNextPage()}
             disabled={!hasNextPage || isFetchingNextPage}
             className="w-48 rounded-md border-2 border-black px-3 py-2 text-center font-mono text-xl transition delay-100 hover:translate-y-2 hover:cursor-pointer hover:bg-[#fdfd96] hover:shadow-neo"
           >

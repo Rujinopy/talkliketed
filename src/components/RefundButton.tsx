@@ -78,7 +78,7 @@ const RefundButton = (props: RefundData) => {
         if (response.status) {
           
           router
-            .push(`/refund/${response.id}`)
+            .push(`/refund/${response.id as string ?? ""}`)
             .catch((e) => {
               console.log(e);
             });
@@ -141,7 +141,7 @@ const RefundButton = (props: RefundData) => {
       <MakingSureModal
         open={isModalOpen}
         SetModalOpen={toggleModal}
-        isUserEnded={isUserEnded}
+        isUserEnded={() => isUserEnded}
         role={props.role}
       />
       <Toaster

@@ -7,7 +7,7 @@ const Result = () => {
   const router = useRouter();
   const { data } : {data: undefined | Stripe.Refund}= useSWR<Stripe.Refund>(
     router.query
-      ? `/api/trpc/refund/${router.query.id}`
+      ? `/api/trpc/refund/${router.query.id as string ?? ""}`
       : "",
     (url: string) => fetch(url).then((res) => res.json())
   );

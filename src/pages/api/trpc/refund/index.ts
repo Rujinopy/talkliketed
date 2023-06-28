@@ -81,19 +81,30 @@ export default async function handler(
 
         if (req.method === 'POST') {
             try {
-                if (refundAmount()?.amount === 0 || refundAmount()?.amount === undefined || refundAmount()?.amount === null) {
+                const refundAmountResult = refundAmount();
+                if(refundAmountResult === undefined || refundAmountResult === null) {
+                    throw Error("something went wrong. Maybe no pushups session was found.")
+                }
+                if (refundAmountResult.amount === 0 || refundAmountResult.amount === undefined || refundAmountResult.amount === null) {
                     res.status(200).json({
                         id: "NONE",
                         amount: 0,
                     })
                 }
+                if(payment_intent === null || payment_intent === undefined) {
+                    throw Error("something went wrong. Maybe no payment intent was found.")
+                }
+
+                if(startDate === null || startDate === undefined || endDate === null || endDate === undefined) {
+                    throw Error("something went wrong. Maybe no start or end date was found.")
+                }
                 const refundSession = await stripe.refunds.create({
-                    payment_intent: payment_intent!,
-                    amount: (refundAmount()?.amount! * 100) - (pledge! * 6 / 100),
+                    payment_intent: payment_intent,
+                    amount: (refundAmountResult.amount * 100) - (pledge! * 6 / 100),
                     metadata: {
-                        startDate: startDate!.toISOString(),
-                        endDate: endDate!.toISOString(),
-                        status: refundAmount()?.status as string,
+                        startDate: startDate.toISOString(),
+                        endDate: endDate.toISOString(),
+                        status: refundAmountResult.status,
                         pledge: pledge,
                     }
                 });
