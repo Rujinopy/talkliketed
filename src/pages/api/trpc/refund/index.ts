@@ -94,6 +94,7 @@ export default async function handler(
                         startDate: startDate!.toISOString(),
                         endDate: endDate!.toISOString(),
                         status: refundAmount()?.status as string,
+                        pledge: pledge,
                     }
                 });
                 res.status(200).json(refundSession)

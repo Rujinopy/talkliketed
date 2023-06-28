@@ -326,6 +326,7 @@ export const repsRouter = createTRPCRouter({
                 startDate: z.date(),
                 endDate: z.date(),
                 status: z.string(),
+                pledge: z.number(),
             }))
         .mutation(async ({ input, ctx }) => {
             const session = await ctx.prisma.activitiesSession.create({

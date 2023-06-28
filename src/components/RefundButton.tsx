@@ -76,7 +76,7 @@ const RefundButton = (props: RefundData) => {
           return;
         }
         if (response.status) {
-          setRefundResponse(response);
+          
           router
             .push(`/refund/${response.id}`)
             .catch((e) => {
@@ -104,6 +104,7 @@ const RefundButton = (props: RefundData) => {
             startDate: props.startDate,
             endDate: props.endDate,
             status: "NONE",
+            pledge: 0,
           });
         }
         if (data?.success === "FULL") {
@@ -112,6 +113,7 @@ const RefundButton = (props: RefundData) => {
             startDate: props.startDate,
             endDate: props.endDate,
             status: "FULL",
+            pledge: 0,
           });
         }
         if (data?.success === "PARTIAL") {
@@ -120,6 +122,7 @@ const RefundButton = (props: RefundData) => {
             startDate: props.startDate,
             endDate: props.endDate,
             status: "PARTIAL",
+            pledge: 0,
           });
         }
       }

@@ -3,16 +3,38 @@ import type { NextPage } from "next";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import useIntersection from "~/components/useIntersection";
 const Home: NextPage = (props) => {
-  //go to ref section
+  const sec2Ref = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLDivElement>(null);
+
+  const [isIntersecting, setIsIntersecting] = useState(false);
+
   const scrollToRef = () => {
     if (ref.current) {
       //to the top of the div
-      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      ref.current.scrollIntoView({ behavior: "smooth",block: "nearest" });
     }
   };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if(entry === undefined) return;
+        setIsIntersecting(entry.isIntersecting);
+      },
+      { rootMargin: "-100px"}
+    );
+    console.log(isIntersecting)
+    observer.observe(sec2Ref.current!);
+    return () => {
+      observer.disconnect();
+    }
+  }, [isIntersecting]);
+  
+
+  
 
   return (
     <>
@@ -68,8 +90,8 @@ const Home: NextPage = (props) => {
           </div>
         </main>
       </div>
-      <div className="flex h-[50vh] flex-col items-center justify-center border-black md:h-[70vh]">
-        <h1 className="block text-center font-mono text-xl leading-loose md:max-w-4xl md:text-3xl">
+      <div ref={sec2Ref}  className="flex h-[50vh] flex-col items-center justify-center border-black md:h-[70vh]">
+        <h1 className={`${isIntersecting === true ? "translate-y-0 transition delay-100" : "translate-y-56 opacity-0"}  block text-center font-mono text-xl leading-loose md:max-w-4xl md:text-3xl`}>
           Pledge money to overcome procrastination and achieve your goals 🎯{" "}
           <span className="mt-10 block"> or risk losing it !</span>
         </h1>
