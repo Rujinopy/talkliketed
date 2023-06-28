@@ -4,7 +4,7 @@ import Image from "next/image";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import useIntersection from "~/components/useIntersection";
+
 const Home: NextPage = (props) => {
   const sec2Ref = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLDivElement>(null);
