@@ -7,6 +7,7 @@ interface ActivitiesSession {
   id: number | string | null;
   userId: string | null;
   pledge: number | null;
+  status: string | null;
 }
 
 interface SessionAndId {
@@ -18,7 +19,7 @@ export const Histories = (props: SessionAndId) => {
   return (
     <div className="flex h-[10vh] w-full divide-x-2 divide-black border-b-2 border-black bg-[#fdfd96] md:text-2xl">
       <div className="flex w-1/12 items-center justify-center">
-        <h1 className="pl-1 text-center font-mono ">{props.id + 1}</h1>
+        <h1 className="pl-1 text-center font-mono ">-</h1>
       </div>
       <div className="flex w-1/4 items-center">
         <h1 className="pl-1 font-mono text-sm md:text-2xl">
@@ -31,14 +32,14 @@ export const Histories = (props: SessionAndId) => {
         </h1>
       </div>
       <div className="flex w-1/6 items-center md:w-1/12 ">
-        {props ? (
+        {props.session.status === "FULL" ? (
           <span className="h-full w-full bg-green-500 font-mono text-white"></span>
-        ) : (
-          <span className="text-red-500">Ended</span>
+        ) : (props.session.status === "NONE" ? 
+          <span className="h-full w-full bg-red-500"></span> : <span className="h-full w-full bg-yellow-500"></span>
         )}
       </div>
-      <div className="w-1/6 md:w-1/12">
-        <h1 className="pl-2 font-mono ">{props.session.pledge}</h1>
+      <div className="w-1/6 md:w-1/12 items-center flex">
+        <h1 className="pl-2 font-mono ">{props.session.pledge} <span className="text-sm font-bold">USD</span></h1>
       </div>
       <div className="flex w-1/12 items-center ">
         <h1 className="pl-3 font-mono">push-up</h1>

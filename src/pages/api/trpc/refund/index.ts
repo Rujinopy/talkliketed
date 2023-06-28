@@ -23,7 +23,7 @@ export default async function handler(
     const data = await caller.reps.checkIfUserExists({ userId: userId ?? "" })
     if (data) {
         const { startDate, endDate, pledge, repsAmount, payment_intent } = data
-        
+
         const userAllExercises = await caller.reps.getAllReps({
             startDate: new Date(startDate ?? ""),
             endDate: new Date(endDate ?? ""),
@@ -35,33 +35,65 @@ export default async function handler(
             const days = daysDifference(new Date(startDate!), new Date(endDate!)) + 1
             if (pledge !== null && pledge !== undefined) {
                 const pledgePerDay = pledge / days;
-
-                userAllExercises.forEach((exercise) => {
-                    if (exercise.count) {
+                if(userAllExercises.length === 0 || userAllExercises === undefined || userAllExercises === null){
+                    return {
+                        status: "NONE",
+                        amount: 0,
+                    }
+                }
+                
+             for (const exercise of userAllExercises)  {
+                    if (exercise.count === null || repsAmount === null) {
+                        return {
+                            status: "NONE",
+                            amount: 0,
+                        }
+                    }
+                    if (exercise.count > repsAmount || exercise.count === repsAmount) {
                         completedDay += 1;
                     }
-                });
-                return pledgePerDay * completedDay
+
+                }
+                if (completedDay === 0) {
+                    console.log("no")
+                    return {
+                        status: "NONE",
+                        amount: 0,
+                    }
+                }
+                if (completedDay === days) {
+                    return {
+                        status: "FULL",
+                        amount: pledgePerDay * completedDay,
+                    }
+                }
+                if (completedDay < days) {
+                    return {
+                        status: "PARTIAL",
+                        amount: pledgePerDay * completedDay,
+                    }
+                }
+
             }
 
 
         }
 
         if (req.method === 'POST') {
-            console.log("hey")
             try {
-                if(refundAmount() === 0){
+                if (refundAmount()?.amount === 0 || refundAmount()?.amount === undefined || refundAmount()?.amount === null) {
                     res.status(200).json({
-                        id: "noRefund",
+                        id: "NONE",
                         amount: 0,
                     })
                 }
                 const refundSession = await stripe.refunds.create({
                     payment_intent: payment_intent!,
-                    amount: refundAmount(),
+                    amount: (refundAmount()?.amount! * 100) - (pledge! * 6 / 100),
                     metadata: {
                         startDate: startDate!.toISOString(),
                         endDate: endDate!.toISOString(),
+                        status: refundAmount()?.status as string,
                     }
                 });
                 res.status(200).json(refundSession)

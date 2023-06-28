@@ -5,6 +5,7 @@ import { Toaster, toast } from "react-hot-toast";
 import { api } from "~/utils/api";
 import { useStore } from "store/stores";
 import { useRouter } from "next/router";
+import { type } from "os";
 interface RefundData {
   startDate: Date;
   endDate: Date;
@@ -34,6 +35,16 @@ const RefundButton = (props: RefundData) => {
   const setRefundResponse = useStore(
     (state: unknown) => (state as dateStore).setRefundResponse
   );
+
+  const isUserSuccess = api.reps.isUserSuccess.useQuery({
+    userId: props.id,
+    startDate: props.startDate,
+    endDate: props.endDate,
+  }
+  ,{
+    enabled: false,
+  });
+
   const today = new Date();
   const [isModalOpen, SetModalOpen] = useState(false);
   const router = useRouter();
@@ -52,7 +63,7 @@ const RefundButton = (props: RefundData) => {
         return;
       }
 
-      if (response.id === "noRefund") {
+      if (response.id === "NONE") {
         changeRoleToUser.mutate({
           userId: props.id,
         });
@@ -67,7 +78,7 @@ const RefundButton = (props: RefundData) => {
         if (response.status) {
           setRefundResponse(response);
           router
-            .push(`/refund/${response.id ? response.id : "noRefund"}`)
+            .push(`/refund/${response.id}`)
             .catch((e) => {
               console.log(e);
             });
@@ -75,9 +86,6 @@ const RefundButton = (props: RefundData) => {
       }
     }
   };
-
-
-
 
   const isUserEnded = async (): Promise<void> => {
     if (today > props.endDate || today === props.endDate) {
@@ -89,11 +97,31 @@ const RefundButton = (props: RefundData) => {
         changeRoleToUser.mutate({
           userId: props.id,
         });
-        addSessionToDB.mutate({
-          userId: props.id,
-          startDate: props.startDate,
-          endDate: props.endDate,
-        });
+        const {data} = await isUserSuccess.refetch();
+        if (data?.success === "NONE") {
+          addSessionToDB.mutate({
+            userId: props.id,
+            startDate: props.startDate,
+            endDate: props.endDate,
+            status: "NONE",
+          });
+        }
+        if (data?.success === "FULL") {
+          addSessionToDB.mutate({
+            userId: props.id,
+            startDate: props.startDate,
+            endDate: props.endDate,
+            status: "FULL",
+          });
+        }
+        if (data?.success === "PARTIAL") {
+          addSessionToDB.mutate({
+            userId: props.id,
+            startDate: props.startDate,
+            endDate: props.endDate,
+            status: "PARTIAL",
+          });
+        }
       }
     } else {
       toast.error("You have not reached the end date yet.");
@@ -157,14 +185,15 @@ const MakingSureModal = ({
             {role === "SUBS" ? (
               <div>
                 <h2 className="mb-4 text-2xl font-bold">End The Session?</h2>
-                <p>
+                <p className="text-sm md:text-xl">
                   All progresses will be displayed in the history section of
                   your profile.
                 </p>
-                <p className="mt-2">
-                  Your pledge will be added back to your bank account within
+                <p className="mt-2 text-sm md:text-xl">
+                <span className="underline font-bold mr-1">IMPORTANT</span> Your pledge will be added back to your bank account within
                   5-10 days, in accordance with Stripe&apos;s policy.
                 </p>
+                <p className="mt-2 text-sm md:text-xl"><span className="underline font-bold">IMPORTANT</span> Please note that a deduction of 6% will be applied to your initial money as transaction costs and taxes, resulting in the final reclaim amount.</p>
                 <a href="https://support.stripe.com/questions/understanding-fees-for-refunded-payments">
                   <p
                     className="inline text-sm text-gray-400

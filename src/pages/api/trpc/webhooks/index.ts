@@ -86,6 +86,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
         userId: paymentIntent.metadata.userId ?? "",
         startDate: new Date(paymentIntent.metadata.startDate ?? ""),
         endDate: new Date(paymentIntent.metadata.endDate ?? ""),
+        status: paymentIntent.metadata.status === "FULL" ? "FULL" : "PARTIAL",
       })
     }
 

@@ -1,6 +1,6 @@
 import { start } from "repl";
 import { z } from "zod";
-
+import { daysDifference } from "~/utils/dateHelpers";
 import {
     createTRPCRouter,
     publicProcedure,
@@ -35,8 +35,8 @@ export const repsRouter = createTRPCRouter({
                     date: new Date(inputDate.toISOString()),
                 },
             });
-            
-            if ((todayReps === null) && ( role?.Role === "MEM" || role?.Role === "SUBS")) {
+
+            if ((todayReps === null) && (role?.Role === "MEM" || role?.Role === "SUBS")) {
                 console.log(todayReps)
                 const rep = await ctx.prisma.pushups.create({
                     data: {
@@ -75,10 +75,10 @@ export const repsRouter = createTRPCRouter({
                 },
                 select: {
                     count: true,
-                    date:true,
-                    user:{
-                        select:{
-                            repsAmount:true
+                    date: true,
+                    user: {
+                        select: {
+                            repsAmount: true
                         }
                     }
                 },
@@ -174,200 +174,287 @@ export const repsRouter = createTRPCRouter({
         }),
 
     checkIfUserIsMem: publicProcedure
-    .input(
-        z.object({
-            userId: z.string(),
-        })
-    )
-    .query(async ({ ctx, input }) => {
-        const user = await ctx.prisma.users.findFirst({
-            where: {
-                userId: input.userId,
-            },
-        });
-        return user?.Role;
-    }),
+        .input(
+            z.object({
+                userId: z.string(),
+            })
+        )
+        .query(async ({ ctx, input }) => {
+            const user = await ctx.prisma.users.findFirst({
+                where: {
+                    userId: input.userId,
+                },
+            });
+            return user?.Role;
+        }),
 
     checkUserRoleWithoutId: publicProcedure
-    .query(async ({ ctx }) => {
-        const user = await ctx.prisma.users.findFirst({
-            where: {
-                userId: ctx.auth?.userId ?? "",
-            },
-        });
-        return user?.Role;
-    }
-    ),
+        .query(async ({ ctx }) => {
+            const user = await ctx.prisma.users.findFirst({
+                where: {
+                    userId: ctx.auth?.userId ?? "",
+                },
+            });
+            return user?.Role;
+        }
+        ),
 
     getAllReps: publicProcedure
-    .input (
-        z.object({
-            startDate: z.date(),
-            endDate: z.date(),
-        })
-    )
-    .query(async ({ input, ctx }) => {
-        const reps = await ctx.prisma.pushups.findMany({
-            where: {
-                userId: ctx.auth?.userId ?? "",
-                date: {
-                    gte: input.startDate,
-                    lte: input.endDate,
+        .input(
+            z.object({
+                startDate: z.date(),
+                endDate: z.date(),
+            })
+        )
+        .query(async ({ input, ctx }) => {
+            const reps = await ctx.prisma.pushups.findMany({
+                where: {
+                    userId: ctx.auth?.userId ?? "",
+                    date: {
+                        gte: input.startDate,
+                        lte: input.endDate,
+                    },
                 },
-            },
-            select: {
-                count: true,
-            },
-            
-        });
-        return reps;
-    }
-    ),
+                select: {
+                    count: true,
+                },
+
+            });
+            return reps;
+        }
+        ),
 
     changeUserToMem: publicProcedure
-    .mutation(async ({ ctx }) => {
-        //chage user's role to "MEM" if user is "USER"
-        const user = await ctx.prisma.users.updateMany({
-            where: {
-                userId: ctx.auth?.userId ?? "",
-                Role: "USER",
-            },
-            data: {
-                Role: "MEM",
-            },
-        });
-        return user;
-    }
-    ),
+        .mutation(async ({ ctx }) => {
+            //chage user's role to "MEM" if user is "USER"
+            const user = await ctx.prisma.users.updateMany({
+                where: {
+                    userId: ctx.auth?.userId ?? "",
+                    Role: "USER",
+                },
+                data: {
+                    Role: "MEM",
+                },
+            });
+            return user;
+        }
+        ),
 
     changeUserToSubs: publicProcedure
-    .input(
-        z.object({
-            userId: z.string(),
-            pledge: z.string(),
-            payment_intent: z.string(),
-            startDate: z.date(),
-            endDate: z.date(),
-            repsAmount: z.string(),
-        }))
-    .mutation(async ({ input, ctx }) => {
-        const user = await ctx.prisma.users.updateMany({
-            where: {
-                userId: input.userId ?? ctx.auth?.userId ,
-            },
-            data: {
-                Role: "SUBS",
-                pledge: parseInt(input.pledge),
-                payment_intent: input.payment_intent,
-                startDate: input.startDate,
-                endDate: input.endDate,
-                repsAmount: parseInt(input.repsAmount),
-            },
-        });
-        return user;
-    }
-    ),
+        .input(
+            z.object({
+                userId: z.string(),
+                pledge: z.string(),
+                payment_intent: z.string(),
+                startDate: z.date(),
+                endDate: z.date(),
+                repsAmount: z.string(),
+            }))
+        .mutation(async ({ input, ctx }) => {
+            const user = await ctx.prisma.users.updateMany({
+                where: {
+                    userId: input.userId ?? ctx.auth?.userId,
+                },
+                data: {
+                    Role: "SUBS",
+                    pledge: parseInt(input.pledge),
+                    payment_intent: input.payment_intent,
+                    startDate: input.startDate,
+                    endDate: input.endDate,
+                    repsAmount: parseInt(input.repsAmount),
+                },
+            });
+            return user;
+        }
+        ),
 
     getAllRepsForUser: publicProcedure
-    .input( z.object({
-        startDate: z.date(),
-        endDate: z.date(),
-    }))
-    .query(async ({ input, ctx }) => {
-        
-        const reps = await ctx.prisma.pushups.findMany({
-            where:{
-                userId: ctx.auth?.userId,
-                date: {
-                    gte: input.startDate,
-                    lte: input.endDate,
-                }
-            },
-            select: {
-                userId: true,
-                count: true,
-                date: true,
-            },
-            orderBy: {
-                date: "asc",
-            },
-        });
-        return reps;
-    }
-    ),
+        .input(z.object({
+            startDate: z.date(),
+            endDate: z.date(),
+        }))
+        .query(async ({ input, ctx }) => {
+
+            const reps = await ctx.prisma.pushups.findMany({
+                where: {
+                    userId: ctx.auth?.userId,
+                    date: {
+                        gte: input.startDate,
+                        lte: input.endDate,
+                    }
+                },
+                select: {
+                    userId: true,
+                    count: true,
+                    date: true,
+                },
+                orderBy: {
+                    date: "asc",
+                },
+            });
+            
+            return reps;
+        }
+        ),
 
     changeSubsToUser: publicProcedure
-    .input(
-        z.object({
-            userId: z.string(),
-        }))
-    .mutation(async ({input, ctx}) => {
-        const user = await ctx.prisma.users.update({
-            where:{
-                userId: ctx.auth?.userId ?? input.userId
-            },
-            data:{
-                Role: "USER",
-                pledge: 0,
-                payment_intent: "",
-                startDate: null,
-                endDate: null,
-                repsAmount: 0
-            }
-        })
-        return user;
-    }),
-    
+        .input(
+            z.object({
+                userId: z.string(),
+            }))
+        .mutation(async ({ input, ctx }) => {
+            const user = await ctx.prisma.users.update({
+                where: {
+                    userId: ctx.auth?.userId ?? input.userId
+                },
+                data: {
+                    Role: "USER",
+                    pledge: 0,
+                    payment_intent: "",
+                    startDate: null,
+                    endDate: null,
+                    repsAmount: 0
+                }
+            })
+            return user;
+        }),
+
     addSessionHistory: publicProcedure
-    .input(
-        z.object({
-            userId: z.string(),
-            startDate: z.date(),
-            endDate: z.date()
-        }))
-    .mutation(async ({input, ctx}) => {
-        const session = await ctx.prisma.activitiesSession.create({
-            data: {
-                userId: input.userId,
-                startDate: input.startDate,
-                endDate: input.endDate
-            }
-        })
-        return session;
-    }
-    ),
+        .input(
+            z.object({
+                userId: z.string(),
+                startDate: z.date(),
+                endDate: z.date(),
+                status: z.string(),
+            }))
+        .mutation(async ({ input, ctx }) => {
+            const session = await ctx.prisma.activitiesSession.create({
+                data: {
+                    userId: input.userId,
+                    startDate: input.startDate,
+                    endDate: input.endDate,
+                    status: input.status === "FULL" ? "FULL" : (input.status === "NONE" ? "NONE" : "PARTIAL"),
+                }
+            })
+            return session;
+        }
+        ),
 
     infiniteSessionHistory: publicProcedure
-    .input(
-        z.object({
-            userId: z.string(),
-            limit: z.number(),
-            cursor: z.string().nullish()
-        }))
-    .query(async ({input, ctx}) => {
-        const session = await ctx.prisma.activitiesSession.findMany({
-            where: {
-                userId: input.userId,   
-            },
-            cursor: input.cursor ? {id: input.cursor} : undefined,
-            take: input.limit + 1,
-            orderBy: {
-                startDate: "asc"
-            }
-            
-        })
-        let nextCursor: typeof input.cursor | undefined = undefined
-        if (session.length > input.limit) {
-            const nextItem = session.pop()
-            nextCursor = nextItem?.id
-        } 
-        
+        .input(
+            z.object({
+                userId: z.string(),
+                limit: z.number(),
+                cursor: z.string().nullish()
+            }))
+        .query(async ({ input, ctx }) => {
+            const session = await ctx.prisma.activitiesSession.findMany({
+                where: {
+                    userId: input.userId,
+                },
+                cursor: input.cursor ? { id: input.cursor } : undefined,
+                take: input.limit + 1,
+                orderBy: {
+                    startDate: "asc"
+                }
 
-        return {
-            session,
-            nextCursor
+            })
+            let nextCursor: typeof input.cursor | undefined = undefined
+            if (session.length > input.limit) {
+                const nextItem = session.pop()
+                nextCursor = nextItem?.id
+            }
+
+
+            return {
+                session,
+                nextCursor
+            }
         }
-    }
-    ),
+        ),
+
+    isUserSuccess: publicProcedure
+        .input(
+            z.object({
+                userId: z.string(),
+                startDate: z.date(),
+                endDate: z.date(),
+            })
+        )
+        .query(async ({ input, ctx }) => {
+            const user = await ctx.prisma.users.findFirst({
+                where: {
+                    userId: input.userId,
+                },
+                select: {
+                    pushups: {
+                        where: {
+                            date: {
+                                gte: input.startDate,
+                                lte: input.endDate,
+                            },
+                        },
+                        select: {
+                            count: true,
+                        },
+                    },
+                    repsAmount: true,
+                    startDate: true,
+                    endDate: true,
+                }
+            });
+
+            const totalday = daysDifference(user?.startDate!, user?.endDate!) + 1;
+            //check each day if user did enough reps equal or more than repsAmount
+            let success = "NONE"
+            let count = 0
+            //if no any pushups record, return false
+            if (user) {
+                if (user.pushups.length === 0) {
+                    return {
+                        success,
+                        count,
+                        totalday
+                    };
+                }
+                if (user.pushups === undefined) {
+                    success = "UNDEFINED"
+                    return {
+                        success,
+                        count,
+                        totalday
+                    };
+                }
+                for (let i = 0; i < user.pushups.length; i++) {
+                    console.log(totalday)
+                    //count completed days
+                    if (user.pushups[i]?.count! ===  user.repsAmount! || user.pushups[i]?.count! > user.repsAmount!) {
+                        count++;
+                    }
+                }
+                //if count is not equal to totalday, return false means user is not success
+                if (count !== totalday) {
+                    success = "PARTIAL";
+                }
+
+                if( count === totalday) {
+                    success = "FULL"
+                }
+            }
+
+            else if(!user ) {
+                success = "UNDEFINED"
+            }
+            //if user is not found, return false
+            
+            return {
+                success,
+                count,
+                totalday
+            };
+
+        }
+        ),
+
 });
 

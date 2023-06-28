@@ -9,7 +9,7 @@ import { useUser } from "@clerk/nextjs";
 import StatusBar from "~/components/StatusBar";
 import RefundModal from "~/components/RefundModal";
 import Histories from "~/components/Histories";
-import { group } from "console";
+import { daysDifference } from "~/utils/dateHelpers";
 
 const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   const { isSignedIn, user } = useUser();
@@ -24,9 +24,12 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   } = api.reps.infiniteSessionHistory.useInfiniteQuery(
     {
       userId: user?.id ?? "",
-      limit: 1,
+      limit: 4,
     },
     {
+      onSuccess: () => {
+        console.log(data?.pages);
+      },
       enabled: isSignedIn === true,
       refetchOnMount: false,
       refetchOnWindowFocus: false,
@@ -167,6 +170,15 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           <h1 className="mx-auto border-y-2 border-black bg-white py-3 text-center font-mono text-4xl font-bold md:border-b-2 md:border-t-0">
             Current Progress
           </h1>
+          <h1
+            className={`mx-auto border-b-2 border-black bg-white py-2 text-center 
+          font-mono text-xl md:border-b-2 md:border-t-0 ${role === "USER" ? "hidden" : ""}`}
+          >
+            {daysDifference(
+              startDate ?? new Date(startDate!),
+              endDate ?? new Date(endDate!)
+            ) + 1}-day goal for full pledge refund.
+          </h1>
           <div className="mx-auto flex w-full justify-between space-x-14 rounded-2xl border-black px-5 py-2 font-mono md:w-2/3">
             <h1 className="font-mono text-2xl font-bold">No.</h1>
             <h1 className="font-mono text-2xl font-bold">Date</h1>
@@ -210,7 +222,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           </div>
           {data?.pages.map((group, i) =>
             group.session.map((session, id) => (
-              <Histories session={session} id={i} />
+              <Histories session={session} id={id} />
             ))
           )}
         </div>
@@ -218,7 +230,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           <button
             onClick={() => fetchNextPage()}
             disabled={!hasNextPage || isFetchingNextPage}
-            className="hover:cursor-pointer w-48 border-2 rounded-md border-black px-3 py-2 text-center font-mono text-xl transition delay-100 hover:translate-y-2 hover:bg-[#fdfd96] hover:shadow-neo"
+            className="w-48 rounded-md border-2 border-black px-3 py-2 text-center font-mono text-xl transition delay-100 hover:translate-y-2 hover:cursor-pointer hover:bg-[#fdfd96] hover:shadow-neo"
           >
             {isFetchingNextPage
               ? "Loading more..."
