@@ -23,6 +23,7 @@ import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { api } from "~/utils/api";
 import Link from "next/link";
+import { toast } from "react-hot-toast";
 
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
@@ -74,6 +75,15 @@ export const Home: NextPage = (props) => {
       dataQuery.refetch().catch((e) => {
         console.log(e);
       })
+    },
+    onError: (e) => {
+      const errorMessages = e.data?.zodError?.fieldErrors.message;
+      if (errorMessages && errorMessages[0]) {
+        toast.error(errorMessages[0])
+      }
+      else {
+        toast.error("Failed to create rep. Please try again later.")
+      }
     },
   });
   const cachedData = useMemo(() => {

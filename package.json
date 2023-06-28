@@ -27,6 +27,8 @@
     "@trpc/react-query": "^10.25.0",
     "@trpc/server": "^10.25.0",
     "@types/react-datepicker": "^4.11.2",
+    "@upstash/ratelimit": "^0.4.3",
+    "@upstash/redis": "^1.21.0",
     "date-fns": "2.0.0-beta.5",
     "lucide-react": "^0.216.0",
     "micro": "^10.0.1",

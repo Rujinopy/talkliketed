@@ -2,15 +2,34 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import useSWR from "swr";
 
+type RefundData = {
+  id: string;
+  object: string;
+  amount: number;
+  balance_transaction: string;
+  charge: string;
+  created: number;
+  currency: string;
+  metadata: {
+    startDate: string;
+    endDate: string;
+  }
+  payment_intent: string;
+  reason: string;
+  receipt_number: string;
+  source_transfer_reversal: string;
+  status: string;
+  transfer_reversal: string;
+};
+
 const Result = () => {
   const router = useRouter();
-  const { data }= useSWR(
+  const { data } : {data: RefundData | undefined}= useSWR<RefundData>(
     router.query
       ? `/api/trpc/refund/${router.query.id}`
       : "",
     (url: string) => fetch(url).then((res) => res.json())
   );
-  console.log(data)
 
   if (data === undefined) {
     return (
