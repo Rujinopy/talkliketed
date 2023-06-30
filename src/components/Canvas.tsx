@@ -23,11 +23,11 @@ const Canvas = ({ onWebcamRef, onCanvasRef }: Props) =>{
       <Webcam
         ref={camRef}
         muted={true}
-        className="z-9 absolute inset-0 mx-auto text-center w-full md:h-[30rem] border-black border-y-2"
+        className="z-9 absolute inset-0 mx-auto text-center md:h-[30rem] border-black border-y-2"
       />
       <canvas
         ref={canvasRef}
-        className="z-8 absolute inset-0 mx-auto text-center w-full md:h-[30rem]"
+        className="z-8 absolute inset-0 mx-auto text-center md:h-[30rem]"
       />
     </div>
   );

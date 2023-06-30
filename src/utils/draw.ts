@@ -5,7 +5,7 @@ import { type Keypoint } from "@tensorflow-models/pose-detection/dist/types";
 export let count = 0
 const color = "aqua";
 const lineWidth = 3;
-export let godown = true;
+export let godown = false;
 let goup = false;
 let back = false
 // export let countReps = 0;
