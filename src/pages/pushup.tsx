@@ -247,8 +247,10 @@ export const Home: NextPage = (props) => {
             ) : (
               <VideoMock />
             )}
+                  <h2 className="underline px-2 py-2 font-mono">Guide</h2>
+                  <h2 className="text-center text-xl px-14">Align your left side toward the camera. Keep your backstraight and do push-ups.</h2>
           </div>
-
+              
           {/* right */}
           <div className="flex h-[8rem] flex-col items-center justify-center border-black bg-[#ffb2ef] md:h-auto md:basis-1/4 md:border-r-2">
             {!isSignedIn ? (
