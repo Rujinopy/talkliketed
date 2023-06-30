@@ -98,13 +98,16 @@ export default function Subs() {
       const days = diff / (1000 * 3600 * 24);
       //day selected can't be yesterday or before
       if(repsPerDay < 1){
-        toast.error("Please select a valid number of reps per day");
+        toast.error("reps per day must be at least 1");
+        return
       }
       if (days < 0) {
         toast.error("Please select a valid date range");
+        return
       } else {
         if (days > 30) {
           toast.error("Please select a date range less than 30 days");
+          return
         } else {
           if (startDate.getDate() < new Date().getDate()) {
             toast.error("Please select startDate at least today or after");
