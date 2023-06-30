@@ -41,7 +41,7 @@ export default async function handler(
   }
 
   if (eventType === "session.created") {
-
+    
   }
   res.json({});
 }
