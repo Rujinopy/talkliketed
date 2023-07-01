@@ -24,12 +24,9 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   } = api.reps.infiniteSessionHistory.useInfiniteQuery(
     {
       userId: user?.id ?? "",
-      limit: 4,
+      limit: 2,
     },
     {
-      onSuccess: () => {
-        console.log(data?.pages);
-      },
       enabled: isSignedIn === true,
       refetchOnMount: false,
       refetchOnWindowFocus: false,
@@ -229,7 +226,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
         </div>
         <div className="flex w-full justify-center pt-5">
           <button
-            onClick={void fetchNextPage()}
+            onClick={() => void fetchNextPage()}
             disabled={!hasNextPage || isFetchingNextPage}
             className="w-48 rounded-md border-2 border-black px-3 py-2 text-center font-mono text-xl transition delay-100 hover:translate-y-2 hover:cursor-pointer hover:bg-[#fdfd96] hover:shadow-neo"
           >
@@ -261,12 +258,12 @@ export function NameAndStatus({
       <Image
         className="mt-10 rounded-full border-2 border-black md:mr-10 md:mt-0"
         src={imageURL}
-        alt=""
+        alt="profile"
         width={80}
         height={80}
       />
       <div className="flex flex-col items-center justify-center md:items-start md:justify-normal">
-        <h1 className="text-stroke-3 text-[3rem] font-semibold text-[#fdfd96] dark:text-white md:text-[3rem]">
+        <h1 className="text-stroke-3 text-[3rem] font-mono font-semibold text-[#fdfd96] dark:text-white md:text-[3rem]">
           {firstName}
         </h1>
         <div className="flex flex-col ">

@@ -143,7 +143,7 @@ export default function Subs() {
               color="white"
               size={60}
               onClick={toggleCheckoutForm}
-              className="absolute bottom-5 left-5 hover:cursor-pointer md:top-20"
+              className="absolute bottom-5 left-5 hover:cursor-pointer md:top-20 bg-yellow-200 border-black border-2 shadow-neo rounded-lg"
             />
           ) : null}
           {!checkoutForm ? (
