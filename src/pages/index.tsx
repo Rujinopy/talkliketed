@@ -33,9 +33,6 @@ const Home: NextPage = (props) => {
     }
   }, [isIntersecting]);
   
-
-  
-
   return (
     <>
       <NavbarWithoutCam style="sticky top-0 z-50" />

@@ -299,7 +299,7 @@ export const Home: NextPage = (props) => {
           </h1>
           <div className="max-w-4xl space-y-7 px-5 md:px-10 py-8 font-mono text-xl">
             <h2>
-            This is a push-up counter operated with AI that tracks your movement when you're performing push-ups.
+            This is a push-up counter operated with AI that tracks your movement when you&apos;re performing push-ups.
             </h2>
             { Guides.map((guide, id) => (
               <div key={id} className="flex flex-col space-y-3 bg-white py-3 px-3 rounded-xl border-black border-2">
