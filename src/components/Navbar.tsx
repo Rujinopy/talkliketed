@@ -18,10 +18,10 @@ export default function Navbar({onStateChanged}: { onStateChanged: (boolean: boo
     
 
     return (
-        <div className="flex h-16 items-center max-w-6xl mx-auto border-black bg-white">
+        <div className="flex h-16 items-center w-screen border-b border-black bg-white">
           {/* <MenuBar /> */}
-          <Link href={"/"} className="h-full py-2 border-l-2 border-black ">
-            <p className="font-mono text-lg px-3 md:text-4xl">Pushup</p>
+          <Link href={"/"}>
+            <p className="font-mono text-lg px-3 pr-[21px] md:mx-5 md:my-5 md:text-4xl">Pushup</p>
           </Link>
           <button
             className="border-l-2 border-r-2 my-5 transform  border-black px-2 md:px-5 py-1 font-mono 
