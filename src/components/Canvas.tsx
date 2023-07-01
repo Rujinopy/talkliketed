@@ -19,15 +19,15 @@ const Canvas = ({ onWebcamRef, onCanvasRef }: Props) =>{
 
   
   return (
-    <div className="relative w-full h-72 md:mt-10">
+    <div className="relative  w-full h-72 md:h-[30rem]  bg-black">
       <Webcam
         ref={camRef}
         muted={true}
-        className="z-9 absolute inset-0 mx-auto text-center md:h-[30rem] border-black border-y-2"
+        className="z-9 absolute inset-0 mx-auto text-center h-[17rem] md:h-full lg:h-[30rem] "
       />
       <canvas
         ref={canvasRef}
-        className="z-8 absolute inset-0 mx-auto text-center md:h-[30rem]"
+        className="z-8 absolute inset-0 mx-auto text-center h-[17rem] md:h-full lg:h-[30rem]"
       />
     </div>
   );

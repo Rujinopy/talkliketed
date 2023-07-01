@@ -26,7 +26,7 @@ const Home: NextPage = (props) => {
       },
       { rootMargin: "-100px"}
     );
-    console.log(isIntersecting)
+    // console.log(isIntersecting)
     observer.observe(sec2Ref.current!);
     return () => {
       observer.disconnect();
@@ -46,7 +46,7 @@ const Home: NextPage = (props) => {
         >
           <div className="flex h-full w-full flex-col py-10 md:flex-row md:pb-5">
             <div className="flex flex-col justify-center px-5 pb-10 md:w-3/6 md:pb-0">
-              <h2 className="fomt-mono ml-5 mr-auto rounded-2xl border-2 border-black bg-pink-200 px-5 py-1 font-bold md:mb-2">
+              <h2 className="fomt-mono md:ml-5 mr-auto rounded-2xl border-2 border-black bg-pink-200 px-5 py-1 font-bold md:mb-2">
                 AI as a trainer
               </h2>
               <h1 className="text-stroke-2 py-2 text-left text-4xl font-bold text-black md:pl-5 md:text-6xl">
