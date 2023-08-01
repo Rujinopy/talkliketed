@@ -74,6 +74,8 @@ export const Home: NextPage = (props) => {
     },
     {
       enabled: isSignedIn === true,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     }
   );
 
