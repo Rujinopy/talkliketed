@@ -1,15 +1,14 @@
-
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import { type Keypoint } from "@tensorflow-models/pose-detection/dist/types";
 
-export let count = 0
+
 const color = "aqua";
 const lineWidth = 3;
-export let godown = false;
+let godown = false;
 let goup = false;
 let back = false
-// export let countReps = 0;
 let elbowAngle = 0;
+
 function isAndroid() {
   return /Android/i.test(navigator.userAgent);
 }
@@ -21,11 +20,6 @@ function isiOS() {
 export function isMobile() {
   return isAndroid() || isiOS();
 }
-// let countUpdateCallback: () => void = () => { };
-
-// export function setCountUpdateCallback(callback: () => void) {
-//   countUpdateCallback = callback;
-// }
 
 export function drawPoint(ctx: CanvasRenderingContext2D, y: number, x: number, r: number, color: string) {
   ctx.beginPath();
@@ -42,7 +36,7 @@ export function drawKeypoints(keypoints: Keypoint[], ctx: CanvasRenderingContext
       const x = keypoint.x;
       const y = keypoint.y;
       const score = keypoint.score;
-      if (score >= 0.3) {
+      if (score >= 0.5) {
         drawPoint(ctx, y, x, 6, color);
         updateArmAngle(keypoints);
         isBackStraight(keypoints);
@@ -183,11 +177,11 @@ export function isBackStraight(keypoints: Keypoint[]) {
     //convert to degree
     if (degree > 160 && degree < 200) {
       back = true;
-      console.log("Your back is straight" + `${degree}`)
+      // console.log("Your back is straight" + `${degree}`)
     }
     else {
       back = false;
-      console.log("Keep your back straight" + `${degree}`)
+      // console.log("Keep your back straight" + `${degree}`)
     }
   }
 }
@@ -197,7 +191,7 @@ export function inUpPosition(callback: () => void) {
 
   if (elbowAngle > 170 && elbowAngle < 200) {
     if (godown === true) {
-      count = count + 1;
+
       //callback function to update count state in index.tsx
       callback();
     }

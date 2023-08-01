@@ -14,6 +14,28 @@ import NavbarWithoutCam from "~/components/NavbarWithoutCam";
 import Title from "~/components/Title";
 import toast, { Toaster } from "react-hot-toast";
 
+export const SelectExcerciseDropDown = () => {
+  return (
+    <div className="font-mono">
+      <label
+        htmlFor="HeadlineAct"
+        className="block text-xl  text-gray-900"
+      >
+        Type
+      </label>
+
+      <select
+        name="HeadlineAct"
+        id="HeadlineAct"
+        className="mt-1.5 w-full rounded-lg border-black border-2 text-gray-700 sm:text-sm px-2 py-3"
+      >
+        <option className="" value="">Please select</option>
+        <option className="" value="Push-Ups">Push-Ups</option>
+      </select>
+    </div>
+  );
+};
+
 interface storeProps {
   startDate: Date;
   endDate: Date;
@@ -44,7 +66,11 @@ export default function Subs() {
   );
 
   //check if user's role is 'MEM' according to Users table in db
-  const role = api.reps.checkUserRoleWithoutId.useQuery();
+  const role = api.reps.checkUserRoleWithoutId.useQuery(undefined,{
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
   //disable datepicker if user is MEM
   const [picker, setPicker] = useState(false);
   const [pledgeLayout, setPledgeLayout] = useState(false);
@@ -75,9 +101,11 @@ export default function Subs() {
   useEffect(() => {
     if (typeof startDate === "string") {
       setStartDate(parseISO(startDate));
+      // console.log(startDate);
     }
     if (typeof endDate === "string") {
       setEndDate(parseISO(endDate));
+      // console.log(endDate);
     }
   }, [startDate, endDate]);
 
@@ -97,24 +125,23 @@ export default function Subs() {
       const diff = endDate.getTime() - startDate.getTime();
       const days = diff / (1000 * 3600 * 24);
       //day selected can't be yesterday or before
-      if(repsPerDay < 1){
+      if (repsPerDay < 1) {
         toast.error("reps per day must be at least 1");
-        return
+        return;
       }
       if (days < 0) {
         toast.error("Please select a valid date range");
-        return
+        return;
       } else {
         if (days > 30) {
           toast.error("Please select a date range less than 30 days");
-          return
+          return;
         } else {
           if (startDate.getDate() < new Date().getDate()) {
             toast.error("Please select startDate at least today or after");
           } else {
             toggleCheckoutForm();
             //set reps per day with current form value
-            
           }
         }
       }
@@ -126,32 +153,33 @@ export default function Subs() {
   return (
     <div
       className="flex min-h-screen 
-    w-screen flex-col justify-center bg-[#ffb2ef]"
+    w-screen flex-col justify-center border-b-2 border-black bg-[#ffb2ef] pb-10"
     >
       <Toaster
         toastOptions={{
-          className: "font-mono border-2 border-black ",
+          className: "font-mono border-2 border-black",
         }}
       />
       <NavbarWithoutCam />
       <Title title={"set up your push-ups challenge"} />
 
       <SignedIn>
-        <div className="flex h-screen flex-col relative items-center md:justify-center pt-16">
+        <div className="relative flex min-h-screen flex-col items-center pt-16 md:justify-center md:pt-0">
           {checkoutForm ? (
             <ArrowBigLeft
               color="white"
               size={60}
               onClick={toggleCheckoutForm}
-              className="absolute bottom-5 left-5 hover:cursor-pointer md:top-20 bg-yellow-200 border-black border-2 shadow-neo rounded-lg"
+              className="absolute bottom-5 left-5 rounded-lg border-2 border-black bg-yellow-200 shadow-neo hover:cursor-pointer md:top-20"
             />
           ) : null}
           {!checkoutForm ? (
             !picker ? (
-              <section className="flex w-full flex-col items-center justify-center border-black md:border-r-2">
-                <h1 className="pt-0 text-center font-mono text-5xl text-black md:mt-10 md:pb-10">
+              <section className="flex w-[80%] flex-col items-center justify-center">
+                <h1 className="pt-0 text-center font-mono font-bold text-5xl text-black md:mt-10 md:pb-10">
                   Set Your <span className="mt-3 flex">Deadline</span>{" "}
                 </h1>
+                <SelectExcerciseDropDown />
                 <div className="mx-auto w-full md:w-1/3">
                   <h2 className="py-1 font-mono text-2xl">start</h2>
                   <DatePicker
@@ -182,11 +210,11 @@ export default function Subs() {
                   onClick={checkOut}
                   className="mx-auto mt-8 w-2/3 rounded-lg border-2 border-black bg-[#fdfd96]  p-2 text-center font-mono text-2xl shadow-neo hover:cursor-pointer hover:bg-[#ffdb58] md:w-1/3"
                 >
-                  Confirm deadline and reps
+                  Next
                 </p>
               </section>
             ) : (
-              <div className="flex flex-col">
+              <div className="flex flex-col ">
                 <p className="mb-5 text-center font-mono text-3xl md:text-4xl">
                   You have set dates range! Check your profile.
                 </p>
@@ -253,3 +281,5 @@ export default function Subs() {
     </div>
   );
 }
+
+

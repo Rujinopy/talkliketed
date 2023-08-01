@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import {
     createTRPCRouter,
     publicProcedure,
@@ -10,12 +8,7 @@ import { clerkClient } from '@clerk/nextjs/server';
 
 export const profilesRouter = createTRPCRouter({
     getProfile: publicProcedure
-        // .input(
-        //     z.object({
-        //         firstname: z.string(),
-        //     })
-        // )
-        .query(async ({ input, ctx }) => {
+        .query(async ({ ctx }) => {
             const userId = ctx.auth?.userId;
             const profile = await clerkClient.users.getUser(userId ?? "");
             return profile

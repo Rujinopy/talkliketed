@@ -18,9 +18,6 @@ interface SessionAndId {
 export const Histories = (props: SessionAndId) => {
   return (
     <div className="flex h-[10vh] w-full divide-x-2 divide-black border-b-2 border-black bg-[#fdfd96] md:text-2xl">
-      <div className="flex w-1/12 items-center justify-center">
-        <h1 className="pl-1 text-center font-mono ">-</h1>
-      </div>
       <div className="flex w-1/4 items-center">
         <h1 className="pl-1 font-mono text-sm md:text-2xl">
           {props.session.startDate

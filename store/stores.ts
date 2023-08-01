@@ -1,6 +1,5 @@
 import { persist } from 'zustand/middleware'
 import { create } from 'zustand'
-import { parseISO } from 'date-fns'
 
 interface dateStore {
   startDate: Date

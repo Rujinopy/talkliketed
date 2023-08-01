@@ -7,7 +7,6 @@ import {
   RepCounter,
   Canvas,
   type Webcam,
-  drawSkeleton,
   drawCanvas,
   VideoMock,
 } from "./app";
@@ -22,9 +21,8 @@ import {
 import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { api } from "~/utils/api";
-import Link from "next/link";
 import { toast } from "react-hot-toast";
-
+import Image from "next/image";
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
 
@@ -49,9 +47,8 @@ const Guides = [
   "1. Turn on your camera by clicking the button on the top.",
   "2. Align your left side with the camera. It needs to see your full body, for better results.",
   "3. Keep your back straight and do push-ups.",
-  "NOTE: The colored skeleton on the side of your body indicates if your back is straight."
-]
-
+  "NOTE: The colored skeleton on the side of your body indicates if your back is straight.",
+];
 
 export const Home: NextPage = (props) => {
   const { user, isSignedIn, isLoaded } = useUser();
@@ -101,7 +98,6 @@ export const Home: NextPage = (props) => {
     if (!dataQuery.isSuccess) return null;
     if (dataQuery.data) {
       updateReps(dataQuery.data.count ?? 0);
-      // console.log(dataQuery.data.date);
       return dataQuery.data;
     }
   }, [dataQuery.data?.count]);
@@ -122,7 +118,6 @@ export const Home: NextPage = (props) => {
         dataQuery.data?.count === undefined ||
         dataQuery.data?.count === null
       ) {
-        console.log(newToday);
         createRep.mutate({
           userId: user?.id ?? "",
           date: newToday,
@@ -164,9 +159,7 @@ export const Home: NextPage = (props) => {
       video.video.width = videoWidth;
       video.video.height = videoHeight;
       const pose = await net.estimatePoses(video.video);
-
       if (pose[0]) {
-        const keypoints = pose[0].keypoints;
         const context = canvasRef.current?.getContext("2d"); // Use optional chaining operator to avoid undefined
         if (context) {
           // Add a check to ensure 'context' is not undefined
@@ -178,7 +171,6 @@ export const Home: NextPage = (props) => {
             canvasRef,
             handleCountUpdate
           );
-          drawSkeleton(keypoints, context);
         }
       }
     }
@@ -192,15 +184,12 @@ export const Home: NextPage = (props) => {
   const runMovenet = async () => {
     const net = await poseDetection.createDetector(model, detectorConfig);
     //detect the pose in real time
-    const intervalId = setInterval(() => {
+    setInterval(() => {
       if (webRef.current && net) {
         detectPoseInRealTime(webRef.current, net).catch(console.error);
       }
     }, 100);
-    //clear interval
-    return () => {
-      clearInterval(intervalId);
-    };
+
   };
 
   //get isChecked state from Navbar for toggling the video
@@ -230,11 +219,11 @@ export const Home: NextPage = (props) => {
   );
   //isLoaded
   if (!isLoaded) {
-    return <div>Loading...</div>;
+    return <div className="container text-center">Loading...</div>;
   }
 
   return (
-    <div className="flex h-auto w-screen flex-col justify-center">
+    <div className="flex h-auto w-screen flex-col justify-center bg-[#daf5f0]">
       {/* <button
         className="text-stroke-3 font-mono text-7xl font-bold text-red-400"
         onClick={() => updateReps((prev) => prev + 1)}
@@ -244,11 +233,20 @@ export const Home: NextPage = (props) => {
       <section className="border-b-2 border-black">
         <Navbar onStateChanged={handleChecked} />
       </section>
-      <section aria-label="body" className="md:h-screen h-[70vh] w-screen bg-[#daf5f0]">
-        <section className="flex h-full max-w-6xl mx-auto flex-col border-b-2 border-black md:h-screen md:flex-row md:justify-center">
+      <section
+        aria-label="body"
+        className="h-full w-screen border-b-2 border-x-2 border-black bg-[#ffb2ef] md:h-auto max-w-6xl mx-auto"
+      >
+        <RepCounter
+              date={newToday}
+              userId={user?.id}
+              reps={reps}
+              goal={dataQuery.data?.user?.repsAmount as number}
+              isSignedIn={isSignedIn ?? false}
+            />
+        <section className="mx-auto h-[90%] flex max-w-6xl flex-col md:flex-row md:justify-center md:overflow-hidden">
           {/* left */}
-          {/* <div className="flex h-72 flex-col justify-center bg-white pb-20 md:h-auto md:basis-1/4 md:pl-8"></div> */}
-          <div className="flex h-[6rem] flex-col items-center justify-center border-black bg-[#ffb2ef] md:h-auto md:basis-1/4 md:border-l-2">
+          {/* <div className="flex h-[6rem] flex-col items-center justify-center border-black bg-[#ffb2ef] md:h-auto md:basis-1/4 md:border-l-2">
             {!isSignedIn ? (
               <Link
                 className="transform border-y-2 border-black bg-[#fdfd96] 
@@ -263,19 +261,14 @@ export const Home: NextPage = (props) => {
                 {reps}
               </p>
             )}
-          </div>
+          </div> */}
+
           {/* middle */}
           <div
             aria-label="video"
-            className="h-fulll relative w-screen border-black bg-white md:h-auto md:w-auto md:basis-3/4 md:border-x-2"
+            className="relative overflow-hidden w-screen border-black bg-white md:w-full md:basis-3/4 md:border-x-2 flex-col flex md:flex-row"
           >
-            <RepCounter
-              date={newToday}
-              userId={user?.id}
-              reps={reps}
-              goal={dataQuery.data?.user?.repsAmount as number}
-              isSignedIn={isSignedIn ?? false}
-            />
+            
             {isChecked ? (
               <Canvas
                 onWebcamRef={handleWebcamRef}
@@ -284,8 +277,6 @@ export const Home: NextPage = (props) => {
             ) : (
               <VideoMock />
             )}
-            {/* <h2 className="underline px-2 py-2 font-mono">Guide</h2>
-                  <h2 className="text-center text-md px-14">Align your left side toward the camera. Keep your backstraight and do push-ups.</h2> */}
           </div>
 
           {/* right */}
@@ -304,6 +295,32 @@ export const Home: NextPage = (props) => {
             { Guides.map((guide, id) => (
               <div key={id} className="flex flex-col space-y-3 bg-white py-3 px-3 rounded-xl border-black border-2">
                 <p>{guide}</p>
+                {
+                  id === 1 ? <Image
+                  src="https://scontent.fbkk2-4.fna.fbcdn.net/v/t39.30808-6/364748037_6382607758484193_5164982862645369181_n.jpg?stp=cp6_dst-jpg&_nc_cat=105&ccb=1-7&_nc_sid=8bfeb9&_nc_eui2=AeGHTRvrYrwsPQe1duDnpYAPjs3PzERQ2ziOzc_MRFDbOJ0ruGh8QGY-WprCeDfcjwy7HTFYsjCY5Gj_eTWsFzEE&_nc_ohc=ohSGO1WDCeAAX-V-Lkl&_nc_zt=23&_nc_ht=scontent.fbkk2-4.fna&oh=00_AfCMC0_zHzebtaGH1HgYFjojUTShLpoIKghNAtQOSzBpHw&oe=64CD6537"
+                  alt="lef side of body"
+                  className="z-0"
+                  priority={true}
+                  width={500}
+                  height={500}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  
+                />
+                : null
+                }
+                {
+                  id === 2 ? <Image
+                  src="https://cdn.fbsbx.com/v/t59.2708-21/364163958_249548967927181_5477702127242660233_n.gif?_nc_cat=108&ccb=1-7&_nc_sid=041f46&_nc_eui2=AeGazv46saqQtv7s9XZ75vZXeHPFX6NBjC14c8Vfo0GMLYEj4nSDOqVWwiWSCg4b0Qmu2tW7bOPz0faVFmHR8q1O&_nc_ohc=XBJVvEGpcVwAX-7zCp1&_nc_ht=cdn.fbsbx.com&oh=03_AdQzPJgKKz2yPHpWSg-LzlvbbM-C5IE7VbjDQ2np3DQDOg&oe=64CA31BA"
+                  alt="doing push-ups"
+                  className="z-0"
+                  priority={true}
+                  width={500}
+                  height={500}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  
+                />
+                : null
+                }
             </div>
             ))}
           </div>

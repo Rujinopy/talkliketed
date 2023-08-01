@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import useSWR from "swr";
-import { useStore } from "store/stores";
+// import { useStore } from "store/stores";
 
 type PaymentData = {
   metadata: {
@@ -23,10 +23,10 @@ interface storeProps {
 }
 
 const Result: NextPage = () => {
-  const startDate = useStore(
-    (state: unknown) => (state as storeProps).startDate
-  );
-  const endDate = useStore((state: unknown) => (state as storeProps).endDate);
+  // const startDate = useStore(
+  //   (state: unknown) => (state as storeProps).startDate
+  // );
+  // const endDate = useStore((state: unknown) => (state as storeProps).endDate);
   const router = useRouter();
 
   const { data }: { data?: PaymentData | undefined } = useSWR<PaymentData>(

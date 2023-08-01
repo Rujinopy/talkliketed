@@ -5,7 +5,6 @@ import { Toaster, toast } from "react-hot-toast";
 import { api } from "~/utils/api";
 import { useStore } from "store/stores";
 import { useRouter } from "next/router";
-import { type } from "os";
 interface RefundData {
   startDate: Date;
   endDate: Date;

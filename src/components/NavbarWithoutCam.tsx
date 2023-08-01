@@ -13,8 +13,8 @@ export default function Navbar(props: { style?: string }) {
       </Link>
       <SignedIn>
         <Link
-          className="invisible absolute my-5 flex  h-full transform items-center border-l-2 
-        border-r-2 border-black px-5 py-1 font-mono text-xl font-medium text-black
+          className="my-5 flex text-center h-full transform items-center border-l-2 
+        border-r-2 border-black md:px-5 py-1 font-mono text-sm w-28 md:w-auto px-3 md:text-xl font-medium text-black
          transition duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:bg-[#bafca2] hover:shadow-neo md:visible md:relative"
           href="/subscription"
         >
@@ -42,11 +42,12 @@ export default function Navbar(props: { style?: string }) {
                 ? `${window.location.origin}/user-profile`
                 : undefined
             }
+            
             appearance={{
               elements: {
                 avatarBox:
                   "border border-gray-500 hover:scale-125 transition duration-400",
-                card: "border-2 border-black",
+                card: "border-2 border-black mt-3 mx-auto ml-2",
                 userPreviewTextContainer: "font-mono",
                 userButtonPopoverActionButtonIcon__manageAccount: "text-black",
                 userButtonPopoverActionButtonIcon__signOut: "text-black",
@@ -54,7 +55,9 @@ export default function Navbar(props: { style?: string }) {
                   "font-mono text-black",
                 userButtonPopoverActionButtonText__signOut:
                   "font-mono text-black",
+                
               },
+              
             }}
           />
         </div>

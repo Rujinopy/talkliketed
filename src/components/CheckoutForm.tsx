@@ -95,7 +95,20 @@ const CheckoutForm = (props: Form) => {
 
   return (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    <form onSubmit={handleSubmit} className='flex flex-col w-full justify-center items-center py-10'>
+    <section className='flex flex-col md:flex-row md:w-screen max-w-7xl md:pt-16'>
+    <div className='w-full md:w-[50%] h-fit bg-white border-2 border-black rounded-xl p-5 space-y-3'>
+      <h1 className='text-3xl font-bold '>Pledge information</h1>
+      <p className=''>We will charge you at the beginning of your challenge. If the challenge reaches its end date, your payment
+      will be refunded in full amount or partial, propotionally to your progress, <span className='font-bold'>with 6% deduction for Stripe fees.</span></p>
+      <p className='font-bold underline'>example</p>
+      <p className=''>- You pledge $100 for 100 pushups a day for 10 days.
+       After 15 days you have done 100 pushups everyday. You will be refunded $100 - (0 x (100 / 10)) - (0.06 x 100) = $94.</p>
+      <p className=''>- You pledge $100 for 100 pushups a day for 10 days.
+       After 15 days you have done 100 pushups for only 12 days. It means, you missed three days. So, you will be refunded $100 - (3 x (100 / 10))  - (0.06 x 100) = $70 - 6 = $64</p>
+       <p className='font-bold'>**If you don&apos;t feel comfortable to make pledge right now, feel free to select &quot;Go without pledge&quot;</p>
+       <p className='font-bold'>the app will perform everything like the pledge version but without pledge and refund feature.**</p>
+    </div>
+    <form onSubmit={handleSubmit} className='flex flex-col w-full md:w-[50%] justify-center items-center py-10'>
       <CustomDonationInput
         className="py-3 px-24 mt-12 font-mono text-2xl text-black border-2 border-black rounded-lg focus:border-2 focus:border-[#ffdb58] focus:outline-none"
         name={'customDonation'}
@@ -119,6 +132,7 @@ const CheckoutForm = (props: Form) => {
           hover:cursor-pointer bg-[#fdfd96] hover:bg-[#ffdb58] border-2 border-black">Go without pledge</button>
       </Link>
     </form>
+    </section>
   )
 }
 

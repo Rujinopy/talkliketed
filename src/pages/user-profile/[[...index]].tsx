@@ -18,9 +18,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
     data,
     fetchNextPage,
     hasNextPage,
-    isFetching,
     isFetchingNextPage,
-    status,
   } = api.reps.infiniteSessionHistory.useInfiniteQuery(
     {
       userId: user?.id ?? "",
@@ -51,7 +49,6 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
   );
 
   const role = useMemo(() => sessionData.data?.Role, [sessionData.data?.Role]);
-  // const pledge = sessionData.data?.pledge;
   const endDate = useMemo(
     () => sessionData.data?.endDate,
     [sessionData.data?.endDate]
@@ -106,7 +103,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           className="mx-auto w-full border-black md:w-1/2 md:border-r-2"
         >
           <h1 className="mx-auto border-b-2 border-black bg-white py-3 text-center font-mono text-4xl font-bold">
-            Sessions
+            Challenge
           </h1>
           <div className="mt-5 flex h-[60vh] items-center justify-center text-left text-sm text-gray-500 dark:text-gray-400 md:mx-auto">
             <div className="flex w-96 bg-white md:rounded-lg md:shadow-neo">
@@ -198,15 +195,12 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
       </div>
       <div className="h-screen w-screen">
         <h1 className="mx-auto border-b-2 border-black bg-white py-3 text-center font-mono text-4xl font-bold">
-          history
+          Challenge history
         </h1>
         <div>
           <div className="flex w-full divide-x-2 divide-black border-b-2 border-black bg-white font-bold md:text-2xl">
-            <div className="w-1/12">
-              <h1 className="pl-1 text-center font-mono ">No.</h1>
-            </div>
             <div className="w-1/4">
-              <h1 className="pl-1 font-mono ">Start-End</h1>
+              <h1 className="pl-1 font-mono ">Challenge dates</h1>
             </div>
             <div className="w-1/6 md:w-1/12">
               <h1 className="pl-2 font-mono ">Status</h1>

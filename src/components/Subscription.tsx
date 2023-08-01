@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-
 export default function Subscription() {
     return (
         <Link className="border-r-2 my-5 transform  border-black px-5 py-1 font-mono 

@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { is } from "date-fns/locale";
 import React, { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 
@@ -10,11 +9,6 @@ interface RepCounterProps {
   goal: number
   isSignedIn: boolean
 }
-
-// interface User {
-//   userId: string;
-//   count: number;
-// }
 
 export default function RepCounter(props: RepCounterProps) {
   const checkIfUserIsSubsOrMem = api.reps.checkIfUserExists.useQuery({
@@ -31,7 +25,7 @@ export default function RepCounter(props: RepCounterProps) {
   }, [props.reps]);
 
   return (
-    <div className="w-full h-20 md:h-auto relative transform border-y-2 md:border-b-2 md:border-t-0 border-black bg-[#fdfd96] px-5 py-2 
+    <div className=" h-[10%] md:h-auto relative transform border-y-2 md:border-b-2 md:border-t-0 border-black bg-[#fdfd96] px-5 py-2 
     font-medium text-black shadow-lg transition duration-200 font-mono text-2xl md:text-3xl flex justify-center items-center
      hover:shadow-sm">
        <p className="text-3xl md:text-3xl">Goal: {reps} / {(SubsOrMem === "MEM" || SubsOrMem === "SUBS") ? props.goal : 21}</p>
