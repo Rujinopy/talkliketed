@@ -93,9 +93,9 @@ const Footer = () => {
         <div className="mt-16 border-t border-black pt-8 sm:flex sm:items-center sm:justify-between lg:mt-24">
           <ul className="flex flex-wrap justify-center gap-4 text-xs lg:justify-end">
             <li>
-              <a href="#" className="text-black transition hover:opacity-75">
+              <Link href="/conditions" className="text-black transition hover:opacity-75">
                 Terms & Conditions
-              </a>
+              </Link>
             </li>
 
             <li>

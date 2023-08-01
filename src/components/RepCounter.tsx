@@ -25,7 +25,7 @@ export default function RepCounter(props: RepCounterProps) {
   }, [props.reps]);
 
   return (
-    <div className=" h-[10%] md:h-auto relative transform border-y-2 md:border-b-2 md:border-t-0 border-black bg-[#fdfd96] px-5 py-2 
+    <div className=" h-[10%] md:h-auto relative transform md:border-y-2 md:border-b-2 md:border-t-0 border-black bg-[#fdfd96] px-5 py-2 
     font-medium text-black shadow-lg transition duration-200 font-mono text-2xl md:text-3xl flex justify-center items-center
      hover:shadow-sm">
        <p className="text-3xl md:text-3xl">Goal: {reps} / {(SubsOrMem === "MEM" || SubsOrMem === "SUBS") ? props.goal : 21}</p>

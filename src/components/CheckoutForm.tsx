@@ -106,7 +106,7 @@ const CheckoutForm = (props: Form) => {
       <p className=''>- You pledge $100 for 100 pushups a day for 10 days.
        After 15 days you have done 100 pushups for only 12 days. It means, you missed three days. So, you will be refunded $100 - (3 x (100 / 10))  - (0.06 x 100) = $70 - 6 = $64</p>
        <p className='font-bold'>**If you don&apos;t feel comfortable to make pledge right now, feel free to select &quot;Go without pledge&quot;</p>
-       <p className='font-bold'>the app will perform everything like the pledge version but without pledge and refund feature.**</p>
+       <p className='font-bold'>the app will perform everything like the pledge version but with no pledge and refund features.**</p>
     </div>
     <form onSubmit={handleSubmit} className='flex flex-col w-full md:w-[50%] justify-center items-center py-10'>
       <CustomDonationInput

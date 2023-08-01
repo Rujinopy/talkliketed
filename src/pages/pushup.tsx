@@ -235,7 +235,7 @@ export const Home: NextPage = (props) => {
       </section>
       <section
         aria-label="body"
-        className="h-full w-screen border-b-2 border-x-2 border-black bg-[#ffb2ef] md:h-auto max-w-6xl mx-auto"
+        className="h-full w-screen border-b-2 md:border-x-2 border-black bg-[#ffb2ef] md:h-auto max-w-6xl mx-auto"
       >
         <RepCounter
               date={newToday}
