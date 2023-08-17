@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
@@ -12,53 +12,82 @@ generator client {
 }
 
 model Posts {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    content  String @db.VarChar(255)
-    authorId String
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content   String   @db.VarChar(255)
+  authorId  String
 
-    @@index([authorId])
+  @@index([authorId])
 }
 
 model Pushups {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    date      DateTime? 
-    count     Int?
-    user      Users? @relation(fields: [userId], references: [userId])
-    userId    String?
+  id                 String    @id @default(cuid())
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  date               DateTime?
+  count              Int?      @default(0)
+  user               Users?    @relation(fields: [userId], references: [userId])
+  userId             String?
 
-    @@index([userId])
+  @@index([userId])
+}
+
+model Situps {
+  id                 String    @id @default(cuid())
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  date               DateTime?
+  count              Int?      @default(0)
+  user               Users?    @relation(fields: [userId], references: [userId])
+  userId             String?
+
+  @@index([userId])
+}
+
+model WeightLifting {
+  id                 String    @id @default(cuid())
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  date               DateTime?
+  count              Int?      @default(0)
+  user               Users?    @relation(fields: [userId], references: [userId])
+  userId             String?
+
+  @@index([userId])
 }
 
 model Users {
-    id        Int      @id @default(autoincrement())
-    startDate DateTime?
-    endDate   DateTime?
-    pushups   Pushups[]
-    email     String?
-    name      String?
-    userId    String 
-    Role      Role     @default(USER)
-    session   ActivitiesSession[] 
-    pledge    Int?      @default(0)
-    repsAmount Int?     @default(0)
-    payment_intent String? 
-    
-    @@unique([userId])
+  id                  Int                 @id @default(autoincrement())
+  name                String?
+  userId              String
+  startDate           DateTime?
+  endDate             DateTime?
+  email               String?
+  pledge              Int?                @default(0)
+  repsAmount          Int?                @default(0)
+  situpsAmount        Int?                @default(0)
+  weightLiftingAmount Int?                @default(0)
+  payment_intent      String?
+  pushups             Pushups[]
+  situps              Situps[]
+  weightLifting       WeightLifting[]
+  Role                Role                @default(USER)
+  session             ActivitiesSession[]
+
+  @@unique([userId])
 }
 
 model ActivitiesSession {
-  id String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  startDate DateTime? 
-  endDate DateTime?
-  userId String
-  pledge Int? @default(0)
-  status Status @default(NONE)
-  user Users @relation(fields: [userId], references: [userId])
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  startDate DateTime?
+  endDate   DateTime?
+  userId    String
+  pledge    Int?      @default(0)
+  refund    Int?      @default(0)
+  status    Status    @default(NONE)
+  user      Users     @relation(fields: [userId], references: [userId])
 
   @@index([userId])
 }

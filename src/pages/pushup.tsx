@@ -10,19 +10,25 @@ import {
   drawCanvas,
   VideoMock,
 } from "./app";
-import {
+import React, {
   useState,
   useRef,
   useEffect,
-  useMemo,
   useCallback,
   type MutableRefObject,
+  ChangeEvent,
 } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import { api } from "~/utils/api";
-import { toast } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import Image from "next/image";
+import { calculatePushups, calculateSitUps } from "~/utils/draw";
+import debounce from "lodash.debounce";
+import { useStore } from "store/stores";
+
+let movenetInterval: NodeJS.Timeout;
+
 //movenet model
 const model = poseDetection.SupportedModels.MoveNet;
 
@@ -37,7 +43,7 @@ const detectorConfig = {
 };
 
 const convertDate = () => {
-  const today = new Date().toString().slice(0, 15);
+  const today = new Date().toDateString();
   const newToday = new Date(today);
   return newToday;
 };
@@ -50,13 +56,20 @@ const Guides = [
   "NOTE: The colored skeleton on the side of your body indicates if your back is straight.",
 ];
 
+interface modeProps {
+  mode: string;
+  setMode: (mode: string) => void;
+}
+
 export const Home: NextPage = (props) => {
   const { user, isSignedIn, isLoaded } = useUser();
   const webRef = useRef<Webcam | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isChecked, setChecked] = useState(false);
   const [reps, updateReps] = useState(0);
-
+  // const [modes, setModes] = useState("push-ups");
+  const mode = useStore((state: unknown) => (state as modeProps).mode);
+  const setMode = useStore((state: unknown) => (state as modeProps).setMode);
   const useUpdateRep = api.reps.updateRepsForUser.useMutation({
     onSuccess: () => {
       setIsUpdating(false);
@@ -71,11 +84,30 @@ export const Home: NextPage = (props) => {
     {
       userId: user?.id ?? "",
       date: newToday,
+      mode: mode,
     },
     {
       enabled: isSignedIn === true,
-      refetchOnMount: false,
       refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      onSuccess: (data) => {
+        if (data.user?.Role !== "USER") {
+          if (data?.reps?.count == undefined || data?.reps?.count == null) {
+
+            createRep.mutate({
+              userId: user?.id ?? "",
+              date: newToday,
+              reps: 0,
+              mode: mode,
+            });
+          } 
+          
+          else if (data?.reps?.count) {
+
+            updateReps(data?.reps?.count);
+          }
+        }
+      },
     }
   );
 
@@ -83,9 +115,7 @@ export const Home: NextPage = (props) => {
   const createRep = api.reps.createRepForUser.useMutation({
     onSuccess: () => {
       //refetch data
-      dataQuery.refetch().catch((e) => {
-        console.log(e);
-      });
+      dataQuery.refetch().catch((e) => {});
     },
     onError: (e) => {
       const errorMessages = e.data?.zodError?.fieldErrors.message;
@@ -96,55 +126,28 @@ export const Home: NextPage = (props) => {
       }
     },
   });
-  const cachedData = useMemo(() => {
-    if (!dataQuery.isSuccess) return null;
-    if (dataQuery.data) {
-      updateReps(dataQuery.data.count ?? 0);
-      return dataQuery.data;
-    }
-  }, [dataQuery.data?.count]);
 
-  // create reps only one time when page loads
-  useEffect(() => {
-    if (isSignedIn === undefined || isSignedIn === null) {
-      return;
-    }
-    if (isSignedIn) {
-      if (
-        dataQuery.data?.count !== undefined &&
-        dataQuery.data?.count !== null
-      ) {
-        return;
-      }
-      if (
-        dataQuery.data?.count === undefined ||
-        dataQuery.data?.count === null
-      ) {
-        createRep.mutate({
-          userId: user?.id ?? "",
-          date: newToday,
-          reps: 0,
-        });
-      }
-    }
-  }, [isSignedIn]);
-
-  // update reps in db
+  const debouncedUpdateRep = debounce(useUpdateRep.mutateAsync, 2000);
   useEffect(() => {
     //send reps to db
     if (reps > 0) {
       if (isSignedIn) {
         //isUpdating is used to prevent multiple calls to the db
-        if (!isUpdating) {
-          void Promise.resolve(setIsUpdating(true)).then(() => {
-            void useUpdateRep.mutateAsync({
-              date: newToday,
-              reps: reps,
-            });
+        setIsUpdating(false);
+        if (isUpdating === false) {
+          debouncedUpdateRep({
+            date: newToday,
+            reps: reps,
+            mode: mode,
           });
         }
       }
     }
+
+    // Clear the debounced function when the component unmounts or when the 'reps' dependency changes.
+    return () => {
+      debouncedUpdateRep.cancel();
+    };
   }, [reps]);
 
   //detect the pose in real time
@@ -165,14 +168,14 @@ export const Home: NextPage = (props) => {
         const context = canvasRef.current?.getContext("2d"); // Use optional chaining operator to avoid undefined
         if (context) {
           // Add a check to ensure 'context' is not undefined
-          drawCanvas(
-            pose[0],
-            video,
-            videoWidth,
-            videoHeight,
-            canvasRef,
-            handleCountUpdate
-          );
+          drawCanvas(pose[0], video, videoWidth, videoHeight, canvasRef, mode);
+
+          if (mode === "push-ups") {
+            calculatePushups(pose[0].keypoints, handleCountUpdate);
+          }
+          if (mode === "sit-ups") {
+            calculateSitUps(pose[0].keypoints, handleCountUpdate);
+          }
         }
       }
     }
@@ -185,13 +188,13 @@ export const Home: NextPage = (props) => {
   //run movenet
   const runMovenet = async () => {
     const net = await poseDetection.createDetector(model, detectorConfig);
+
     //detect the pose in real time
-    setInterval(() => {
+    movenetInterval = setInterval(() => {
       if (webRef.current && net) {
         detectPoseInRealTime(webRef.current, net).catch(console.error);
       }
     }, 100);
-
   };
 
   //get isChecked state from Navbar for toggling the video
@@ -201,6 +204,7 @@ export const Home: NextPage = (props) => {
 
   useEffect(() => {
     if (isChecked) {
+      //stop current movenet
       void tf.ready().catch(console.error);
       runMovenet().catch(console.error);
     }
@@ -225,28 +229,29 @@ export const Home: NextPage = (props) => {
   }
 
   return (
-    <div className="flex h-auto w-screen flex-col justify-center bg-[#daf5f0]">
-      {/* <button
-        className="text-stroke-3 font-mono text-7xl font-bold text-red-400"
+    <div className="flex h-auto w-screen flex-col justify-center border-b-2 border-black bg-[#daf5f0] font-mono">
+      <button
+        className="text-stroke-3 text-7xl font-bold text-red-400"
         onClick={() => updateReps((prev) => prev + 1)}
       >
         test
-      </button> */}
+      </button>
       <section className="border-b-2 border-black">
-        <Navbar onStateChanged={handleChecked} />
+        <Navbar onStateChanged={handleChecked} mode={mode} />
       </section>
       <section
         aria-label="body"
-        className="h-full w-screen border-b-2 md:border-x-2 border-black bg-[#ffb2ef] md:h-auto max-w-6xl mx-auto"
+        className="mx-auto h-full w-screen max-w-6xl border-black bg-[#ffb2ef] md:h-auto md:border-x-2"
       >
         <RepCounter
-              date={newToday}
-              userId={user?.id}
-              reps={reps}
-              goal={dataQuery.data?.user?.repsAmount as number}
-              isSignedIn={isSignedIn ?? false}
-            />
-        <section className="mx-auto h-[90%] flex max-w-6xl flex-col md:flex-row md:justify-center md:overflow-hidden">
+          date={newToday}
+          userId={user?.id}
+          reps={reps}
+          role={dataQuery.data?.user?.Role as string}
+          goal={dataQuery.data?.user?.repsAmount as number}
+          isSignedIn={isSignedIn ?? false}
+        />
+        <section className="mx-auto flex h-[90%] max-w-6xl flex-col md:flex-row md:justify-center md:overflow-hidden">
           {/* left */}
           {/* <div className="flex h-[6rem] flex-col items-center justify-center border-black bg-[#ffb2ef] md:h-auto md:basis-1/4 md:border-l-2">
             {!isSignedIn ? (
@@ -268,9 +273,8 @@ export const Home: NextPage = (props) => {
           {/* middle */}
           <div
             aria-label="video"
-            className="relative overflow-hidden w-screen border-black bg-white md:w-full md:basis-3/4 md:border-x-2 flex-col flex md:flex-row"
+            className="relative flex w-screen flex-col overflow-hidden border-black bg-white md:w-full md:basis-3/4 md:flex-row md:border-x-2"
           >
-            
             {isChecked ? (
               <Canvas
                 onWebcamRef={handleWebcamRef}
@@ -285,45 +289,57 @@ export const Home: NextPage = (props) => {
         </section>
       </section>
       <section className="h-auto min-h-screen bg-[#daf5f0]">
-        <div className="mx-auto min-h-screen max-w-6xl border-x-2 border-black bg-[#ffb2ef]">
-          <h1 className="ml-3 w-fit px-5 py-3 "></h1>
-          <h1 className="ml-10 mt-3 w-fit rounded-lg border-2 border-black bg-white px-5 py-3 font-mono font-bold shadow-neo">
+        <div className="mx-auto min-h-screen max-w-6xl border-x-2 border-b-2 border-black bg-[#ffb2ef]">
+          <div className="flex justify-center pt-5 ">
+            <p className="p-2 text-lg">Select Mode:</p>
+            <ModeSelector
+              setModes={setMode}
+              onclick={() => {
+                setChecked(false);
+                if (dataQuery.data?.user?.Role !== "USER") {
+                  dataQuery.refetch().then((data) => updateReps(data.data?.reps?.count ?? 0));
+                  
+                }
+              }}
+            />
+          </div>
+          <h1 className="ml-10 mt-20 w-fit rounded-lg border-2 border-black bg-white px-5 py-3 font-mono font-bold shadow-neo">
             User Guide
           </h1>
-          <div className="max-w-4xl space-y-7 px-5 md:px-10 py-8 font-mono text-xl">
+          <div className="max-w-4xl space-y-7 px-5 py-8 font-mono text-xl md:px-10">
             <h2>
-            This is a push-up counter operated with AI that tracks your movement when you&apos;re performing push-ups.
+              This is a push-up counter operated with AI that tracks your
+              movement when you&apos;re performing push-ups.
             </h2>
-            { Guides.map((guide, id) => (
-              <div key={id} className="flex flex-col space-y-3 bg-white py-3 px-3 rounded-xl border-black border-2">
+            {Guides.map((guide, id) => (
+              <div
+                key={id}
+                className="flex flex-col space-y-3 rounded-xl border-2 border-black bg-white px-3 py-3"
+              >
                 <p>{guide}</p>
-                {
-                  id === 1 ? <Image
-                  src="https://scontent.fbkk2-4.fna.fbcdn.net/v/t39.30808-6/364748037_6382607758484193_5164982862645369181_n.jpg?stp=cp6_dst-jpg&_nc_cat=105&ccb=1-7&_nc_sid=8bfeb9&_nc_eui2=AeGHTRvrYrwsPQe1duDnpYAPjs3PzERQ2ziOzc_MRFDbOJ0ruGh8QGY-WprCeDfcjwy7HTFYsjCY5Gj_eTWsFzEE&_nc_ohc=ohSGO1WDCeAAX-V-Lkl&_nc_zt=23&_nc_ht=scontent.fbkk2-4.fna&oh=00_AfCMC0_zHzebtaGH1HgYFjojUTShLpoIKghNAtQOSzBpHw&oe=64CD6537"
-                  alt="lef side of body"
-                  className="z-0"
-                  priority={true}
-                  width={500}
-                  height={500}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  
-                />
-                : null
-                }
-                {
-                  id === 2 ? <Image
-                  src="https://cdn.fbsbx.com/v/t59.2708-21/364163958_249548967927181_5477702127242660233_n.gif?_nc_cat=108&ccb=1-7&_nc_sid=041f46&_nc_eui2=AeGazv46saqQtv7s9XZ75vZXeHPFX6NBjC14c8Vfo0GMLYEj4nSDOqVWwiWSCg4b0Qmu2tW7bOPz0faVFmHR8q1O&_nc_ohc=XBJVvEGpcVwAX-7zCp1&_nc_ht=cdn.fbsbx.com&oh=03_AdQzPJgKKz2yPHpWSg-LzlvbbM-C5IE7VbjDQ2np3DQDOg&oe=64CA31BA"
-                  alt="doing push-ups"
-                  className="z-0"
-                  priority={true}
-                  width={500}
-                  height={500}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  
-                />
-                : null
-                }
-            </div>
+                {id === 1 ? (
+                  <Image
+                    src="https://scontent.fbkk2-4.fna.fbcdn.net/v/t39.30808-6/364748037_6382607758484193_5164982862645369181_n.jpg?stp=cp6_dst-jpg&_nc_cat=105&ccb=1-7&_nc_sid=8bfeb9&_nc_eui2=AeGHTRvrYrwsPQe1duDnpYAPjs3PzERQ2ziOzc_MRFDbOJ0ruGh8QGY-WprCeDfcjwy7HTFYsjCY5Gj_eTWsFzEE&_nc_ohc=ohSGO1WDCeAAX-V-Lkl&_nc_zt=23&_nc_ht=scontent.fbkk2-4.fna&oh=00_AfCMC0_zHzebtaGH1HgYFjojUTShLpoIKghNAtQOSzBpHw&oe=64CD6537"
+                    alt="lef side of body"
+                    className="z-0 mx-auto h-[50%] w-[50%] border-2 border-black"
+                    priority={true}
+                    width={200}
+                    height={200}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
+                ) : null}
+                {id === 2 ? (
+                  <Image
+                    src="https://cdn.fbsbx.com/v/t59.2708-21/364163958_249548967927181_5477702127242660233_n.gif?_nc_cat=108&ccb=1-7&_nc_sid=041f46&_nc_eui2=AeGazv46saqQtv7s9XZ75vZXeHPFX6NBjC14c8Vfo0GMLYEj4nSDOqVWwiWSCg4b0Qmu2tW7bOPz0faVFmHR8q1O&_nc_ohc=XBJVvEGpcVwAX-7zCp1&_nc_ht=cdn.fbsbx.com&oh=03_AdQzPJgKKz2yPHpWSg-LzlvbbM-C5IE7VbjDQ2np3DQDOg&oe=64CA31BA"
+                    alt="doing push-ups"
+                    className="z-0 mx-auto h-[50%] w-[50%] border-2 border-black"
+                    priority={true}
+                    width={500}
+                    height={500}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
+                ) : null}
+              </div>
             ))}
           </div>
         </div>
@@ -333,3 +349,71 @@ export const Home: NextPage = (props) => {
 };
 
 export default Home;
+
+interface ModeSelectorProps {
+  setModes: (mode: string) => void;
+  onclick: () => void;
+}
+
+export function ModeSelector(props: ModeSelectorProps) {
+  const handleClick = (
+    e:
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selectMode = (
+      e.currentTarget as HTMLButtonElement | HTMLSelectElement
+    ).value;
+    props.setModes(selectMode);
+    clearInterval(movenetInterval);
+    props.onclick();
+    toast.success(`Mode changed to ${selectMode}`);
+  };
+  return (
+    <div className="w-auto font-mono ">
+      <Toaster
+        toastOptions={{
+          className: "border-2 border-black",
+        }}
+      />
+      <div className="sm:hidden">
+        <label htmlFor="Tab" className="sr-only">
+          Tab
+        </label>
+
+        <select
+          onChange={(e) => handleClick(e)}
+          id="Tab"
+          className="w-full rounded-md border-2 border-black p-2"
+        >
+          <option value="push-ups">Push-ups</option>
+          <option value="sit-ups">Sit-ups</option>
+        </select>
+      </div>
+
+      <div className="hidden font-mono sm:block">
+        <nav className="flex gap-6" aria-label="Tabs">
+          <button
+            className="shrink-0 rounded-lg border-2 border-black bg-white p-2 text-lg text-black transition duration-200 hover:translate-x-1 hover:bg-yellow-200 hover:shadow-neo"
+            onClick={(e) => {
+              handleClick(e);
+            }}
+            value={"push-ups"}
+          >
+            Push-ups
+          </button>
+
+          <button
+            onClick={(e) => {
+              handleClick(e);
+            }}
+            className="shrink-0 rounded-lg border-2 border-black bg-white p-2 text-lg text-black transition duration-200 hover:translate-x-1 hover:bg-yellow-200 hover:shadow-neo"
+            value={"sit-ups"}
+          >
+            Sit-ups
+          </button>
+        </nav>
+      </div>
+    </div>
+  );
+}

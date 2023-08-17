@@ -16,7 +16,7 @@ export default function Navbar(props: { style?: string }) {
           className="my-5 flex text-center h-full transform items-center border-l-2 
         border-r-2 border-black md:px-5 py-1 font-mono text-sm w-28 md:w-auto px-3 md:text-xl font-medium text-black
          transition duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:bg-[#bafca2] hover:shadow-neo md:visible md:relative"
-          href="/subscription"
+          href="/challenge"
         >
           Set Custom Goal
         </Link>

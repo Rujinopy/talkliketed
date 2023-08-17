@@ -22,7 +22,7 @@ const Canvas = ({ onWebcamRef, onCanvasRef }: Props) => {
   };
 
   return (
-    <div className="relative h-screen md:h-full w-full bg-black">
+    <div className="relative h-[80vh] md:h-full w-full bg-black">
       <Webcam
           ref={camRef}
           audio={false}

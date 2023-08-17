@@ -7,9 +7,9 @@ import {
 } from "~/server/api/trpc";
 
 import { TRPCError } from "@trpc/server";
-
 import { Ratelimit } from "@upstash/ratelimit"; // for deno: see above
 import { Redis } from "@upstash/redis";
+
 // Create a new ratelimiter, that allows 10 requests per 10 seconds
 const ratelimit = new Ratelimit({
     redis: Redis.fromEnv(),
@@ -25,6 +25,7 @@ export const repsRouter = createTRPCRouter({
                 userId: z.string(),
                 date: z.date(),
                 reps: z.number(),
+                mode: z.string(),
             })
         )
         .mutation(async ({ input, ctx }) => {
@@ -41,33 +42,59 @@ export const repsRouter = createTRPCRouter({
                     Role: true,
                 },
             });
-            const inputDate = new Date(input.date);
-            inputDate.setHours(inputDate.getHours() + 7);
-
-            const todayReps = await ctx.prisma.pushups.findFirst({
-                where: {
-                    userId: ctx.auth?.userId,
-                    date: new Date(inputDate.toISOString()),
-                },
-            });
-
-            if ((todayReps === null) && (role?.Role === "MEM" || role?.Role === "SUBS")) {
-                console.log(todayReps)
-                const rep = await ctx.prisma.pushups.create({
-                    data: {
-                        user: {
-                            connect: {
-                                userId: ctx.auth?.userId ?? "",
-                            },
-                        },
-                        date: new Date(inputDate.toISOString()),
-                        count: input.reps,
+            let todayReps = null
+            if (input.mode === "push-ups") {
+                todayReps = await ctx.prisma.pushups.findFirst({
+                    where: {
+                        userId: ctx.auth?.userId,
+                        date: input.date,
                     },
                 });
-                console.log("success");
-                return rep;
+            }
+            else if (input.mode === "sit-ups") {
+                todayReps = await ctx.prisma.situps.findFirst({
+                    where: {
+                        userId: ctx.auth?.userId,
+                        date: input.date,
+                    },
+                });
+            }
+
+
+            if ((role?.Role === "MEM" || role?.Role === "SUBS")) {
+                let rep
+                if (todayReps === null) {
+                    if (input.mode === "push-ups") {
+                        rep = await ctx.prisma.pushups.create({
+                            data: {
+                                user: {
+                                    connect: {
+                                        userId: ctx.auth?.userId ?? "",
+                                    },
+                                },
+                                date: input.date,
+                                count: input.reps,
+                            },
+                        });
+                    }
+                    if (input.mode === "sit-ups") {
+                        rep = await ctx.prisma.situps.create({
+                            data: {
+                                user: {
+                                    connect: {
+                                        userId: ctx.auth?.userId ?? "",
+                                    },
+                                },
+                                date: input.date,
+                                count: input.reps,
+                            },
+                        });
+                    }
+                    return rep;
+                }
+
             } else if (role?.Role === "USER") {
-                console.log("user is not subscribed");
+                console.log("user haven't set any challenge yet.");
                 return null;
             }
         }),
@@ -76,40 +103,82 @@ export const repsRouter = createTRPCRouter({
             z.object({
                 userId: z.string(),
                 date: z.date(),
+                mode: z.string(),
             })
         )
         .query(async ({ input, ctx }) => {
-            //if user is logged in, return reps for that user
-            const inputDate = new Date(input.date);
-            inputDate.setHours(inputDate.getHours() + 7);
-
-            const reps = await ctx.prisma.pushups.findFirst({
+            const mode = input.mode;
+            const user = await ctx.prisma.users.findFirst({
                 where: {
                     userId: ctx.auth?.userId ?? input.userId,
-                    date: new Date(inputDate.toISOString()),
                 },
                 select: {
-                    count: true,
-                    date: true,
-                    user: {
-                        select: {
-                            repsAmount: true
-                        }
-                    }
+                    Role: true,
+                    repsAmount: true,
                 },
             });
-            return reps;
+
+            if (mode === "push-ups") {
+                const reps = await ctx.prisma.pushups.findFirst({
+                    where: {
+                        userId: ctx.auth?.userId ?? input.userId,
+                        date: input.date
+                    },
+                    select: {
+                        count: true,
+                        date: true,
+
+                    },
+                });
+
+                return {
+                    reps,
+                    user
+                };
+            }
+
+            else if (mode === "sit-ups") {
+                const reps = await ctx.prisma.situps.findFirst({
+                    where: {
+                        userId: ctx.auth?.userId ?? input.userId,
+                        date: input.date
+                    },
+                    select: {
+                        count: true,
+                        date: true,
+                    }
+                })
+                return {
+                    reps,
+                    user
+                };
+            }
+
+            return {
+                reps: null,
+                user
+            }
+
+
+
+
+
         }),
 
-    updateRepsForUser: publicProcedure
+    updateRepsForUser: protectedProcedure
         .input(
             z.object({
                 date: z.date(),
                 reps: z.number(),
+                mode: z.string(),
             })
         )
         .mutation(async ({ input, ctx }) => {
-            const rep = await ctx.prisma.pushups.updateMany({
+            // const inputDate = new Date(input.date);
+            // inputDate.setHours(inputDate.getHours() + 7);
+            let rep
+            if (input.mode === "push-ups") {
+            rep = await ctx.prisma.pushups.updateMany({
                 where: {
                     userId: ctx.auth?.userId ?? "",
                     date: input.date,
@@ -118,6 +187,18 @@ export const repsRouter = createTRPCRouter({
                     count: input.reps,
                 },
             });
+        }
+        else if (input.mode === "sit-ups") {
+            rep = await ctx.prisma.situps.updateMany({
+                where: {
+                    userId: ctx.auth?.userId ?? "",
+                    date: input.date,
+                },
+                data: {
+                    count: input.reps,
+                },
+            });
+        }
             return rep;
         }),
     updateStartEndDates: publicProcedure
@@ -160,6 +241,7 @@ export const repsRouter = createTRPCRouter({
                 },
                 include: {
                     session: true,
+
                 },
             });
             return rep;
@@ -238,7 +320,23 @@ export const repsRouter = createTRPCRouter({
                 },
 
             });
-            return reps;
+            const situps = await ctx.prisma.pushups.findMany({
+                where: {
+                    userId: ctx.auth?.userId ?? "",
+                    date: {
+                        gte: input.startDate,
+                        lte: input.endDate,
+                    },
+                },
+                select: {
+                    count: true,
+                },
+
+            });
+            return {
+                reps,
+                situps
+            }
         }
         ),
 
@@ -267,6 +365,7 @@ export const repsRouter = createTRPCRouter({
                 startDate: z.date(),
                 endDate: z.date(),
                 repsAmount: z.string(),
+                situpsAmount: z.string(),
             }))
         .mutation(async ({ input, ctx }) => {
             const user = await ctx.prisma.users.updateMany({
@@ -280,20 +379,21 @@ export const repsRouter = createTRPCRouter({
                     startDate: input.startDate,
                     endDate: input.endDate,
                     repsAmount: parseInt(input.repsAmount),
+                    situpsAmount: parseInt(input.situpsAmount),
                 },
             });
             return user;
         }
         ),
 
-    getAllRepsForUser: publicProcedure
+    getAllRepsForUser: protectedProcedure
         .input(z.object({
             startDate: z.date(),
             endDate: z.date(),
         }))
         .query(async ({ input, ctx }) => {
-
-            const reps = await ctx.prisma.pushups.findMany({
+            //combine pushups and situps
+            const pushups = await ctx.prisma.pushups.findMany({
                 where: {
                     userId: ctx.auth?.userId,
                     date: {
@@ -304,14 +404,36 @@ export const repsRouter = createTRPCRouter({
                 select: {
                     userId: true,
                     count: true,
-                    date: true,
+                    date: true
                 },
                 orderBy: {
                     date: "asc",
                 },
             });
+            const situps = await ctx.prisma.situps.findMany({
+                where: {
+                    userId: ctx.auth?.userId,
+                    date: {
+                        gte: input.startDate,
+                        lte: input.endDate,
+                    }
+                },
+                select: {
+                    userId: true,
+                    count: true,
+                    date: true
+                },
+                orderBy: {
+                    date: "asc",
+                },
 
-            return reps;
+            });
+            
+
+            return {
+                pushups,
+                situps
+            };
         }
         ),
 
@@ -345,6 +467,7 @@ export const repsRouter = createTRPCRouter({
                 endDate: z.date(),
                 status: z.string(),
                 pledge: z.number(),
+                refund: z.number().optional(),
             }))
         .mutation(async ({ input, ctx }) => {
             const session = await ctx.prisma.activitiesSession.create({
@@ -353,13 +476,15 @@ export const repsRouter = createTRPCRouter({
                     startDate: input.startDate,
                     endDate: input.endDate,
                     status: input.status === "FULL" ? "FULL" : (input.status === "NONE" ? "NONE" : "PARTIAL"),
+                    pledge: input.pledge,
+                    refund: input.refund ?? 0,
                 }
             })
             return session;
         }
         ),
 
-    infiniteSessionHistory: publicProcedure
+    paginate: protectedProcedure
         .input(
             z.object({
                 userId: z.string(),
@@ -367,6 +492,11 @@ export const repsRouter = createTRPCRouter({
                 cursor: z.string().nullish()
             }))
         .query(async ({ input, ctx }) => {
+            const allSessionNumber = await ctx.prisma.activitiesSession.count({
+                where: {
+                    userId: input.userId,
+                }
+            })
             const session = await ctx.prisma.activitiesSession.findMany({
                 where: {
                     userId: input.userId,
@@ -383,13 +513,14 @@ export const repsRouter = createTRPCRouter({
                 const nextItem = session.pop()
                 nextCursor = nextItem?.id
             }
-
-
+            let totalPage = Math.ceil(allSessionNumber / input.limit);
             return {
                 session,
+                totalPage,
                 nextCursor
             }
         }
+
         ),
 
     isUserSuccess: publicProcedure
@@ -476,5 +607,29 @@ export const repsRouter = createTRPCRouter({
         }
         ),
 
+    gedRepsForUser: protectedProcedure
+        .input(z.object({
+            startDate: z.date(),
+        }))
+        .query(async ({ input, ctx }) => {
+
+            const reps = await ctx.prisma.pushups.findMany({
+                where: {
+                    userId: ctx.auth?.userId,
+                    date: {
+                        gte: input.startDate,
+                        lt: new Date(input.startDate.getTime() + 24 * 60 * 60 * 1000),
+                    },
+                },
+                select: {
+                    date: true,
+                    count: true,
+                },
+
+
+            });
+
+            return reps;
+        }),
 });
 

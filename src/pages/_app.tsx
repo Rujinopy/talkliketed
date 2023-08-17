@@ -10,7 +10,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   appearance={
     {
       layout: {
-        helpPageUrl: "/subscription",
+        helpPageUrl: "/challenge",
       }
     }
   }

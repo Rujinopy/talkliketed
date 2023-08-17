@@ -9,6 +9,7 @@ interface PaymentRequestBody {
     startDate: string
     endDate: string;
     repsAmount: number;
+    situpsAmount: number;
     userId: string;
   }
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
@@ -21,7 +22,7 @@ export default async function handler(
 ) {
   if (req.method === 'POST') {
     // const {userId} = getAuth(req);
-    const { amount, startDate, endDate, repsAmount, userId}: PaymentRequestBody = req.body as PaymentRequestBody;
+    const { amount, startDate, endDate, repsAmount, userId, situpsAmount}: PaymentRequestBody = req.body as PaymentRequestBody;
 
     try {
       // Validate the amount that was passed from the client.
@@ -37,7 +38,8 @@ export default async function handler(
             startDate: startDate,
             endDate: endDate,
             pledge: amount,
-            repsAmount: repsAmount
+            repsAmount: repsAmount,
+            situpsAmount: situpsAmount
           }
         },
         metadata: {
@@ -58,7 +60,7 @@ export default async function handler(
         ],
         mode: 'payment',
         success_url: `${req.headers.origin ?? ""}/result?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${req.headers.origin ?? ""}/subscription`,
+        cancel_url: `${req.headers.origin ?? ""}/challenge`,
       }
 
       const checkoutSession: Stripe.Checkout.Session =

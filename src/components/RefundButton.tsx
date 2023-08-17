@@ -5,6 +5,7 @@ import { Toaster, toast } from "react-hot-toast";
 import { api } from "~/utils/api";
 import { useStore } from "store/stores";
 import { useRouter } from "next/router";
+
 interface RefundData {
   startDate: Date;
   endDate: Date;
@@ -28,21 +29,23 @@ const RefundButton = (props: RefundData) => {
   });
   const addSessionToDB = api.reps.addSessionHistory.useMutation({
     onSuccess: () => {
-      toast.success("Successfully reclaim pledge!");
+      toast.success("Successfully end the challenge");
     },
   });
   const setRefundResponse = useStore(
     (state: unknown) => (state as dateStore).setRefundResponse
   );
 
-  const isUserSuccess = api.reps.isUserSuccess.useQuery({
-    userId: props.id,
-    startDate: props.startDate,
-    endDate: props.endDate,
-  }
-  ,{
-    enabled: false,
-  });
+  const isUserSuccess = api.reps.isUserSuccess.useQuery(
+    {
+      userId: props.id,
+      startDate: props.startDate,
+      endDate: props.endDate,
+    },
+    {
+      enabled: false,
+    }
+  );
 
   const today = new Date();
   const [isModalOpen, SetModalOpen] = useState(false);
@@ -66,8 +69,17 @@ const RefundButton = (props: RefundData) => {
         changeRoleToUser.mutate({
           userId: props.id,
         });
+        addSessionToDB.mutate({
+          userId: props.id,
+          startDate: props.startDate,
+          endDate: props.endDate,
+          status: "NONE",
+          pledge: 0,
+          refund: response.refund!
+        });
+        console.log(response)
         router.push(`/refund/noRefund`).catch((e) => {
-          console.log(e);
+
         });
       } else {
         if (response.status === undefined || response.status === null) {
@@ -75,18 +87,16 @@ const RefundButton = (props: RefundData) => {
           return;
         }
         if (response.status) {
-          
-          router
-            .push(`/refund/${response.id as string ?? ""}`)
-            .catch((e) => {
-              console.log(e);
-            });
+          router.push(`/refund/${(response.id as string) ?? ""}`).catch((e) => {
+            console.log(e);
+          });
         }
       }
     }
   };
 
   const isUserEnded = async (): Promise<void> => {
+    // if (today) {
     if (today > props.endDate || today === props.endDate) {
       if (props.role === "SUBS") {
         await handleSubmit();
@@ -96,7 +106,8 @@ const RefundButton = (props: RefundData) => {
         changeRoleToUser.mutate({
           userId: props.id,
         });
-        const {data} = await isUserSuccess.refetch();
+
+        const { data } = await isUserSuccess.refetch();
         if (data?.success === "NONE") {
           addSessionToDB.mutate({
             userId: props.id,
@@ -140,7 +151,7 @@ const RefundButton = (props: RefundData) => {
       <MakingSureModal
         open={isModalOpen}
         SetModalOpen={toggleModal}
-        isUserEnded={() => isUserEnded}
+        isUserEnded={() => isUserEnded()}
         role={props.role}
       />
       <Toaster
@@ -183,7 +194,7 @@ const MakingSureModal = ({
     <>
       {open && (
         <div className="fixed bottom-0 left-0 right-0 top-0 z-40 flex items-center justify-center bg-gray-900 bg-opacity-50 font-mono ">
-          <div className="z-50 max-w-3xl rounded-3xl border-2 border-black bg-[#fdfd96] p-8 text-lg">
+          <div className="z-50 max-w-3xl rounded-3xl border-2 border-black bg-white p-8 text-lg">
             {role === "SUBS" ? (
               <div>
                 <h2 className="mb-4 text-2xl font-bold">End The Session?</h2>
@@ -192,10 +203,16 @@ const MakingSureModal = ({
                   your profile.
                 </p>
                 <p className="mt-2 text-sm md:text-xl">
-                <span className="underline font-bold mr-1">IMPORTANT</span> Your pledge will be added back to your bank account within
+                  <span className="mr-1 font-bold underline">IMPORTANT</span>{" "}
+                  Your pledge will be added back to your bank account within
                   5-10 days, in accordance with Stripe&apos;s policy.
                 </p>
-                <p className="mt-2 text-sm md:text-xl"><span className="underline font-bold">IMPORTANT</span> Please note that a deduction of 6% will be applied to your initial money as transaction costs and taxes, resulting in the final reclaim amount.</p>
+                <p className="mt-2 text-sm md:text-xl">
+                  <span className="font-bold underline">IMPORTANT</span> Please
+                  note that a deduction of 6% will be applied to your initial
+                  money as transaction costs and taxes, resulting in the final
+                  reclaim amount.
+                </p>
                 <a href="https://support.stripe.com/questions/understanding-fees-for-refunded-payments">
                   <p
                     className="inline text-sm text-gray-400
@@ -223,7 +240,9 @@ const MakingSureModal = ({
             <div className="flex flex-row space-x-5">
               <button
                 className="mt-4 rounded border-2 border-black bg-white px-4 py-2 font-bold text-black shadow-neo hover:bg-red-300"
-                onClick={() => isUserEnded()}
+                onClick={() => {
+                  isUserEnded();
+                }}
               >
                 {role === "SUBS" ? "Refund/End Session" : "End session"}
               </button>

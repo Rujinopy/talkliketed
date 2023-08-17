@@ -13,8 +13,6 @@ const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
   apiVersion: '2022-11-15',
 })
 
-
-
 // Stripe requires the raw body to construct the event.
 export const config = {
   api: {
@@ -63,23 +61,23 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
         `❌ Payment failed: ${paymentIntent.last_payment_error?.message ?? 'unknown error'}`
       
     } else if (event.type === 'charge.succeeded') {
-      console.log
       const charge = event.data.object as Stripe.Charge
-      const intent = await stripe.paymentIntents.retrieve(charge.payment_intent as string)
+      // const intent = await stripe.paymentIntents.retrieve(charge.payment_intent as string)
       const paymentIntent = event.data.object as Stripe.PaymentIntent
       await caller.reps.changeUserToSubs({
         userId: paymentIntent.metadata.userId ?? "",
         startDate: new Date(paymentIntent.metadata.startDate ?? ""),
         endDate: new Date(paymentIntent.metadata.endDate ?? ""),
-        pledge: paymentIntent.metadata.pledge ?? "0",
+        pledge: paymentIntent.metadata.pledge!,
         repsAmount: paymentIntent.metadata.repsAmount ?? "0",
+        situpsAmount: paymentIntent.metadata.situpsAmount ?? "0",
         payment_intent: charge.payment_intent as string
       })
-      console.log(paymentIntent)
-
-      console.log(`💵 Charge id: ${charge.id}`)
+      // console.log(paymentIntent)
+      // console.log(`💵 Charge id: ${charge.id}`)
     }
     else if (event.type === 'charge.refunded') {
+      const refund = event.data.object as Stripe.Charge
       const paymentIntent = event.data.object as Stripe.PaymentIntent
       await caller.reps.changeSubsToUser({userId: paymentIntent.metadata.userId ?? ""})
       await caller.reps.addSessionHistory({
@@ -88,9 +86,9 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
         endDate: new Date(paymentIntent.metadata.endDate ?? ""),
         status: paymentIntent.metadata.status === "FULL" ? "FULL" : "PARTIAL",
         pledge: parseInt(paymentIntent.metadata.pledge ?? "0") ,
+        refund: (refund.amount_refunded * 0.94 / 100),
       })
     }
-
     else {
       console.warn(`🤷‍♀️ Unhandled event type: ${event.type}`)
     }
