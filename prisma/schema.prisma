@@ -25,30 +25,6 @@ model Exercises {
   @@index([userId])
 }
 
-// model Situps {
-//   id                 String    @id @default(cuid())
-//   createdAt          DateTime  @default(now())
-//   updatedAt          DateTime  @updatedAt
-//   date               DateTime?
-//   count              Int?      @default(0)
-//   user               Users?    @relation(fields: [userId], references: [userId])
-//   userId             String?
-
-//   @@index([userId])
-// }
-
-// model WeightLifting {
-//   id                 String    @id @default(cuid())
-//   createdAt          DateTime  @default(now())
-//   updatedAt          DateTime  @updatedAt
-//   date               DateTime?
-//   count              Int?      @default(0)
-//   user               Users?    @relation(fields: [userId], references: [userId])
-//   userId             String?
-
-//   @@index([userId])
-// }
-
 model Users {
   id                  Int                 @id @default(autoincrement())
   name                String?
