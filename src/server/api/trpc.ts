@@ -17,6 +17,7 @@
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
 
 import { prisma } from "~/server/db";
+import { stripe } from "../../../lib/stripe";
 import * as trpc from '@trpc/server'
 import * as trpcNext from '@trpc/server/adapters/next'
 import { getAuth } from '@clerk/nextjs/server'
@@ -40,7 +41,8 @@ const createInnerTRPCContext = ({ auth }: AuthContext ) => {
 
   return {
     prisma,
-    auth
+    auth,
+    stripe
   };
 };
 
@@ -80,6 +82,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 });
 
 // check if the user is signed in, otherwise throw a UNAUTHORIZED CODE
+// this is a middleware that will be used in the protectedProcedure
 const isAuthed = t.middleware(({ next, ctx }) => {
   if(!ctx.auth) throw new TRPCError({ code: 'NOT_FOUND' })
   if (!ctx.auth.userId ) {

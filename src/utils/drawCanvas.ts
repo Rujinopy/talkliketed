@@ -1,7 +1,6 @@
 import Webcam from "react-webcam";
 import { type Pose } from "@tensorflow-models/pose-detection/dist/types";
-import { drawKeypoints } from "./draw";
-import ca from "date-fns/esm/locale/ca/index.js";
+import { drawKeypoints, drawSkeleton, highlightBack } from "./draw";
 
 const drawCanvas = (
     pose: Pose,
@@ -9,13 +8,17 @@ const drawCanvas = (
     videoWidth: number,
     videoHeight: number,
     canvas: React.RefObject<HTMLCanvasElement>,
-    callback: () => void
+    modes: string
   ) => {
     const ctx = canvas.current?.getContext("2d");
     if (canvas.current && ctx) {
       canvas.current.width = videoWidth;
       canvas.current.height = videoHeight;
-      drawKeypoints(pose.keypoints, ctx, callback);
+      drawKeypoints(pose.keypoints, ctx);
+      drawSkeleton(pose.keypoints, ctx)
+      if(modes === "push-ups"){
+      highlightBack(pose.keypoints, ctx)
+      }
     }
   };
 

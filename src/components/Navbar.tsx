@@ -4,7 +4,7 @@ import { useUser, UserButton, SignedIn } from "@clerk/nextjs";
 import { Camera } from 'lucide-react';
 import Subscription from "./Subscription";
 
-export default function Navbar({onStateChanged}: { onStateChanged: (boolean: boolean) => void }) {
+export default function Navbar({onStateChanged, mode}: { onStateChanged: (boolean: boolean) => void, mode: string }) {
     const [isChecked, setChecked] = useState(false);
     const [color, setColor] = useState("#ff6b6b")
     const user = useUser();
@@ -14,14 +14,13 @@ export default function Navbar({onStateChanged}: { onStateChanged: (boolean: boo
         onStateChanged(isChecked);
     }
 
-    //scroll to ref when clicked
-    
-
     return (
-        <div className="flex h-16 items-center w-screen border-b border-black bg-white">
+        <div className="flex h-16 items-center w-screen bg-white border-black border-t-2">
           {/* <MenuBar /> */}
-          <Link href={"/"}>
-            <p className="font-mono text-lg px-3 pr-[21px] md:mx-5 md:my-5 md:text-4xl">Pushup</p>
+          <Link href={"/"} className="relative">
+            <p className="font-mono text-lg px-3 pr-[21px] md:mx-5 md:my-5 md:text-4xl ">{mode}
+            {/* <span className="absolute bottom-0 right-0 text-[8px]">by Motiflex</span> */}
+            </p>
           </Link>
           <button
             className="border-l-2 border-r-2 my-5 transform  border-black px-2 md:px-5 py-1 font-mono 

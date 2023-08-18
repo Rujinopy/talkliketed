@@ -1,40 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { is } from "date-fns/locale";
 import React, { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 
 interface RepCounterProps {
   reps?: number;
   userId: string | undefined | null;
-  date: Date
-  goal: number
-  isSignedIn: boolean
+  date: Date;
+  goal: number;
+  role: string;
+  isSignedIn: boolean;
+  mode: string;
 }
 
-// interface User {
-//   userId: string;
-//   count: number;
-// }
-
 export default function RepCounter(props: RepCounterProps) {
-  const checkIfUserIsSubsOrMem = api.reps.checkIfUserExists.useQuery({
-    userId: props.userId ?? "",
-  }, {
-    enabled: props.isSignedIn === true,
-  })
-
-  const SubsOrMem = checkIfUserIsSubsOrMem.data?.Role
-
   const [reps, setReps] = useState(props.reps);
   useEffect(() => {
     setReps(props.reps);
   }, [props.reps]);
 
   return (
-    <div className="w-full h-20 md:h-auto relative transform border-y-2 md:border-b-2 md:border-t-0 border-black bg-[#fdfd96] px-5 py-2 
-    font-medium text-black shadow-lg transition duration-200 font-mono text-2xl md:text-3xl flex justify-center items-center
-     hover:shadow-sm">
-       <p className="text-3xl md:text-3xl">Goal: {reps} / {(SubsOrMem === "MEM" || SubsOrMem === "SUBS") ? props.goal : 21}</p>
+    <div
+      className=" relative flex h-[10%] transform items-center justify-center border-b-2 border-black bg-[#fdfd96] px-5 py-2 font-mono 
+     text-black shadow-lg transition duration-200 hover:shadow-sm md:h-auto md:border-y-2 md:border-b-2
+     md:border-t-0"
+    >
+      <p className="text-4xl md:text-4xl">
+        {reps} /{" "}
+        {props.role === "MEM" || props.role === "SUBS" ? props.goal : 100}
+      </p>
     </div>
   );
 }

@@ -1,17 +1,19 @@
-import React, { useState } from 'react'
-import CustomDonationInput from '../components/CustomDonationInput'
-import getStripe from '~/utils/get-stripejs'
-import { fetchPostJSON } from '~/utils/api-helpers'
-import { formatAmountForDisplay } from '~/utils/stripe-helpers'
-import * as config from 'config/config'
-import Link from 'next/link'
-import { api } from '~/utils/api'
+import React, { useState } from "react";
+import CustomDonationInput from "../components/CustomDonationInput";
+import getStripe from "~/utils/get-stripejs";
+import { fetchPostJSON } from "~/utils/api-helpers";
+import { formatAmountForDisplay } from "~/utils/stripe-helpers";
+import * as config from "config/config";
+import Link from "next/link";
+import { api } from "~/utils/api";
 import { useStore } from "store/stores";
+import Paymentinformation from "./PaymentInformation";
 
 interface Form {
-  Toggle: boolean
-  Id: string
-  RepsPerDay: number
+  Toggle: boolean;
+  Id: string;
+  RepsPerDay: number;
+  SitupsPerDay: number;
 }
 interface storeProps {
   startDate: Date;
@@ -27,100 +29,115 @@ const CheckoutForm = (props: Form) => {
     (state: unknown) => (state as storeProps).startDate
   );
   const endDate = useStore((state: unknown) => (state as storeProps).endDate);
-    const [loading, setLoading] = useState(false)
-    const [input, setInput] = useState({
-      customDonation: Math.round(config.MAX_AMOUNT / config.AMOUNT_STEP),
-    })
-  
-  
-    const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (e) =>
-      setInput({
-        ...input,
-        [e.currentTarget.name]: e.currentTarget.value,
-      })
-    
-    //handle form submission
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
-      e.preventDefault()
-      setLoading(true)
-      console.log('handleSubmit')
+  const [loading, setLoading] = useState(false);
+  const [input, setInput] = useState({
+    customDonation: Math.round(config.MAX_AMOUNT / config.AMOUNT_STEP),
+  });
 
-      //create checkout session
-      const response = await fetchPostJSON('/api/trpc/checkout_session', {
-        amount: input.customDonation,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        repsAmount: props.RepsPerDay,
-        userId: props.Id ?? "",
-      })
+  const handleInputChange: React.ChangeEventHandler<HTMLInputElement> = (e) =>
+    setInput({
+      ...input,
+      [e.currentTarget.name]: e.currentTarget.value,
+    });
 
-      const stripe = await getStripe()
+  //handle form submission
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
+    e.preventDefault();
+    setLoading(true);
+    console.log("handleSubmit");
 
-      if (stripe) {
-        if(response.id === undefined || response.id === null) {
-          console.warn('response.id is undefined')
-          return
-        }
-        const { error } = await stripe.redirectToCheckout({
-          sessionId: response.id,
-        })
-        
-        console.warn(error.message)
-        if(response) {
-          console.log(response)
-        }
+    //create checkout session
+    const response = await fetchPostJSON("/api/trpc/checkout_session", {
+      amount: input.customDonation,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      repsAmount: props.RepsPerDay,
+      situpsAmount: props.SitupsPerDay,
+      userId: props.Id ?? "",
+    });
+
+    const stripe = await getStripe();
+
+    if (stripe) {
+      if (response.id === undefined || response.id === null) {
+        console.warn("response.id is undefined");
+        return;
       }
-      
-    }
-    //hidden form if props.Toggle is false
-    if(!props.Toggle) {
-      return null
-    }
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: response.id,
+      });
 
-    const useMutation = api.reps.updateStartEndDates.useMutation();
+      console.warn(error.message);
+      if (response) {
+        console.log(response);
+      }
+    }
+  };
+  //hidden form if props.Toggle is false
+  if (!props.Toggle) {
+    return null;
+  }
 
-    //turn repsPerDay into number
-    const updateDatesToDb = () => {
-      if (startDate && endDate) {
-        useMutation.mutateAsync({
+  const useMutation = api.reps.updateStartEndDates.useMutation();
+
+  //turn repsPerDay into number
+  const updateDatesToDb = () => {
+    if (startDate && endDate) {
+      useMutation
+        .mutateAsync({
           userId: props.Id ?? "",
           startDate: startDate,
           endDate: endDate,
           repsAmount: props.RepsPerDay,
-        }).catch((err) => {
+        })
+        .catch((err) => {
           console.error(err);
         });
-      }
-    };
+    }
+  };
 
   return (
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    <form onSubmit={handleSubmit} className='flex flex-col w-full justify-center items-center py-10'>
-      <CustomDonationInput
-        className="py-3 px-24 mt-12 font-mono text-2xl text-black border-2 border-black rounded-lg focus:border-2 focus:border-[#ffdb58] focus:outline-none"
-        name={'customDonation'}
-        value={input.customDonation}
-        min={config.MIN_AMOUNT}
-        max={config.MAX_AMOUNT}
-        step={config.AMOUNT_STEP}
-        currency={config.CURRENCY}
-        onChange={handleInputChange}
-      />
-
-      <button
-        className="px-12 mt-10 md:mt-5 py-2 shadow-neo rounded-lg font-mono text-2xl hover:cursor-pointer bg-[#fdfd96] hover:bg-[#ffdb58] border-2 border-black"
-        type="submit"
-        disabled={loading}
+    <section className="flex max-w-7xl flex-col-reverse md:w-screen md:flex-row md:pt-16">
+      <Paymentinformation />
+      <form
+        onSubmit={handleSubmit}
+        className="flex w-full flex-col items-center justify-center py-10 md:w-[50%]"
       >
-        Pledge {formatAmountForDisplay(input.customDonation, config.CURRENCY)}
-      </button>
-      <Link href="/" className='mt-5'>
-        <button onClick={updateDatesToDb} className="px-10 md:mt-5 py-2 shadow-neo rounded-lg font-mono text-2xl
-          hover:cursor-pointer bg-[#fdfd96] hover:bg-[#ffdb58] border-2 border-black">Go without pledge</button>
-      </Link>
-    </form>
-  )
-}
+        <h1 className="text-4xl font-extrabold ">Add pledge</h1>
+        <CustomDonationInput
+          className="mt-12 w-full rounded-lg border-2 border-black px-2 py-3 font-mono text-2xl text-black focus:border-2 focus:border-[#ffdb58] focus:outline-none"
+          name={"customDonation"}
+          value={input.customDonation}
+          min={config.MIN_AMOUNT}
+          max={config.MAX_AMOUNT}
+          step={config.AMOUNT_STEP}
+          currency={config.CURRENCY}
+          onChange={handleInputChange}
+        />
 
-export default CheckoutForm
+        <button
+          className="mt-10 w-3/4 rounded-lg border-2 border-black bg-[#fdfd96] px-12 py-2
+        font-mono text-2xl shadow-neo hover:cursor-pointer hover:bg-[#ffdb58] md:mt-5 md:w-2/4"
+          type="submit"
+          disabled={loading}
+        >
+          Pledge {formatAmountForDisplay(input.customDonation, config.CURRENCY)}
+        </button>
+        <Link href="/" className="mt-5">
+          <button
+            onClick={updateDatesToDb}
+            className="w-full rounded-lg border-2 border-black bg-[#fdfd96] px-10 py-2 font-mono text-2xl
+          shadow-neo hover:cursor-pointer hover:bg-[#ffdb58] md:mt-2 md:w-auto"
+          >
+            Go without pledge
+          </button>
+        </Link>
+      </form>
+    </section>
+  );
+};
 
+export default CheckoutForm;
