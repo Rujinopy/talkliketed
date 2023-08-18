@@ -16,17 +16,19 @@ export const metadata: Metadata = {
 };
 
 export default function PaymentElementPage() {
-  // const [paymentIntent, setPaymentIntent] = useState<PaymentIntent | null>(
-  //   null
-  // );
-  // useEffect(() => {
-  //   fetchPaymentIntent("/api/trpc/payment_intents", {
-  //     amount: Math.round(config.MAX_AMOUNT / config.AMOUNT_STEP),
-  //   }).then((data) => {
-  //     setPaymentIntent(data);
-  //     console.log(data);
-  //   });
-  // }, [setPaymentIntent]);
+  const [paymentIntent, setPaymentIntent] = useState<PaymentIntent | null>(
+    null
+  );
+  useEffect(() => {
+    fetchPaymentIntent("/api/trpc/payment_intents", {
+      amount: Math.round(config.MAX_AMOUNT / config.AMOUNT_STEP),
+    }).then((data) => {
+      setPaymentIntent(data);
+      console.log(data);
+    }).catch((err) => {
+      console.log(err);
+    })
+  }, [setPaymentIntent]);
   return (
     <div className="border-b-2 border-black">
       <NavbarWithoutCam />
@@ -57,7 +59,7 @@ export default function PaymentElementPage() {
             <h1 className="bg-white px-2 py-5 font-mono text-3xl">
               Add payment method
             </h1>
-            {/* {paymentIntent && paymentIntent.client_secret ? (
+            {paymentIntent && paymentIntent.client_secret ? (
               <Elements
                 stripe={getStripe()}
                 options={{
@@ -70,12 +72,12 @@ export default function PaymentElementPage() {
                   },
                   clientSecret: paymentIntent.client_secret,
                 }}
-              > */}
+              >
                 <ElementsForm />
-              {/* </Elements>s
+              </Elements>
             ) : (
               <p>Loading...</p>
-            )} */}
+            )}
           </section>
         </PaymentLayout>
       </SignedIn>
