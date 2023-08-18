@@ -16,7 +16,6 @@ import React, {
   useEffect,
   useCallback,
   type MutableRefObject,
-  ChangeEvent,
 } from "react";
 import { useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
@@ -67,7 +66,6 @@ export const Home: NextPage = (props) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isChecked, setChecked] = useState(false);
   const [reps, updateReps] = useState(0);
-  // const [modes, setModes] = useState("push-ups");
   const mode = useStore((state: unknown) => (state as modeProps).mode);
   const setMode = useStore((state: unknown) => (state as modeProps).setMode);
   const useUpdateRep = api.reps.updateRepsForUser.useMutation({
@@ -262,12 +260,12 @@ export const Home: NextPage = (props) => {
 
   return (
     <div className="flex h-auto w-screen flex-col justify-center border-b-2 border-black bg-[#daf5f0] font-mono">
-      <button
+      {/* <button
         className="text-stroke-3 text-7xl font-bold text-red-400"
         onClick={() => updateReps((prev) => prev + 1)}
       >
         test
-      </button>
+      </button> */}
       <section className="border-b-2 border-black">
         <Navbar onStateChanged={handleChecked} mode={mode} />
       </section>
