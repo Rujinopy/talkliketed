@@ -48,7 +48,7 @@ export default function PaymentElementPage() {
                 canceled, resulting in no charges incurred.
               </p>
               <p className="mt-5">
-                You can monitor both your payment status and your challenge's
+                You can monitor both your payment status and your challenge&apos;s
                 progress on your profile page.
               </p>
             </div>

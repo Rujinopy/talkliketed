@@ -92,8 +92,7 @@ export const Home: NextPage = (props) => {
       refetchOnMount: false,
       onSuccess: (data) => {
         if (data.user?.Role !== "USER") {
-          if (data?.reps?.count == undefined || data?.reps?.count == null) {
-
+          if (data?.reps === undefined || data?.reps === null) {
             createRep.mutate({
               userId: user?.id ?? "",
               date: newToday,
@@ -101,10 +100,19 @@ export const Home: NextPage = (props) => {
               mode: mode,
             });
           } 
-          
-          else if (data?.reps?.count) {
+          else if (data?.reps) {
+            switch (mode) {
+              case "push-ups":
+                updateReps(data?.reps?.pushupsCount ?? 0);
+                break;
+              case "sit-ups":
+                updateReps(data?.reps?.situpsCount ?? 0);
+                break;
+              case "weight-lifting":
+                updateReps(data?.reps?.weightLiftingCount ?? 0);
+                break;
+            }
 
-            updateReps(data?.reps?.count);
           }
         }
       },
@@ -115,7 +123,7 @@ export const Home: NextPage = (props) => {
   const createRep = api.reps.createRepForUser.useMutation({
     onSuccess: () => {
       //refetch data
-      dataQuery.refetch().catch((e) => {});
+      dataQuery.refetch().catch(console.error);
     },
     onError: (e) => {
       const errorMessages = e.data?.zodError?.fieldErrors.message;
@@ -135,7 +143,7 @@ export const Home: NextPage = (props) => {
         //isUpdating is used to prevent multiple calls to the db
         setIsUpdating(false);
         if (isUpdating === false) {
-          debouncedUpdateRep({
+          void debouncedUpdateRep({
             date: newToday,
             reps: reps,
             mode: mode,
@@ -143,12 +151,25 @@ export const Home: NextPage = (props) => {
         }
       }
     }
-
     // Clear the debounced function when the component unmounts or when the 'reps' dependency changes.
     return () => {
       debouncedUpdateRep.cancel();
     };
   }, [reps]);
+
+  useEffect(() => {
+    switch (mode) {
+      case "push-ups":
+        updateReps(dataQuery.data?.reps?.pushupsCount ?? 0);
+        break;
+      case "sit-ups":
+        updateReps(dataQuery.data?.reps?.situpsCount ?? 0);
+        break;
+      case "weight-lifting":
+        updateReps(dataQuery.data?.reps?.weightLiftingCount ?? 0);
+        break;
+    }
+  }, [mode]); 
 
   //detect the pose in real time
   const detectPoseInRealTime = async (
@@ -296,10 +317,10 @@ export const Home: NextPage = (props) => {
               setModes={setMode}
               onclick={() => {
                 setChecked(false);
-                if (dataQuery.data?.user?.Role !== "USER") {
-                  dataQuery.refetch().then((data) => updateReps(data.data?.reps?.count ?? 0));
+                // if (dataQuery.data?.user?.Role !== "USER") {
+                //   dataQuery.refetch().then((data) => updateReps(data.data?.reps?.count ?? 0));
                   
-                }
+                // }
               }}
             />
           </div>

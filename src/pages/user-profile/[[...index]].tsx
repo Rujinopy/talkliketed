@@ -203,37 +203,37 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
             </div>
             {activeDisplayMode === "push-ups" ? (
               <div className="flex h-3/4 flex-col items-center space-y-2 overflow-y-scroll px-5 py-5 mx-auto">
-                {progress.data?.pushups.map((rep, id) => (
+                {progress.data?.currentExcercises.map((excercise, id) => (
                   <div
                     className="flex w-full justify-between space-x-3 rounded-lg border border-black bg-white py-2 pl-5 pr-12 font-mono md:w-2/3"
                     key={id}
                   >
                     <h1>{id + 1}</h1>
                     <p>
-                      {rep.date
+                      {excercise.date
                         ?.toISOString()
                         .slice(0, 10)
                         .replace(/-/g, "/") ?? "N/A"}
                     </p>
-                    <p className="">{rep.count}</p>
+                    <p className="">{excercise.pushupsCount}</p>
                   </div>
                 ))}
               </div>
             ) : (
               <div>
-                {progress.data?.situps.map((rep, id) => (
+                {progress.data?.currentExcercises.map((excercise, id) => (
                   <div
                     className="flex w-full mx-auto justify-between space-x-3 rounded-lg border border-black bg-white py-2 pl-5 pr-12 font-mono md:w-2/3"
                     key={id}
                   >
                     <h1>{id + 1}</h1>
                     <p>
-                      {rep.date
+                      {excercise.date
                         ?.toISOString()
                         .slice(0, 10)
                         .replace(/-/g, "/") ?? "N/A"}
                     </p>
-                    <p className="">{rep.count}</p>
+                    <p className="">{excercise.situpsCount}</p>
                   </div>
                 ))}
               </div>

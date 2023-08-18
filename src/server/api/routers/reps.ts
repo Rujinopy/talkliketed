@@ -42,54 +42,30 @@ export const repsRouter = createTRPCRouter({
                     Role: true,
                 },
             });
-            let todayReps = null
-            if (input.mode === "push-ups") {
-                todayReps = await ctx.prisma.pushups.findFirst({
-                    where: {
-                        userId: ctx.auth?.userId,
-                        date: input.date,
-                    },
-                });
-            }
-            else if (input.mode === "sit-ups") {
-                todayReps = await ctx.prisma.situps.findFirst({
-                    where: {
-                        userId: ctx.auth?.userId,
-                        date: input.date,
-                    },
-                });
-            }
-
+            const todayReps = await ctx.prisma.exercises.findFirst({
+                where: {
+                    userId: ctx.auth?.userId,
+                    date: input.date,
+                },
+            });
 
             if ((role?.Role === "MEM" || role?.Role === "SUBS")) {
                 let rep
                 if (todayReps === null) {
-                    if (input.mode === "push-ups") {
-                        rep = await ctx.prisma.pushups.create({
-                            data: {
-                                user: {
-                                    connect: {
-                                        userId: ctx.auth?.userId ?? "",
-                                    },
+                    rep = await ctx.prisma.exercises.create({
+                        data: {
+                            user: {
+                                connect: {
+                                    userId: ctx.auth?.userId ?? "",
                                 },
-                                date: input.date,
-                                count: input.reps,
                             },
-                        });
-                    }
-                    if (input.mode === "sit-ups") {
-                        rep = await ctx.prisma.situps.create({
-                            data: {
-                                user: {
-                                    connect: {
-                                        userId: ctx.auth?.userId ?? "",
-                                    },
-                                },
-                                date: input.date,
-                                count: input.reps,
-                            },
-                        });
-                    }
+                            date: input.date,
+                            pushupsCount: input.reps,
+                            situpsCount: input.reps,
+                            weightLiftingCount: input.reps,
+                        },
+                    });
+
                     return rep;
                 }
 
@@ -107,7 +83,6 @@ export const repsRouter = createTRPCRouter({
             })
         )
         .query(async ({ input, ctx }) => {
-            const mode = input.mode;
             const user = await ctx.prisma.users.findFirst({
                 where: {
                     userId: ctx.auth?.userId ?? input.userId,
@@ -118,51 +93,24 @@ export const repsRouter = createTRPCRouter({
                 },
             });
 
-            if (mode === "push-ups") {
-                const reps = await ctx.prisma.pushups.findFirst({
-                    where: {
-                        userId: ctx.auth?.userId ?? input.userId,
-                        date: input.date
-                    },
-                    select: {
-                        count: true,
-                        date: true,
+            const reps = await ctx.prisma.exercises.findFirst({
+                where: {
+                    userId: ctx.auth?.userId ?? input.userId,
+                    date: input.date
+                },
+                select: {
+                    pushupsCount: true,
+                    situpsCount: true,
+                    weightLiftingCount: true,
+                    date: true,
 
-                    },
-                });
-
-                return {
-                    reps,
-                    user
-                };
-            }
-
-            else if (mode === "sit-ups") {
-                const reps = await ctx.prisma.situps.findFirst({
-                    where: {
-                        userId: ctx.auth?.userId ?? input.userId,
-                        date: input.date
-                    },
-                    select: {
-                        count: true,
-                        date: true,
-                    }
-                })
-                return {
-                    reps,
-                    user
-                };
-            }
+                },
+            });
 
             return {
-                reps: null,
+                reps,
                 user
-            }
-
-
-
-
-
+            };
         }),
 
     updateRepsForUser: protectedProcedure
@@ -178,27 +126,27 @@ export const repsRouter = createTRPCRouter({
             // inputDate.setHours(inputDate.getHours() + 7);
             let rep
             if (input.mode === "push-ups") {
-            rep = await ctx.prisma.pushups.updateMany({
-                where: {
-                    userId: ctx.auth?.userId ?? "",
-                    date: input.date,
-                },
-                data: {
-                    count: input.reps,
-                },
-            });
-        }
-        else if (input.mode === "sit-ups") {
-            rep = await ctx.prisma.situps.updateMany({
-                where: {
-                    userId: ctx.auth?.userId ?? "",
-                    date: input.date,
-                },
-                data: {
-                    count: input.reps,
-                },
-            });
-        }
+                rep = await ctx.prisma.exercises.updateMany({
+                    where: {
+                        userId: ctx.auth?.userId ?? "",
+                        date: input.date,
+                    },
+                    data: {
+                        pushupsCount: input.reps,
+                    },
+                });
+            }
+            else if (input.mode === "sit-ups") {
+                rep = await ctx.prisma.exercises.updateMany({
+                    where: {
+                        userId: ctx.auth?.userId ?? "",
+                        date: input.date,
+                    },
+                    data: {
+                        situpsCount: input.reps,
+                    },
+                });
+            }
             return rep;
         }),
     updateStartEndDates: publicProcedure
@@ -307,7 +255,7 @@ export const repsRouter = createTRPCRouter({
             })
         )
         .query(async ({ input, ctx }) => {
-            const reps = await ctx.prisma.pushups.findMany({
+            const currentExcercises = await ctx.prisma.exercises.findMany({
                 where: {
                     userId: ctx.auth?.userId ?? "",
                     date: {
@@ -316,26 +264,14 @@ export const repsRouter = createTRPCRouter({
                     },
                 },
                 select: {
-                    count: true,
+                    pushupsCount: true,
+                    situpsCount: true,
                 },
 
             });
-            const situps = await ctx.prisma.pushups.findMany({
-                where: {
-                    userId: ctx.auth?.userId ?? "",
-                    date: {
-                        gte: input.startDate,
-                        lte: input.endDate,
-                    },
-                },
-                select: {
-                    count: true,
-                },
 
-            });
             return {
-                reps,
-                situps
+                currentExcercises,
             }
         }
         ),
@@ -393,7 +329,7 @@ export const repsRouter = createTRPCRouter({
         }))
         .query(async ({ input, ctx }) => {
             //combine pushups and situps
-            const pushups = await ctx.prisma.pushups.findMany({
+            const currentExcercises = await ctx.prisma.exercises.findMany({
                 where: {
                     userId: ctx.auth?.userId,
                     date: {
@@ -403,37 +339,19 @@ export const repsRouter = createTRPCRouter({
                 },
                 select: {
                     userId: true,
-                    count: true,
+                    pushupsCount: true,
+                    situpsCount: true,
+                    weightLiftingCount: true,
                     date: true
                 },
                 orderBy: {
                     date: "asc",
                 },
             });
-            const situps = await ctx.prisma.situps.findMany({
-                where: {
-                    userId: ctx.auth?.userId,
-                    date: {
-                        gte: input.startDate,
-                        lte: input.endDate,
-                    }
-                },
-                select: {
-                    userId: true,
-                    count: true,
-                    date: true
-                },
-                orderBy: {
-                    date: "asc",
-                },
 
-            });
-            
 
-            return {
-                pushups,
-                situps
-            };
+
+            return { currentExcercises };
         }
         ),
 
@@ -513,7 +431,7 @@ export const repsRouter = createTRPCRouter({
                 const nextItem = session.pop()
                 nextCursor = nextItem?.id
             }
-            let totalPage = Math.ceil(allSessionNumber / input.limit);
+            const totalPage = Math.ceil(allSessionNumber / input.limit);
             return {
                 session,
                 totalPage,
@@ -537,7 +455,7 @@ export const repsRouter = createTRPCRouter({
                     userId: input.userId,
                 },
                 select: {
-                    pushups: {
+                    exercises: {
                         where: {
                             date: {
                                 gte: input.startDate,
@@ -545,7 +463,9 @@ export const repsRouter = createTRPCRouter({
                             },
                         },
                         select: {
-                            count: true,
+                            pushupsCount: true,
+                            situpsCount: true,
+                            weightLiftingCount: true,
                         },
                     },
                     repsAmount: true,
@@ -559,16 +479,17 @@ export const repsRouter = createTRPCRouter({
             //check each day if user did enough reps equal or more than repsAmount
             let success = "NONE"
             let count = 0
+
             //if no any pushups record, return false
             if (user) {
-                if (user.pushups.length === 0) {
+                if (user.exercises.length === 0 || user.exercises === null) {
                     return {
                         success,
                         count,
                         totalday
                     };
                 }
-                if (user.pushups === undefined) {
+                if (user.exercises === undefined) {
                     success = "UNDEFINED"
                     return {
                         success,
@@ -576,15 +497,18 @@ export const repsRouter = createTRPCRouter({
                         totalday
                     };
                 }
-                for (let i = 0; i < user.pushups.length; i++) {
-                    console.log(totalday)
-                    //count completed days
-                    if (user.pushups[i]!.count! === user.repsAmount! || user.pushups[i]!.count! > user.repsAmount!) {
-                        count++;
+                for (let i = 0; i < user.exercises.length; i++) {
+                    if (user.exercises[i]!.pushupsCount! >= user.repsAmount!
+                        && user.exercises[i]!.situpsCount! >= user.repsAmount!) {
+                        count += 1
                     }
                 }
+
                 //if count is not equal to totalday, return false means user is not success
-                if (count !== totalday) {
+                if (count === 0) {
+                    success = "NONE"
+                }
+                if (count !== totalday && count > 0) {
                     success = "PARTIAL";
                 }
 
@@ -596,8 +520,8 @@ export const repsRouter = createTRPCRouter({
             else if (!user) {
                 success = "UNDEFINED"
             }
-            //if user is not found, return false
 
+            //if user is not found, return false
             return {
                 success,
                 count,
@@ -607,29 +531,5 @@ export const repsRouter = createTRPCRouter({
         }
         ),
 
-    gedRepsForUser: protectedProcedure
-        .input(z.object({
-            startDate: z.date(),
-        }))
-        .query(async ({ input, ctx }) => {
-
-            const reps = await ctx.prisma.pushups.findMany({
-                where: {
-                    userId: ctx.auth?.userId,
-                    date: {
-                        gte: input.startDate,
-                        lt: new Date(input.startDate.getTime() + 24 * 60 * 60 * 1000),
-                    },
-                },
-                select: {
-                    date: true,
-                    count: true,
-                },
-
-
-            });
-
-            return reps;
-        }),
 });
 

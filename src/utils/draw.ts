@@ -136,7 +136,7 @@ export function getAngle(
   [by, bx]: [number, number],
   [cy, cx]: [number, number]
 ) {
-  let angle = (Math.atan2(cy - by, cx - bx) - Math.atan2(ay - by, ax - bx)) * 180 / Math.PI;
+  const angle = (Math.atan2(cy - by, cx - bx) - Math.atan2(ay - by, ax - bx)) * 180 / Math.PI;
   return angle
 }
 
@@ -284,9 +284,6 @@ function updateArmAngle(keypoints: Keypoint[]) {
       elbowAngle = angle;
     }
   }
-}
-
-function isInSitupPosition(keypoints: Keypoint[]) {
 }
 
 let situp_down = false;

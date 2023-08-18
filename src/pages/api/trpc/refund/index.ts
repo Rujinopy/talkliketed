@@ -25,61 +25,48 @@ export default async function handler(
         const { startDate, endDate, pledge, repsAmount, payment_intent, situpsAmount } = data
 
         //fetching
-        const userAllExercises = await caller.reps.getAllReps({
+        const { currentExcercises } = await caller.reps.getAllReps({
             startDate: new Date(startDate ?? ""),
             endDate: new Date(endDate ?? ""),
         })
 
         //refund amount is the difference between the pledge and the amount of reps the user has done
         const refundAmount = () => {
-            let completedPushupsDays = 0
-            let completedSitupsDays = 0
+            let totalCompleteDays = 0
+
             const days = daysDifference(new Date(startDate!), new Date(endDate!)) + 1
             if (pledge !== null && pledge !== undefined) {
                 const pledgePerDay = pledge / days;
-                if ((userAllExercises.reps.length && userAllExercises.situps.length) === 0 || userAllExercises === undefined || userAllExercises === null) {
+
+                if(currentExcercises === null || currentExcercises === undefined) 
+                {
                     return {
                         status: "NONE",
                         amount: 0,
                     }
                 }
-
-                for (const exercise of userAllExercises.reps) {
-                    if (exercise.count === null || repsAmount === null) {
-                        return
-                    }
-                    if (exercise.count >= repsAmount) {
-                        completedPushupsDays += 1;
+                for (let i = 0; i < currentExcercises.length; i++) {
+                    if (currentExcercises[i]!.pushupsCount! >= repsAmount! && currentExcercises[i]!.situpsCount! >= situpsAmount!) {
+                        totalCompleteDays++
                     }
                 }
 
-                for (const exercise of userAllExercises.situps) {
-                    if (exercise.count === null || situpsAmount === null) {
-                        return
-                    }
-                    if (exercise.count >= situpsAmount) {
-                        completedSitupsDays += 1;
-                    }
-                }
-
-                let totalCompleteDays = Math.floor((completedPushupsDays + completedSitupsDays) / 2)
 
                 if (totalCompleteDays === 0) {
-                    console.log("no")
                     return {
                         status: "NONE",
                         amount: 0,
-                    }
-                }
-                if (totalCompleteDays === days) {
-                    return {
-                        status: "FULL",
-                        amount: pledgePerDay * totalCompleteDays,
                     }
                 }
                 if (totalCompleteDays < days) {
                     return {
                         status: "PARTIAL",
+                        amount: pledgePerDay * totalCompleteDays,
+                    }
+                }
+                if (totalCompleteDays === days) {
+                    return {
+                        status: "FULL",
                         amount: pledgePerDay * totalCompleteDays,
                     }
                 }

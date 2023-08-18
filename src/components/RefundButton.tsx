@@ -75,11 +75,11 @@ const RefundButton = (props: RefundData) => {
           endDate: props.endDate,
           status: "NONE",
           pledge: 0,
-          refund: response.refund!
+          refund: response.refund!,
         });
-        console.log(response)
+        console.log(response);
         router.push(`/refund/noRefund`).catch((e) => {
-
+          console.log(e);
         });
       } else {
         if (response.status === undefined || response.status === null) {
@@ -108,32 +108,39 @@ const RefundButton = (props: RefundData) => {
         });
 
         const { data } = await isUserSuccess.refetch();
-        if (data?.success === "NONE") {
-          addSessionToDB.mutate({
-            userId: props.id,
-            startDate: props.startDate,
-            endDate: props.endDate,
-            status: "NONE",
-            pledge: 0,
-          });
-        }
-        if (data?.success === "FULL") {
-          addSessionToDB.mutate({
-            userId: props.id,
-            startDate: props.startDate,
-            endDate: props.endDate,
-            status: "FULL",
-            pledge: 0,
-          });
-        }
-        if (data?.success === "PARTIAL") {
-          addSessionToDB.mutate({
-            userId: props.id,
-            startDate: props.startDate,
-            endDate: props.endDate,
-            status: "PARTIAL",
-            pledge: 0,
-          });
+        switch (data?.success) {
+          case "NONE":
+            addSessionToDB.mutate({
+              userId: props.id,
+              startDate: props.startDate,
+              endDate: props.endDate,
+              status: "NONE",
+              pledge: 0,
+              refund: 0,
+            });
+            break;
+          case "FULL":
+            addSessionToDB.mutate({
+              userId: props.id,
+              startDate: props.startDate,
+              endDate: props.endDate,
+              status: "FULL",
+              pledge: 0,
+              refund: 0,
+            });
+            break;
+          case "PARTIAL":
+            addSessionToDB.mutate({
+              userId: props.id,
+              startDate: props.startDate,
+              endDate: props.endDate,
+              status: "PARTIAL",
+              pledge: 0,
+              refund: 0,
+            });
+            break;
+          default:
+            break;
         }
       }
     } else {

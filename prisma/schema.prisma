@@ -11,51 +11,43 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Posts {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  content   String   @db.VarChar(255)
-  authorId  String
-
-  @@index([authorId])
-}
-
-model Pushups {
+model Exercises {
   id                 String    @id @default(cuid())
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   date               DateTime?
-  count              Int?      @default(0)
+  pushupsCount       Int?      @default(0)
+  situpsCount        Int?      @default(0)
+  weightLiftingCount Int?      @default(0)
   user               Users?    @relation(fields: [userId], references: [userId])
   userId             String?
 
   @@index([userId])
 }
 
-model Situps {
-  id                 String    @id @default(cuid())
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  date               DateTime?
-  count              Int?      @default(0)
-  user               Users?    @relation(fields: [userId], references: [userId])
-  userId             String?
+// model Situps {
+//   id                 String    @id @default(cuid())
+//   createdAt          DateTime  @default(now())
+//   updatedAt          DateTime  @updatedAt
+//   date               DateTime?
+//   count              Int?      @default(0)
+//   user               Users?    @relation(fields: [userId], references: [userId])
+//   userId             String?
 
-  @@index([userId])
-}
+//   @@index([userId])
+// }
 
-model WeightLifting {
-  id                 String    @id @default(cuid())
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  date               DateTime?
-  count              Int?      @default(0)
-  user               Users?    @relation(fields: [userId], references: [userId])
-  userId             String?
+// model WeightLifting {
+//   id                 String    @id @default(cuid())
+//   createdAt          DateTime  @default(now())
+//   updatedAt          DateTime  @updatedAt
+//   date               DateTime?
+//   count              Int?      @default(0)
+//   user               Users?    @relation(fields: [userId], references: [userId])
+//   userId             String?
 
-  @@index([userId])
-}
+//   @@index([userId])
+// }
 
 model Users {
   id                  Int                 @id @default(autoincrement())
@@ -69,9 +61,7 @@ model Users {
   situpsAmount        Int?                @default(0)
   weightLiftingAmount Int?                @default(0)
   payment_intent      String?
-  pushups             Pushups[]
-  situps              Situps[]
-  weightLifting       WeightLifting[]
+  exercises           Exercises[]
   Role                Role                @default(USER)
   session             ActivitiesSession[]
 

@@ -31,7 +31,7 @@ function conditions() {
           that the challenge is successfully completed by its end date, you will
           receive a full or partial refund corresponding to your progress.{" "}
           <span className="font-bold">
-            A deduction of 6% will be made to cover Stripe's fees. (current
+            A deduction of 6% will be made to cover Stripe&apos;s fees. (current
             policy)
           </span>
         </p>
@@ -39,6 +39,7 @@ function conditions() {
           Refund = Initial Pledge - (Missed Days x (Initial Pledge / Total
           Challenge Days)) - (0.06 x Initial Pledge)
         </p>
+        <p>**You have to reach both exercises goal to get counted in each day.</p>
         <p className="font-bold underline">example</p>
         <p className="">
           <span className="font-bold">Full refund case: </span>Suppose you
@@ -55,7 +56,7 @@ function conditions() {
         </p>
         <p className="font-bold">
           ***If you are not ready to make a pledge at this moment, you have the
-          option to choose "Go without a pledge." The application will function
+          option to choose &quot;Go without a pledge.&quot; The application will function
           as the pledge version, but without pledge and refund features.***
         </p>
       </div>

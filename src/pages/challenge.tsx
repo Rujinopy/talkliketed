@@ -26,10 +26,6 @@ export const SelectExcerciseDropDown = () => {
         name="HeadlineAct"
         id="HeadlineAct"
         className="mt-1.5 w-full rounded-lg border-2 border-black px-2 py-3 text-gray-700 sm:text-sm"
-        onClick={(e) => {
-          
-        }
-      }
       >
         <option className="" value="">
           Please select
@@ -217,7 +213,7 @@ export default function Subs() {
                 <div className="font-mono text-md bg-white bg-opacity-40 rounded-xl border-black border-2 p-3 mt-5 mb-5 w-full md:w-1/3">
                   <h2>- Select start date and end date of your challenge.</h2>
                   <p>- At least one challenge must be at least 1 {"(push-ups or sit-ups)"}</p>
-                  <p>- Leave any challenge you don't want as 0</p>
+                  <p>- Leave any challenge you don&apos;t want as 0</p>
                 </div>
                 {/* <SelectExcerciseDropDown /> */}
                 <div className="mx-auto w-full md:w-1/3">
