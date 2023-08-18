@@ -17,9 +17,6 @@ const Canvas = ({ onWebcamRef, onCanvasRef }: Props) => {
     onCanvasRef(canvasRef);
   }, [onCanvasRef]);
 
-  const videoConstraints = {
-    facingMode: "user",
-  };
 
   return (
     <div className="relative h-[80vh] md:h-full w-full bg-black">
@@ -30,8 +27,10 @@ const Canvas = ({ onWebcamRef, onCanvasRef }: Props) => {
           screenshotFormat="image/jpeg"
           videoConstraints={{
             facingMode: 'user',
+            width: { ideal: window.innerWidth },
+            height: { ideal: window.innerHeight },
           }}
-          className="w-full h-full object-cover md:object-none z-40"
+          className="w-full h-full object-cover md:object-none z-40 border-b-2 border-black"
         />
       <canvas
         ref={canvasRef}

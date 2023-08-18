@@ -20,7 +20,7 @@ export default function RepCounter(props: RepCounterProps) {
 
   return (
     <div
-      className=" relative flex h-[10%] transform items-center justify-center border-b-2 border-black bg-[#fdfd96] px-5 py-2 font-mono 
+      className=" relative flex h-[10%] transform items-center justify-center border-b-2 border-black bg-[#fdfd96] px-5 py-1 font-mono 
      text-black shadow-lg transition duration-200 hover:shadow-sm md:h-auto md:border-y-2 md:border-b-2
      md:border-t-0"
     >

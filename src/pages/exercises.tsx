@@ -304,7 +304,7 @@ export const Home: NextPage = (props) => {
           {/* middle */}
           <div
             aria-label="video"
-            className="relative flex w-screen flex-col overflow-hidden border-black bg-white md:w-full md:basis-3/4 md:flex-row md:border-x-2"
+            className="relative flex w-full flex-col overflow-hidden border-black bg-white md:w-full  md:flex-row md:border-x-2"
           >
             {isChecked ? (
               <Canvas
