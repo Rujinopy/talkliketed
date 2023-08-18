@@ -13,7 +13,7 @@ function SignInPage() {
       <Link href="/" className="font-mono text-6xl p-5 font-bold text-stroke-3 text-[#fdfd96]">Motiflex</Link>
         <div className="px-2 md:px-2">
         <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up"
-        afterSignInUrl={previousPage ? previousPage as string : "/pushup"} 
+        afterSignInUrl={previousPage ? previousPage as string : "/exercises"} 
         appearance={
           {
             layout: {},

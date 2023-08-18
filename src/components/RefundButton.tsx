@@ -96,8 +96,8 @@ const RefundButton = (props: RefundData) => {
   };
 
   const isUserEnded = async (): Promise<void> => {
-    // if (today) {
-    if (today > props.endDate || today === props.endDate) {
+    if (today) {
+    // if (today > props.endDate || today === props.endDate) {
       if (props.role === "SUBS") {
         await handleSubmit();
       }
@@ -176,7 +176,7 @@ const RefundButton = (props: RefundData) => {
             : SetModalOpen(!isModalOpen)
         }
       >
-        end session/claim pledge &#128181;
+        end challenge/ refund&#128181;
       </button>
     </div>
   );

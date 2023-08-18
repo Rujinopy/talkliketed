@@ -3,10 +3,16 @@ import type { NextPage } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useStore } from "@/store/stores";
+
+interface modeProps {
+  setMode: (mode: string) => void;
+}
 
 const Home: NextPage = (props) => {
   const sec2Ref = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLDivElement>(null);
+  const setMode = useStore((state: unknown) => (state as modeProps).setMode);
 
   const [isIntersecting, setIsIntersecting] = useState(false);
 
@@ -55,14 +61,20 @@ const Home: NextPage = (props) => {
               </p>
               <div className="mt-2 flex space-x-2 md:ml-5">
                 <Link
-                  href="/pushup"
+                  href="/exercises"
+                  onClick={() => setMode("push-ups")}
                   className="mt-3 self-center rounded-lg border-2 border-black bg-white px-5 py-5 duration-200 hover:translate-y-2 hover:bg-pink-300 hover:shadow-neo md:text-sm lg:text-lg"
                 >
                   Push up
                 </Link>
-                <button className=" mt-3 rounded-lg border-2 border-black bg-white px-5 py-2 duration-200 hover:translate-y-2 hover:bg-pink-300 hover:shadow-neo md:text-sm lg:text-lg">
-                  Sit-Ups <span className="block text-xs">Coming soon...</span>
-                </button>
+                <Link 
+  className="mt-3 self-center rounded-lg border-2 border-black bg-white px-5 py-5 duration-200 hover:translate-y-2 hover:bg-pink-300 hover:shadow-neo md:text-sm lg:text-lg"
+                  
+                  onClick={() => setMode("sit-ups")}
+                  href="/exercises"
+                >
+                  Sit-Ups
+                </Link>
                 <button className=" mt-3 rounded-lg border-2 border-black bg-white px-5 py-2 duration-200 hover:translate-y-2 hover:bg-pink-300 hover:shadow-neo md:text-sm lg:text-lg">
                   Weight Lifting
                   <span className="block text-xs">Coming soon...</span>

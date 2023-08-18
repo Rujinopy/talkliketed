@@ -86,7 +86,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
         endDate: new Date(paymentIntent.metadata.endDate ?? ""),
         status: paymentIntent.metadata.status === "FULL" ? "FULL" : "PARTIAL",
         pledge: parseInt(paymentIntent.metadata.pledge ?? "0") ,
-        refund: (refund.amount_refunded * 0.94 / 100),
+        refund: Math.round(refund.amount_refunded),
       })
     }
     else {

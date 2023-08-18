@@ -5,7 +5,7 @@ import { getAuth } from '@clerk/nextjs/server'
 import { appRouter } from "../../../../server/api/root";
 import { createTRPCContext } from "../../../../server/api/trpc";
 import { daysDifference } from '~/utils/dateHelpers'
-
+import { formatAmountForStripe } from '~/utils/stripe-helpers'
 const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
     apiVersion: '2022-11-15',
 })
@@ -38,19 +38,18 @@ export default async function handler(
             if (pledge !== null && pledge !== undefined) {
                 const pledgePerDay = pledge / days;
 
-                if(currentExcercises === null || currentExcercises === undefined) 
-                {
+                if (currentExcercises === null || currentExcercises === undefined) {
                     return {
                         status: "NONE",
                         amount: 0,
                     }
                 }
                 for (let i = 0; i < currentExcercises.length; i++) {
+                    //making sure that currentExcercises[i] is not undefined
                     if (currentExcercises[i]!.pushupsCount! >= repsAmount! && currentExcercises[i]!.situpsCount! >= situpsAmount!) {
                         totalCompleteDays++
                     }
                 }
-
 
                 if (totalCompleteDays === 0) {
                     return {
@@ -81,7 +80,7 @@ export default async function handler(
                 if (refundAmountResult === undefined || refundAmountResult === null) {
                     throw Error("something went wrong. No pushups session was found.")
                 }
-                const totalRefundAmount = (refundAmountResult.amount * 100) - (pledge! * 6 / 100)
+                const totalRefundAmount = Math.round((refundAmountResult.amount) - (pledge! * 0.06))
                 if (refundAmountResult.amount === 0 || refundAmountResult.amount === undefined || refundAmountResult.amount === null) {
                     res.status(200).json({
                         id: "NONE",
@@ -97,10 +96,9 @@ export default async function handler(
                     throw Error("something went wrong. No start or end date was found.")
                 }
 
-
                 const refundSession = await stripe.refunds.create({
                     payment_intent: payment_intent,
-                    amount: totalRefundAmount,
+                    amount: formatAmountForStripe(totalRefundAmount, 'usd'),
                     metadata: {
                         startDate: startDate.toISOString(),
                         endDate: endDate.toISOString(),

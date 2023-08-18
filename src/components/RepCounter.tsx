@@ -9,6 +9,7 @@ interface RepCounterProps {
   goal: number;
   role: string;
   isSignedIn: boolean;
+  mode: string;
 }
 
 export default function RepCounter(props: RepCounterProps) {
@@ -25,7 +26,7 @@ export default function RepCounter(props: RepCounterProps) {
     >
       <p className="text-4xl md:text-4xl">
         {reps} /{" "}
-        {props.role === "MEM" || props.role === "SUBS" ? props.goal : 21}
+        {props.role === "MEM" || props.role === "SUBS" ? props.goal : 100}
       </p>
     </div>
   );

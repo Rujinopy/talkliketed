@@ -90,6 +90,7 @@ export const repsRouter = createTRPCRouter({
                 select: {
                     Role: true,
                     repsAmount: true,
+                    situpsAmount: true,
                 },
             });
 
@@ -371,7 +372,8 @@ export const repsRouter = createTRPCRouter({
                     payment_intent: "",
                     startDate: null,
                     endDate: null,
-                    repsAmount: 0
+                    repsAmount: 0,
+                    situpsAmount: 0,
                 }
             })
             return user;

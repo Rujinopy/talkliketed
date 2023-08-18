@@ -158,6 +158,7 @@ export const Home: NextPage = (props) => {
   }, [reps]);
 
   useEffect(() => {
+    if(dataQuery.data?.user?.Role !== "USER"){
     switch (mode) {
       case "push-ups":
         updateReps(dataQuery.data?.reps?.pushupsCount ?? 0);
@@ -169,6 +170,7 @@ export const Home: NextPage = (props) => {
         updateReps(dataQuery.data?.reps?.weightLiftingCount ?? 0);
         break;
     }
+  }
   }, [mode]); 
 
   //detect the pose in real time
@@ -249,6 +251,15 @@ export const Home: NextPage = (props) => {
     return <div className="container text-center">Loading...</div>;
   }
 
+  const handleGoalType = (mode: string) => {
+    switch (mode) {
+      case "push-ups":
+        return dataQuery.data?.user?.repsAmount
+      case "sit-ups":
+        return dataQuery.data?.user?.situpsAmount
+    }
+  }
+
   return (
     <div className="flex h-auto w-screen flex-col justify-center border-b-2 border-black bg-[#daf5f0] font-mono">
       <button
@@ -269,7 +280,8 @@ export const Home: NextPage = (props) => {
           userId={user?.id}
           reps={reps}
           role={dataQuery.data?.user?.Role as string}
-          goal={dataQuery.data?.user?.repsAmount as number}
+          goal={handleGoalType(mode) as number}
+          mode={mode}
           isSignedIn={isSignedIn ?? false}
         />
         <section className="mx-auto flex h-[90%] max-w-6xl flex-col md:flex-row md:justify-center md:overflow-hidden">

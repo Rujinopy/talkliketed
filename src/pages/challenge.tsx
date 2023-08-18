@@ -157,7 +157,7 @@ export default function Subs() {
         return;
       }
       if (pushupPerDay == 0 && situpPerDay == 0) {
-        toast.error("At least one challenge must be more than 0");
+        toast.error("At least one exercise must be more than 0");
         return;
       }
       if (days < 0) {
@@ -182,7 +182,7 @@ export default function Subs() {
 
   return (
     <div
-      className="relative flex 
+      className=" flex 
     min-h-screen w-screen flex-col justify-center border-b-2 border-black bg-[#ffb2ef] pb-10 "
     >
       <Toaster
@@ -194,14 +194,14 @@ export default function Subs() {
       <Title title={"set up your challenge"} />
 
       <SignedIn>
-        <div className="flex min-h-screen flex-col items-center pt-16 md:justify-center md:pt-0">
+        <div className="flex relative min-h-screen flex-col items-center pt-16 md:justify-center md:pt-0">
           {checkoutForm ? (
             <ArrowBigLeft
               color="white"
-              size={60}
+              size={40}
               onClick={toggleCheckoutForm}
-              className="absolute bottom-0 left-1 rounded-lg border-2 border-black bg-yellow-300 shadow-neo 
-              duration-150 hover:-translate-x-2 hover:cursor-pointer hover:bg-yellow-200 md:bottom-5 md:left-5 md:top-1/2"
+              className="absolute top-2 left-3 rounded-lg border-2 border-black bg-yellow-300 hover:shadow-neo 
+              duration-150 hover:-translate-x-2 hover:cursor-pointer hover:bg-yellow-200 md:top-2 md:left-5"
             />
           ) : null}
           {!checkoutForm ? (
@@ -210,10 +210,10 @@ export default function Subs() {
                 <h1 className="pt-0 text-center font-mono text-5xl font-bold text-black md:mt-10 md:pb-10">
                   Set Your <span className="mt-3 flex">Deadline</span>{" "}
                 </h1>
-                <div className="font-mono text-md bg-white bg-opacity-40 rounded-xl border-black border-2 p-3 mt-5 mb-5 w-full md:w-1/3">
+                <div className="font-mono text-md bg-yellow-100 rounded-xl border-black border-2 p-3 px-10 mt-5 mb-5 w-full md:w-1/3">
                   <h2>- Select start date and end date of your challenge.</h2>
-                  <p>- At least one challenge must be at least 1 {"(push-ups or sit-ups)"}</p>
-                  <p>- Leave any challenge you don&apos;t want as 0</p>
+                  <p>- At least one exercise must be at least 1</p>
+                  <p>- Leave any exercise you don&apos;t want it to be in challenge as 0</p>
                 </div>
                 {/* <SelectExcerciseDropDown /> */}
                 <div className="mx-auto w-full md:w-1/3">

@@ -46,7 +46,7 @@ const Result = () => {
         <h1 className={`${data.status === "succeeded" ? "" : "hidden"} `}>
           Refunded Amount:{" "}
           <span className="inline-block font-bold text-green-500">
-          {(data.amount * 0.94 / 100)} USD
+          {(data.amount / 100)} USD
           </span>
         </h1>
         <h1 className="text-sm">
@@ -58,7 +58,7 @@ const Result = () => {
         >
           Go to your profile
         </Link>
-        <h3 className="mt-5 px-5 text-sm">Something went wrong? Send me your problem at Discord, i&apos;ll fix it.</h3>
+        <h3 className="mt-5 px-5 text-sm">Something went wrong? Report me on Discord!</h3>
         <Link href={"https://discord.gg/WTtZu65nKE"} 
         className="mt-5 text-sm  hover:underline border-2 border-black p-3 shadow-neo">
           Go to discord
