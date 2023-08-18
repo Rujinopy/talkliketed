@@ -41,7 +41,7 @@ const Home: NextPage = (props) => {
   return (
     <>
       <NavbarWithoutCam style="sticky md:flex top-0 z-50" />
-      <div className="container flex min-h-screen flex-col items-center justify-center border-b-2 border-black bg-[#ffb2ef]">
+      <div className="container w-screen flex min-h-screen flex-col items-center justify-center border-b-2 border-black bg-[#ffb2ef]">
         <main
           className="flex h-screen w-screen flex-col items-center justify-center border-black 
         bg-yellow-200 text-center font-mono md:w-[70vw] md:border-x-2 md:pb-10"
