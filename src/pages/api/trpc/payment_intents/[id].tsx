@@ -8,7 +8,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const id: string = req.query.id as string
-  console.log("kuy")
+  
   try {
     if (!id.startsWith('pi_')) {
       throw Error('Incorrect paymentIntent ID.')
@@ -16,7 +16,7 @@ export default async function handler(
 
     const paymentIntent: Stripe.PaymentIntent =
     await stripe.paymentIntents.retrieve(id)
-
+    console.log(paymentIntent)
     res.status(200).json(paymentIntent)
   } catch (err) {
     const errorMessage =

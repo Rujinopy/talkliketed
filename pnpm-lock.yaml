@@ -1,4 +1,4 @@
-lockfileVersion: '6.1'
+lockfileVersion: '6.0'
 
 settings:
   autoInstallPeers: true
@@ -59,6 +59,9 @@ dependencies:
   '@types/react-datepicker':
     specifier: ^4.11.2
     version: 4.11.2(react-dom@18.2.0)(react@18.2.0)
+  '@upstash/qstash':
+    specifier: ^0.3.6
+    version: 0.3.6
   '@upstash/ratelimit':
     specifier: ^0.4.3
     version: 0.4.3
@@ -301,6 +304,10 @@ packages:
     engines: {node: '>=14'}
     dependencies:
       csstype: 3.1.1
+    dev: false
+
+  /@deno/shim-crypto@0.3.1:
+    resolution: {integrity: sha512-ed4pNnfur6UbASEgF34gVxR9p7Mc3qF+Ygbmjiil8ws5IhNFhPDFy5vE5hQAUA9JmVsSxXPcVLM5Rf8LOZqQ5Q==}
     dev: false
 
   /@eslint-community/eslint-utils@4.4.0(eslint@8.39.0):
@@ -1098,6 +1105,12 @@ packages:
       '@upstash/redis': 1.21.0
     transitivePeerDependencies:
       - encoding
+    dev: false
+
+  /@upstash/qstash@0.3.6:
+    resolution: {integrity: sha512-NKN4jbPhB5lfHoSIaU7AuQ3F+yGS20e/FBRiUuPetcKoi354wHhKj9AJFfkFT5SSeLq0XEsXRNynm8gqCS4HjQ==}
+    dependencies:
+      '@deno/shim-crypto': 0.3.1
     dev: false
 
   /@upstash/ratelimit@0.4.3:

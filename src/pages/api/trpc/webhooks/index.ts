@@ -62,19 +62,19 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
       
     } else if (event.type === 'charge.succeeded') {
       const charge = event.data.object as Stripe.Charge
-      // const intent = await stripe.paymentIntents.retrieve(charge.payment_intent as string)
-      const paymentIntent = event.data.object as Stripe.PaymentIntent
-      await caller.reps.changeUserToSubs({
-        userId: paymentIntent.metadata.userId ?? "",
-        startDate: new Date(paymentIntent.metadata.startDate ?? ""),
-        endDate: new Date(paymentIntent.metadata.endDate ?? ""),
-        pledge: paymentIntent.metadata.pledge!,
-        repsAmount: paymentIntent.metadata.repsAmount ?? "0",
-        situpsAmount: paymentIntent.metadata.situpsAmount ?? "0",
-        payment_intent: charge.payment_intent as string
-      })
-      // console.log(paymentIntent)
-      // console.log(`💵 Charge id: ${charge.id}`)
+      const intent = await stripe.paymentIntents.retrieve(charge.payment_intent as string)
+      // const paymentIntent = event.data.object as Stripe.PaymentIntent
+      // await caller.reps.changeUserToSubs({
+      //   userId: paymentIntent.metadata.userId ?? "",
+      //   startDate: new Date(paymentIntent.metadata.startDate ?? ""),
+      //   endDate: new Date(paymentIntent.metadata.endDate ?? ""),
+      //   pledge: paymentIntent.metadata.pledge!,
+      //   repsAmount: paymentIntent.metadata.repsAmount ?? "0",
+      //   situpsAmount: paymentIntent.metadata.situpsAmount ?? "0",
+      //   payment_intent: charge.payment_intent as string
+      // })
+      console.log(intent)
+      console.log(`💵 Charge id: ${charge.id}`)
     }
     else if (event.type === 'charge.refunded') {
       const refund = event.data.object as Stripe.Charge

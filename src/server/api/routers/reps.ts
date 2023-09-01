@@ -532,6 +532,19 @@ export const repsRouter = createTRPCRouter({
 
         }
         ),
+        
+        isTodayYourEndDate: publicProcedure
+        .query(async ({ ctx }) => {
+            const user = await ctx.prisma.users.findMany({
+                select: {
+                    userId: true,
+                    endDate: true,
+                    startDate: true,
+                }
+        })
+        return user;
+    })
+
 
 });
 
