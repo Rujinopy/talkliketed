@@ -118,8 +118,7 @@ const CheckoutForm = (props: Form) => {
           currency={config.CURRENCY}
           onChange={handleInputChange}
         />
-        <Button type="submit" disabled={loading} children={` Pledge ${formatAmountForDisplay(input.customDonation, config.CURRENCY)}`} 
-        className="mt-5"/>
+        <Button type="submit" disabled={loading} className="mt-5">Pledge ${formatAmountForDisplay(input.customDonation, config.CURRENCY)}</Button>
         <Link href="/challenge" className="mt-5">
           <Button onClick={updateDatesToDb} className="w-full md:mt-2 md:w-auto">
             Go without pledge

@@ -105,7 +105,7 @@ import { PaymentIntent } from '@stripe/stripe-js'
 const DonatePage: NextPage = () => {
   const [paymentIntent, setPaymentIntent] = useState<PaymentIntent | null>(null)
   useEffect(() => {
-    fetchPaymentIntent('/api/trpc/payment_intents', {
+    void fetchPaymentIntent('/api/trpc/payment_intents', {
       amount: Math.round(config.MAX_AMOUNT / config.AMOUNT_STEP),
     }).then((data) => {
       setPaymentIntent(data)

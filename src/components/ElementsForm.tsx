@@ -25,7 +25,7 @@ const ElementsForm: FC<{
     cardholderName: '',
   })
   const [paymentType, setPaymentType] = useState('')
-  const [payment, setPayment] = useState<Record<string,null> | {status: string}>({ status: 'initial' })
+  const [payment, setPayment] = useState<Record<string, null> | { status: string }>({ status: 'initial' })
   const [errorMessage, setErrorMessage] = useState('')
   const stripe = useStripe()
   const elements = useElements()
@@ -62,50 +62,54 @@ const ElementsForm: FC<{
       [e.currentTarget.name]: e.currentTarget.value,
     })
 
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Abort if form isn't valid
-    if (!e.currentTarget.reportValidity()) return
-    if (!elements) return
-    setPayment({ status: 'processing' })
+    try {
+      // Abort if form isn't valid
+      if (!e.currentTarget.reportValidity()) return
+      if (!elements) return
+      setPayment({ status: 'processing' })
 
-    // Create a PaymentIntent with the specified amount.
-    const response = await fetchPostJSON('/api/trpc/payment_intents', {
-      amount: input.customDonation,
-      payment_intent_id: paymentIntent?.id,
-    })
-    setPayment(response)
+      // Create a PaymentIntent with the specified amount.
+      const response = await fetchPostJSON('/api/trpc/payment_intents', {
+        amount: input.customDonation,
+        payment_intent_id: paymentIntent?.id,
+      })
+      setPayment(response)
 
-    if (response.statusCode! === 500) {
-      setPayment({ status: 'error' })
-      setErrorMessage(response.message!)
-      return
-    }
+      if (response.statusCode! === 500) {
+        setPayment({ status: 'error' })
+        setErrorMessage(response.message!)
+        return
+      }
 
-    // Use your card Element with other Stripe.js APIs
-    const { error } = await stripe!.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: 'http://localhost:3000/pay-with-elements/result',
-        payment_method_data: {
-          billing_details: {
-            name: input.cardholderName,
+      const { error } = await stripe!.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: 'http://localhost:3000/pay-with-elements/result',
+          payment_method_data: {
+            billing_details: {
+              name: input.cardholderName,
+            },
           },
         },
-      },
-    })
+      })
 
-    if (error) {
-      setPayment({ status: 'error' })
-      setErrorMessage(error.message ?? 'An unknown error occurred')
-    } else if (paymentIntent) {
-      setPayment(paymentIntent)
+      if (error) {
+        setPayment({ status: 'error' })
+        setErrorMessage(error.message ?? 'An unknown error occurred')
+      } else if (paymentIntent) {
+        setPayment(paymentIntent)
+      }
+    }
+    catch (err) {
+      console.log(err)
     }
   }
 
   return (
     <>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={(e) => handleSubmit(e)}>
         <CustomDonationInput
           className="elements-style"
           name="customDonation"
