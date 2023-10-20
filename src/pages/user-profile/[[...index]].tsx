@@ -93,7 +93,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
     <div className="relative w-screen">
       <RefundModal open={modalOpen} toggleModal={toggleModal} />
       <NavbarWithoutCam style="sticky top-0 z-50" />
-      <div className="mx-auto max-w-7xl border-x-2 border-black">
+      <div className="mx-auto md:w-[70vw] border-x-2 border-black">
         <Title title={"Dashboard"} />
         <NameAndStatus
           role={role ?? ""}
@@ -171,9 +171,8 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
 
             <h1
               className={`mx-auto border-b-2 border-black bg-white py-2 text-center 
-          font-mono text-xl md:border-b-2 md:border-t-0 ${
-            role === "USER" ? "hidden" : ""
-          }`}
+          font-mono text-xl md:border-b-2 md:border-t-0 ${role === "USER" ? "hidden" : ""
+                }`}
             >
               {" "}
               Total days:{" "}
@@ -244,22 +243,19 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
           <h1 className="mx-auto border-b-2 border-black bg-white py-3 text-center font-mono text-4xl font-bold">
             Challenge history
           </h1>
-          <div>
-            <div className="flex w-full divide-x-2 divide-black border-b-2 border-black bg-white font-bold md:text-2xl">
+          <div className="w-full">
+            <div className="flex justify-between w-full border-b-2 border-black bg-white font-bold lg:text-2xl">
               <div className="w-1/4">
                 <h1 className="pl-1 font-mono ">Challenge dates</h1>
               </div>
-              <div className="w-1/6 md:w-1/12">
-                <h1 className="pl-2 font-mono ">Status</h1>
-              </div>
-              <div className="w-1/6 md:w-1/12">
+              <div className="w-1/4 md:w-1/5">
                 <h1 className="pl-2 font-mono ">Pledge</h1>
               </div>
-              <div className="w-1/6 md:w-1/12">
-                <h1 className="pl-2 font-mono ">Refund</h1>
+              <div className="w-1/4 md:w-1/5">
+                <h1 className="pl-2 font-mono">Refund</h1>
               </div>
-              <div className="w-1/12">
-                <h1 className="pl-3 font-mono ">Activity</h1>
+              <div className="w-1/4 md:w-1/5">
+                <h1 className="pl-2 font-mono text-center">Status</h1>
               </div>
             </div>
             {/* {data?.pages.map((group, i) =>
@@ -299,7 +295,7 @@ const UserProfile: NextPage<{ firstname: string }> = ({ firstname }) => {
             <p className="text-lg text-gray-900">
               {page + 1}
               <span className="mx-0.25">/ {data?.pages[0]?.totalPage}</span>
-              {}
+              { }
             </p>
             <button
               className="inline-flex h-8 w-8 items-center justify-center rounded border border-black bg-white text-gray-900 hover:bg-yellow-200  disabled:bg-white rtl:rotate-180"

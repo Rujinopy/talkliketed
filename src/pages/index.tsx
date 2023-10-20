@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/store/stores";
-
+import { Button } from "~/components/Button";
 interface modeProps {
   setMode: (mode: string) => void;
 }
@@ -40,11 +40,11 @@ const Home: NextPage = (props) => {
 
   return (
     <>
-      <NavbarWithoutCam style="sticky md:flex top-0 z-50" />
-      <div className="w-screen flex min-h-screen flex-col items-center justify-center border-b-2 border-black bg-[#ffb2ef]">
+      <NavbarWithoutCam style="sticky top-0 z-50"/>
+      <div className="flex flex-col items-center justify-center border-t-0 border-b-2 border-black bg-gradient-to-r from-red-400 via-red-100 to-red-400">
         <main
-          className="flex h-screen w-full max-w-7xl flex-col items-center justify-center border-black 
-        bg-yellow-200 text-center font-mono md:w-[70vw] md:border-x-2 md:pb-10"
+          className="flex h-screen w-full flex-col items-center justify-center border-black 
+        bg-yellow-200 text-center font-mono md:w-[70vw] md:border-x-1 md:pb-10 md:border-x-2"
         >
           <div className="flex h-full w-full flex-col py-10 md:flex-row md:pb-5">
             <div className="flex flex-col justify-center px-5 pb-10 md:w-3/6 md:pb-0">
@@ -52,33 +52,35 @@ const Home: NextPage = (props) => {
                 AI as a trainer
               </h2>
               <h1 className="text-stroke-2 py-2 text-left text-4xl font-bold text-black md:pl-5 md:text-5xl lg:text-6xl">
-                Goodbye{" "}
-                <span className="mt-2 inline-block">Procrastination.</span>
+                Excercise{" "}
+                <span className="mt-2 inline-block">Like Saitama.</span>
               </h1>
               <h1 className="text-stroke-2 py-2 pl-5 text-left text-4xl font-bold text-black md:text-5xl"></h1>
               <p className="text-left text-xl md:pl-5">
-                Pledge your money. Finish your goal and Get it back. Free everything. Pay only fees.
+                Pledge money. Finish exercise challenge. Claim your money back.
               </p>
               <div className="mt-2 flex space-x-2 md:ml-5">
-                <Link
+                <Button
                   href="/exercises"
+                  variant={"whiteDown"}
                   onClick={() => setMode("push-ups")}
-                  className="mt-3 self-center rounded-lg border-2 border-black bg-white px-5 py-5 duration-200 hover:translate-y-2 hover:bg-pink-300 hover:shadow-neo md:text-sm lg:text-lg"
+                  className="mt-3 self-center px-2 text-md py-4"
                 >
                   Push up
-                </Link>
-                <Link 
-  className="mt-3 self-center rounded-lg border-2 border-black bg-white px-5 py-5 duration-200 hover:translate-y-2 hover:bg-pink-300 hover:shadow-neo md:text-sm lg:text-lg"
-                  
+                </Button>
+                <Button
+                  className="mt-3 self-center px-2 text-md py-4"
+                  variant={"whiteDown"}
                   onClick={() => setMode("sit-ups")}
                   href="/exercises"
                 >
                   Sit-Ups
-                </Link>
-                <button className=" mt-3 rounded-lg border-2 border-black bg-white px-5 py-2 duration-200 hover:translate-y-2 hover:bg-pink-300 hover:shadow-neo md:text-sm lg:text-lg">
+                </Button>
+                <Button className=" mt-3 self-cente px-2 text-md py-2"
+                  variant={"whiteDown"}>
                   Weight Lifting
                   <span className="block text-xs">Coming soon...</span>
-                </button>
+                </Button>
               </div>
               <p
                 onClick={scrollToRef}
@@ -103,14 +105,13 @@ const Home: NextPage = (props) => {
       </div>
       <div
         ref={sec2Ref}
-        className="flex h-[50vh] flex-col items-center justify-center border-black md:h-[70vh]"
+        className="flex h-[50vh] flex-col w-screen  items-center justify-center border-black md:h-[70vh]"
       >
         <h1
-          className={`${
-            isIntersecting === true
-              ? "translate-y-0 transition delay-100"
-              : "translate-y-56 opacity-0"
-          }  block text-center font-mono text-xl leading-loose md:max-w-4xl md:text-3xl`}
+          className={`${isIntersecting === true
+            ? "translate-y-0 transition delay-100"
+            : "translate-y-56 opacity-0"
+            }  block text-center font-mono text-xl leading-loose md:max-w-4xl md:text-3xl`}
         >
           Pledge money to overcome procrastination and achieve your goals 🎯{" "}
           <span className="mt-10 block"> or risk losing it !</span>
@@ -118,13 +119,13 @@ const Home: NextPage = (props) => {
       </div>
       <div
         ref={ref}
-        className="flex h-[15vh] items-center justify-center border-y-2 border-black bg-purple-200 p-2"
+        className="flex h-[15vh] items-center justify-center border-y-2 border-black bg-purple-200 p-2 w-screen "
       >
         <h1 className="text-center font-mono text-3xl">
           How does Motiflex works?
         </h1>
       </div>
-      <div className="relative flex h-[100vh] flex-col divide-y-2 divide-black border-b-2 border-black bg-[#ffb2ef] font-mono text-xl md:divide-y-0 md:text-2xl">
+      <div className="relative w-screen  flex h-[100vh] flex-col divide-y-2 divide-black border-b-2 border-black bg-[#ffb2ef] font-mono text-xl md:divide-y-0 md:text-2xl">
         <div className="absolute inset-0 flex items-center justify-center">
           <Image
             src={`https://images.squarespace-cdn.com/content/v1/55e5dbc1e4b08f65bc69d96d/1579710354488-RH6N1143AKJ42UJQ5NVO/halterJommeke.gif?format=500w`}
@@ -137,26 +138,26 @@ const Home: NextPage = (props) => {
           <div className="md:text-md md:text-xl lg:text-2xl absolute z-0 h-[90vh] w-full border-y-2 border-black bg-yellow-200 md:w-[95vw] md:rounded-3xl md:border-2">
             <div className=" z-10 flex h-1/2 w-full flex-col divide-y-2 divide-black md:flex-row  md:divide-y-0 ">
               <div className="flex h-1/2 w-full flex-col items-center justify-center p-2 md:h-full  md:w-1/2">
-                <h1 className="text-center">1. Set your custom goal.</h1>
+                <h1 className="text-center">Create exercise challenge and set goal.</h1>
               </div>
               <div className="flex h-1/2 w-full items-center justify-center p-2 md:h-full md:w-1/2">
                 <h1 className="text-center">
-                  2. Make some pledge or go without pledge.
+                  Pledge or no pledge.{" "}
                 </h1>
               </div>
             </div>
             <div className=" z-10 flex h-1/2 w-full flex-col divide-y-2 divide-black md:flex-row-reverse md:divide-y-0 md:divide-x-reverse">
               <div className="flex h-1/2 w-full items-center justify-center p-2 md:h-full md:w-1/2">
-                <h1 className=" text-center">
-                  3. Begin exercising on webcam.{" "}
-                  <span className="block">
-                    Our AI tracks and counts your push-ups.
+                <h1 className="">
+                  Begin exercising on your camera.{" "}
+                  <span className="block mt-3 text-sm">
+                    Our AI tracks and counts your reps of any exercise.
                   </span>
                 </h1>
               </div>
               <div className="flex h-1/2 w-full items-center justify-center p-2 md:h-full md:w-1/2">
                 <h1 className="text-center">
-                  4. Retrieve your result{" "}
+                  Retrieve your result{" "}
                   <span className="block"> and reclaim your pledge.</span>
                 </h1>
               </div>

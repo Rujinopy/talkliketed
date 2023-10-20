@@ -17,9 +17,9 @@ export default function Navbar({onStateChanged, mode}: { onStateChanged: (boolea
     return (
         <div className="flex h-16 items-center w-screen bg-white border-black border-t-2">
           {/* <MenuBar /> */}
-          <Link href={"/"} className="relative">
-            <p className="font-mono text-lg px-3 pr-[21px] md:mx-5 md:my-5 md:text-4xl ">{mode}
-            {/* <span className="absolute bottom-0 right-0 text-[8px]">by Motiflex</span> */}
+          <Link href={"/"} className="relative md:w-[15vw] w-[30vw]">
+            <p className="font-mono text-lg px-1 md:my-5 md:text-4xl text-center">
+              {mode}
             </p>
           </Link>
           <button

@@ -8,6 +8,7 @@ import Link from "next/link";
 import { api } from "~/utils/api";
 import { useStore } from "store/stores";
 import Paymentinformation from "./PaymentInformation";
+import { Button } from "./Button";
 
 interface Form {
   Toggle: boolean;
@@ -117,23 +118,12 @@ const CheckoutForm = (props: Form) => {
           currency={config.CURRENCY}
           onChange={handleInputChange}
         />
-
-        <button
-          className="mt-10 w-3/4 rounded-lg border-2 border-black bg-[#fdfd96] px-12 py-2
-        font-mono text-2xl shadow-neo hover:cursor-pointer hover:bg-[#ffdb58] md:mt-5 md:w-2/4"
-          type="submit"
-          disabled={loading}
-        >
-          Pledge {formatAmountForDisplay(input.customDonation, config.CURRENCY)}
-        </button>
-        <Link href="/" className="mt-5">
-          <button
-            onClick={updateDatesToDb}
-            className="w-full rounded-lg border-2 border-black bg-[#fdfd96] px-10 py-2 font-mono text-2xl
-          shadow-neo hover:cursor-pointer hover:bg-[#ffdb58] md:mt-2 md:w-auto"
-          >
+        <Button type="submit" disabled={loading} children={` Pledge ${formatAmountForDisplay(input.customDonation, config.CURRENCY)}`} 
+        className="mt-5"/>
+        <Link href="/challenge" className="mt-5">
+          <Button onClick={updateDatesToDb} className="w-full md:mt-2 md:w-auto">
             Go without pledge
-          </button>
+          </Button>
         </Link>
       </form>
     </section>

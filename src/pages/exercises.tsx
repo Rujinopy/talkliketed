@@ -259,7 +259,7 @@ export const Home: NextPage = (props) => {
   }
 
   return (
-    <div className="flex h-auto w-screen flex-col justify-center border-b-2 border-black bg-[#daf5f0] font-mono">
+    <div className="flex h-auto w-screen flex-col justify-center border-b-2 border-black bg-[#ffb2ef] font-mono">
       {/* <button
         className="text-stroke-3 text-7xl font-bold text-red-400"
         onClick={() => updateReps((prev) => prev + 1)}
@@ -271,7 +271,7 @@ export const Home: NextPage = (props) => {
       </section>
       <section
         aria-label="body"
-        className="mx-auto h-full w-screen max-w-6xl border-black bg-[#ffb2ef] md:h-auto md:border-x-2"
+        className="mx-auto h-full md:w-[70vw] w-screen max-w-6xl border-black bg-[#ffb2ef] md:h-auto md:border-x-2"
       >
         <RepCounter
           date={newToday}
@@ -283,25 +283,6 @@ export const Home: NextPage = (props) => {
           isSignedIn={isSignedIn ?? false}
         />
         <section className="mx-auto flex h-[90%] max-w-6xl flex-col md:flex-row md:justify-center md:overflow-hidden">
-          {/* left */}
-          {/* <div className="flex h-[6rem] flex-col items-center justify-center border-black bg-[#ffb2ef] md:h-auto md:basis-1/4 md:border-l-2">
-            {!isSignedIn ? (
-              <Link
-                className="transform border-y-2 border-black bg-[#fdfd96] 
-            px-5 py-2 font-mono text-lg font-medium text-black shadow-lg transition duration-200 hover:bg-[#ffdb58] hover:shadow-neo md:text-xl
-            "
-                href={"/sign-in"}
-              >
-                Login to customize your daily goal here. &#128547;
-              </Link>
-            ) : (
-              <p className="text-stroke-3 rounded-2xl border-black px-5 py-1 font-mono text-[6rem] font-bold text-white md:border-2 md:bg-[#fdfd96] md:text-[12rem]">
-                {reps}
-              </p>
-            )}
-          </div> */}
-
-          {/* middle */}
           <div
             aria-label="video"
             className="relative flex w-full flex-col overflow-hidden border-black bg-white md:w-full  md:flex-row md:border-x-2"
@@ -316,11 +297,10 @@ export const Home: NextPage = (props) => {
             )}
           </div>
 
-          {/* right */}
         </section>
       </section>
-      <section className="h-auto min-h-screen bg-[#daf5f0]">
-        <div className="mx-auto min-h-screen max-w-6xl border-x-2 border-b-2 border-black bg-[#ffb2ef]">
+      <section className="mx-auto h-full md:w-[70vw] w-screen  border-black bg-[#ffb2ef] md:h-auto md:border-x-2">
+        <div className="mx-auto min-h-[40vh] bg-white">
           <div className="flex justify-center pt-5 ">
             <p className="p-2 text-lg">Select Mode:</p>
             <ModeSelector
@@ -334,10 +314,10 @@ export const Home: NextPage = (props) => {
               }}
             />
           </div>
-          <h1 className="ml-10 mt-20 w-fit rounded-lg border-2 border-black bg-white px-5 py-3 font-mono font-bold shadow-neo">
+          {/* <h1 className="ml-10 mt-20 w-fit rounded-lg border-2 border-black bg-white px-5 py-3 font-mono font-bold shadow-neo">
             User Guide
-          </h1>
-          <div className="max-w-4xl space-y-7 px-5 py-8 font-mono text-xl md:px-10">
+          </h1> */}
+          {/* <div className="max-w-4xl space-y-7 px-5 py-8 font-mono text-xl md:px-10">
             <h2>
               This is a push-up counter operated with AI that tracks your
               movement when you&apos;re performing push-ups.
@@ -372,7 +352,7 @@ export const Home: NextPage = (props) => {
                 ) : null}
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </section>
     </div>
