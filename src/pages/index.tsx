@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/store/stores";
 import { Button } from "~/components/Button";
+
 interface modeProps {
   setMode: (mode: string) => void;
 }

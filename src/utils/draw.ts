@@ -359,3 +359,5 @@ export function calculateSitUps(keypoints: Keypoint[], callback: () => void) {
   situp_DownPosition(keypoints, callback);
   situp_UpPosition(keypoints);
 }
+
+// Let contributors add their own exercises here
