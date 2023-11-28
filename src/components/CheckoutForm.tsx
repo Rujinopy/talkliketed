@@ -69,7 +69,6 @@ const CheckoutForm = (props: Form) => {
       const { error } = await stripe.redirectToCheckout({
         sessionId: response.id,
       });
-
       console.warn(error.message);
       if (response) {
         console.log(response);
@@ -118,7 +117,7 @@ const CheckoutForm = (props: Form) => {
           currency={config.CURRENCY}
           onChange={handleInputChange}
         />
-        <Button type="submit" disabled={loading} className="mt-5">Pledge ${formatAmountForDisplay(input.customDonation, config.CURRENCY)}</Button>
+        <Button type="submit" disabled={loading} className="mt-5">Pledge {formatAmountForDisplay(input.customDonation, config.CURRENCY)}</Button>
         <Link href="/challenge" className="mt-5">
           <Button onClick={updateDatesToDb} className="w-full md:mt-2 md:w-auto">
             Go without pledge
