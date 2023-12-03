@@ -38,7 +38,6 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     try {
       event = stripe.webhooks.constructEvent(buf.toString(), sig, env.STRIPE_WEBHOOK_SECRET)
-      
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
       // On error, log and return the error message.
@@ -63,16 +62,16 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     } else if (event.type === 'charge.succeeded') {
       const charge = event.data.object as Stripe.Charge
       const intent = await stripe.paymentIntents.retrieve(charge.payment_intent as string)
-      // const paymentIntent = event.data.object as Stripe.PaymentIntent
-      // await caller.reps.changeUserToSubs({
-      //   userId: paymentIntent.metadata.userId ?? "",
-      //   startDate: new Date(paymentIntent.metadata.startDate ?? ""),
-      //   endDate: new Date(paymentIntent.metadata.endDate ?? ""),
-      //   pledge: paymentIntent.metadata.pledge!,
-      //   repsAmount: paymentIntent.metadata.repsAmount ?? "0",
-      //   situpsAmount: paymentIntent.metadata.situpsAmount ?? "0",
-      //   payment_intent: charge.payment_intent as string
-      // })
+      const paymentIntent = event.data.object as Stripe.PaymentIntent
+      await caller.reps.changeUserToSubs({
+        userId: paymentIntent.metadata.userId ?? "",
+        startDate: new Date(paymentIntent.metadata.startDate ?? ""),
+        endDate: new Date(paymentIntent.metadata.endDate ?? ""),
+        pledge: paymentIntent.metadata.pledge!,
+        repsAmount: paymentIntent.metadata.repsAmount ?? "0",
+        situpsAmount: paymentIntent.metadata.situpsAmount ?? "0",
+        payment_intent: charge.payment_intent as string
+      })
       // console.log(intent)
       // console.log(`💵 Charge id: ${charge.id}`)
     }
