@@ -37,7 +37,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     let event: Stripe.Event
 
     try {
-      event = stripe.webhooks.constructEvent(buf.toString(), sig, process.env.STRIPE_WEBHOOK_SECRET || "")
+      event = stripe.webhooks.constructEvent(buf, sig, env.STRIPE_WEBHOOK_SECRET)
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
