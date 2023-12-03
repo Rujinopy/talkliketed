@@ -43,7 +43,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error'
       // On error, log and return the error message.
       if (err instanceof Error) console.log(err)
-      console.log(`❌ Error message: ${errorMessage}`)
+      // console.log(`❌ Error message: ${errorMessage}`)
       res.status(400).send(`Webhook Error: ${errorMessage}`)
       return
     }
@@ -73,8 +73,8 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
       //   situpsAmount: paymentIntent.metadata.situpsAmount ?? "0",
       //   payment_intent: charge.payment_intent as string
       // })
-      console.log(intent)
-      console.log(`💵 Charge id: ${charge.id}`)
+      // console.log(intent)
+      // console.log(`💵 Charge id: ${charge.id}`)
     }
     else if (event.type === 'charge.refunded') {
       const refund = event.data.object as Stripe.Charge
@@ -90,7 +90,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
       })
     }
     else {
-      console.warn(`🤷‍♀️ Unhandled event type: ${event.type}`)
+      // console.warn(`🤷‍♀️ Unhandled event type: ${event.type}`)
     }
 
     // Return a response to acknowledge receipt of the event.
